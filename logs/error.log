@@ -1,0 +1,699 @@
+2025-06-24T10:07:52.146Z ERROR: sendOtp error: org is not defined
+2025-06-24T10:08:18.952Z ERROR: sendOtp error: org is not defined
+2025-06-24T10:44:02.411Z ERROR: createAccount error: 
+Invalid `prisma.organizations.create()` invocation:
+
+{
+  data: {
+    name: "vconsol",
+    email_domain: "gmail.com",
+    is_active: true,
++   industry_type: {
++     create: Industry_TypesCreateWithoutOrganizationsInput | Industry_TypesUncheckedCreateWithoutOrganizationsInput,
++     connectOrCreate: Industry_TypesCreateOrConnectWithoutOrganizationsInput,
++     connect: Industry_TypesWhereUniqueInput
++   }
+  }
+}
+
+Argument `industry_type` is missing.
+2025-06-24T10:45:47.950Z ERROR: createAccount error: 
+Invalid `prisma.organizations.create()` invocation:
+
+{
+  data: {
+    name: "vconsol",
+    email_domain: "gmail.com",
+    is_active: true,
++   industry_type: {
++     create: Industry_TypesCreateWithoutOrganizationsInput | Industry_TypesUncheckedCreateWithoutOrganizationsInput,
++     connectOrCreate: Industry_TypesCreateOrConnectWithoutOrganizationsInput,
++     connect: Industry_TypesWhereUniqueInput
++   }
+  }
+}
+
+Argument `industry_type` is missing.
+2025-06-24T11:14:07.359Z ERROR: createAccount error: 
+Invalid `prisma.organizations.create()` invocation:
+
+{
+  data: {
+    name: "vconsol",
+    email_domain: "gmail.com",
+    is_active: true,
++   status: {
++     create: Organization_StatusesCreateWithoutOrganizationsInput | Organization_StatusesUncheckedCreateWithoutOrganizationsInput,
++     connectOrCreate: Organization_StatusesCreateOrConnectWithoutOrganizationsInput,
++     connect: Organization_StatusesWhereUniqueInput
++   }
+  }
+}
+
+Argument `status` is missing.
+2025-06-24T11:20:28.850Z ERROR: createAccount error: bcrypt is not defined
+2025-06-24T11:21:57.479Z ERROR: createAccount error: bcrypt is not defined
+2025-06-24T11:22:45.339Z ERROR: createAccount error: Invalid salt. Salt must be in the form of: $Vers$log2(NumRounds)$saltvalue
+2025-06-24T11:34:06.423Z ERROR: createAccount error: Invalid salt. Salt must be in the form of: $Vers$log2(NumRounds)$saltvalue
+2025-06-24T11:35:04.768Z ERROR: createAccount error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "ust@ust.com",
+    password_hash: "$2b$10$ze32kA4voMjUGqrIcwczc.pu6vSn.LkVKizQckhgBgjLoCil2eqVG",
+    first_name: "ust",
+    last_name: "",
+    phone_number: "",
+    organization_id: "20965dd4-3a0f-4c20-8d86-e3c5721c2375",
++   site: {
++     create: SitesCreateWithoutUsersInput | SitesUncheckedCreateWithoutUsersInput,
++     connectOrCreate: SitesCreateOrConnectWithoutUsersInput,
++     connect: SitesWhereUniqueInput
++   }
+  }
+}
+
+Argument `site` is missing.
+2025-06-24T12:30:49.861Z ERROR: getOrganizationName error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: undefined,
+?   email?: String,
+?   AND?: UsersWhereInput | UsersWhereInput[],
+?   OR?: UsersWhereInput[],
+?   NOT?: UsersWhereInput | UsersWhereInput[],
+?   organization_id?: StringNullableFilter | String | Null,
+?   site_id?: StringNullableFilter | String | Null,
+?   area_id?: StringNullableFilter | String | Null,
+?   password_hash?: StringFilter | String,
+?   first_name?: StringFilter | String,
+?   last_name?: StringFilter | String,
+?   phone_number?: StringFilter | String,
+?   phone_verified?: BoolFilter | Boolean,
+?   is_active?: BoolFilter | Boolean,
+?   role_id?: StringFilter | String,
+?   created_at?: DateTimeFilter | DateTime,
+?   updated_at?: DateTimeFilter | DateTime,
+?   organization?: OrganizationsNullableScalarRelationFilter | OrganizationsWhereInput | Null,
+?   site?: SitesNullableScalarRelationFilter | SitesWhereInput | Null,
+?   area?: AreasNullableScalarRelationFilter | AreasWhereInput | Null,
+?   role?: RolesScalarRelationFilter | RolesWhereInput,
+?   Phone_Verifications?: Phone_VerificationsListRelationFilter,
+?   Alerts?: AlertsListRelationFilter,
+?   Visitor_Status?: Visitor_StatusListRelationFilter,
+?   Notification_Recipients?: Notification_RecipientsListRelationFilter,
+?   User_Locations?: User_LocationsListRelationFilter,
+?   Audit_Logs?: Audit_LogsListRelationFilter
+  },
+  include: {
+    organization: true
+  }
+}
+
+Argument `where` of type UsersWhereUniqueInput needs at least one of `user_id` or `email` arguments. Available options are marked with ?.
+2025-06-24T13:29:30.249Z ERROR: createSite error: createSiteSchema is not defined
+2025-06-24T13:33:14.673Z ERROR: createSite error: 
+Invalid `prisma.organizations.update()` invocation:
+
+{
+  where: {
+    organization_id: "c1a2b3d4-5678-4321-abcd-123456789abc"
+  },
+  data: {
+    site_id: "9a7d818a-ba52-42bf-8ae1-1eef7361dd84",
+    ~~~~~~~
+?   organization_id?: String | StringFieldUpdateOperationsInput,
+?   name?: String | StringFieldUpdateOperationsInput,
+?   email_domain?: String | StringFieldUpdateOperationsInput,
+?   main_contact_name?: String | NullableStringFieldUpdateOperationsInput | Null,
+?   main_contact_email?: String | NullableStringFieldUpdateOperationsInput | Null,
+?   main_contact_phone?: String | NullableStringFieldUpdateOperationsInput | Null,
+?   is_active?: Boolean | BoolFieldUpdateOperationsInput,
+?   created_at?: DateTime | DateTimeFieldUpdateOperationsInput,
+?   updated_at?: DateTime | DateTimeFieldUpdateOperationsInput,
+?   last_activity_at?: DateTime | NullableDateTimeFieldUpdateOperationsInput | Null,
+?   industry_type?: Industry_TypesUpdateOneWithoutOrganizationsNestedInput,
+?   status?: Organization_StatusesUpdateOneWithoutOrganizationsNestedInput,
+?   Sites?: SitesUpdateManyWithoutOrganizationNestedInput,
+?   Users?: UsersUpdateManyWithoutOrganizationNestedInput,
+?   Alerts?: AlertsUpdateManyWithoutOrganizationNestedInput,
+?   Subscriptions?: SubscriptionsUpdateManyWithoutOrganizationNestedInput
+  }
+}
+
+Unknown argument `site_id`. Available options are marked with ?.
+2025-06-24T14:09:35.235Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Sites_organization_id_fkey`
+2025-06-24T14:29:40.660Z ERROR: createSite error: 
+Invalid `prisma.sites.findUnique()` invocation:
+
+{
+  where: {
+    contact_email: "hq@company.com",
+?   id?: String,
+?   AND?: SitesWhereInput | SitesWhereInput[],
+?   OR?: SitesWhereInput[],
+?   NOT?: SitesWhereInput | SitesWhereInput[],
+?   organization_id?: StringNullableFilter | String | Null,
+?   name?: StringFilter | String,
+?   address_line_1?: StringFilter | String,
+?   address_line_2?: StringNullableFilter | String | Null,
+?   city?: StringFilter | String,
+?   state?: StringFilter | String,
+?   zip_code?: StringFilter | String,
+?   contact_phone?: StringNullableFilter | String | Null,
+?   created_at?: DateTimeFilter | DateTime,
+?   organization?: OrganizationsNullableScalarRelationFilter | OrganizationsWhereInput | Null,
+?   Areas?: AreasListRelationFilter,
+?   Users?: UsersListRelationFilter,
+?   Alert_Sites?: Alert_SitesListRelationFilter
+  }
+}
+
+Argument `where` of type SitesWhereUniqueInput needs at least one of `id` arguments. Available options are marked with ?.
+2025-06-26T10:28:56.151Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-06-26T11:37:13.826Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-06-26T11:37:30.325Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-07-15T10:03:35.245Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-07-15T10:04:18.370Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-07-15T10:04:26.318Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-07-15T10:04:51.104Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-07-15T10:05:10.146Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-07-15T11:39:03.052Z ERROR: createEmployee error: 
+Invalid `prisma.users.create()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Users_organization_id_fkey`
+2025-07-15T12:31:40.580Z ERROR: Login error: jwt is not defined
+2025-07-15T12:32:22.028Z ERROR: Login error: JWT_SECRET is not defined
+2025-07-15T12:37:08.739Z ERROR: Login error: TOKEN_EXPIRY is not defined
+2025-07-15T12:37:45.780Z ERROR: Login error: TOKEN_EXPIRY is not defined
+2025-07-29T11:44:56.667Z ERROR: getAreasByOrganizationId error: organizationId is not defined
+2025-07-31T13:58:10.500Z ERROR: Cannot destructure property 'fcm_token' of 'req.body' as it is undefined.
+2025-07-31T13:59:31.162Z ERROR: 
+Invalid `prisma.users.update()` invocation:
+
+{
+  where: {
+    id: undefined,
+?   user_id?: String,
+?   email?: String,
+?   AND?: UsersWhereInput | UsersWhereInput[],
+?   OR?: UsersWhereInput[],
+?   NOT?: UsersWhereInput | UsersWhereInput[],
+?   organization_id?: StringNullableFilter | String | Null,
+?   site_id?: StringNullableFilter | String | Null,
+?   area_id?: StringNullableFilter | String | Null,
+?   password_hash?: StringFilter | String,
+?   first_name?: StringFilter | String,
+?   last_name?: StringFilter | String,
+?   phone_number?: StringFilter | String,
+?   phone_verified?: BoolFilter | Boolean,
+?   is_active?: BoolFilter | Boolean,
+?   role_id?: StringFilter | String,
+?   token?: StringNullableFilter | String | Null,
+?   created_at?: DateTimeFilter | DateTime,
+?   updated_at?: DateTimeFilter | DateTime,
+?   organization?: OrganizationsNullableScalarRelationFilter | OrganizationsWhereInput | Null,
+?   site?: SitesNullableScalarRelationFilter | SitesWhereInput | Null,
+?   area?: AreasNullableScalarRelationFilter | AreasWhereInput | Null,
+?   role?: RolesScalarRelationFilter | RolesWhereInput,
+?   Phone_Verifications?: Phone_VerificationsListRelationFilter,
+?   Alerts?: AlertsListRelationFilter,
+?   Visitor_Status?: Visitor_StatusListRelationFilter,
+?   Notification_Recipients?: Notification_RecipientsListRelationFilter,
+?   User_Locations?: User_LocationsListRelationFilter,
+?   Audit_Logs?: Audit_LogsListRelationFilter
+  },
+  data: {
+    token: "1234"
+  }
+}
+
+Argument `where` of type UsersWhereUniqueInput needs at least one of `user_id` or `email` arguments. Available options are marked with ?.
+2025-07-31T14:00:49.473Z ERROR: 
+Invalid `prisma.users.update()` invocation:
+
+{
+  where: {
+    id: "484ff5cd-fcc6-4785-937c-c05abdb206d1",
+    ~~
+?   user_id?: String,
+?   email?: String,
+?   AND?: UsersWhereInput | UsersWhereInput[],
+?   OR?: UsersWhereInput[],
+?   NOT?: UsersWhereInput | UsersWhereInput[],
+?   organization_id?: StringNullableFilter | String | Null,
+?   site_id?: StringNullableFilter | String | Null,
+?   area_id?: StringNullableFilter | String | Null,
+?   password_hash?: StringFilter | String,
+?   first_name?: StringFilter | String,
+?   last_name?: StringFilter | String,
+?   phone_number?: StringFilter | String,
+?   phone_verified?: BoolFilter | Boolean,
+?   is_active?: BoolFilter | Boolean,
+?   role_id?: StringFilter | String,
+?   token?: StringNullableFilter | String | Null,
+?   created_at?: DateTimeFilter | DateTime,
+?   updated_at?: DateTimeFilter | DateTime,
+?   organization?: OrganizationsNullableScalarRelationFilter | OrganizationsWhereInput | Null,
+?   site?: SitesNullableScalarRelationFilter | SitesWhereInput | Null,
+?   area?: AreasNullableScalarRelationFilter | AreasWhereInput | Null,
+?   role?: RolesScalarRelationFilter | RolesWhereInput,
+?   Phone_Verifications?: Phone_VerificationsListRelationFilter,
+?   Alerts?: AlertsListRelationFilter,
+?   Visitor_Status?: Visitor_StatusListRelationFilter,
+?   Notification_Recipients?: Notification_RecipientsListRelationFilter,
+?   User_Locations?: User_LocationsListRelationFilter,
+?   Audit_Logs?: Audit_LogsListRelationFilter
+  },
+  data: {
+    token: "1234"
+  }
+}
+
+Unknown argument `id`. Did you mean `OR`? Available options are marked with ?.
+2025-07-31T14:01:19.243Z ERROR: 
+Invalid `prisma.users.update()` invocation:
+
+{
+  where: {
+    id: "484ff5cd-fcc6-4785-937c-c05abdb206d1",
+    ~~
+?   user_id?: String,
+?   email?: String,
+?   AND?: UsersWhereInput | UsersWhereInput[],
+?   OR?: UsersWhereInput[],
+?   NOT?: UsersWhereInput | UsersWhereInput[],
+?   organization_id?: StringNullableFilter | String | Null,
+?   site_id?: StringNullableFilter | String | Null,
+?   area_id?: StringNullableFilter | String | Null,
+?   password_hash?: StringFilter | String,
+?   first_name?: StringFilter | String,
+?   last_name?: StringFilter | String,
+?   phone_number?: StringFilter | String,
+?   phone_verified?: BoolFilter | Boolean,
+?   is_active?: BoolFilter | Boolean,
+?   role_id?: StringFilter | String,
+?   token?: StringNullableFilter | String | Null,
+?   created_at?: DateTimeFilter | DateTime,
+?   updated_at?: DateTimeFilter | DateTime,
+?   organization?: OrganizationsNullableScalarRelationFilter | OrganizationsWhereInput | Null,
+?   site?: SitesNullableScalarRelationFilter | SitesWhereInput | Null,
+?   area?: AreasNullableScalarRelationFilter | AreasWhereInput | Null,
+?   role?: RolesScalarRelationFilter | RolesWhereInput,
+?   Phone_Verifications?: Phone_VerificationsListRelationFilter,
+?   Alerts?: AlertsListRelationFilter,
+?   Visitor_Status?: Visitor_StatusListRelationFilter,
+?   Notification_Recipients?: Notification_RecipientsListRelationFilter,
+?   User_Locations?: User_LocationsListRelationFilter,
+?   Audit_Logs?: Audit_LogsListRelationFilter
+  },
+  data: {
+    token: "1234"
+  }
+}
+
+Unknown argument `id`. Did you mean `OR`? Available options are marked with ?.
+2025-08-02T07:36:10.327Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-02T07:37:54.806Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-02T07:39:20.948Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-02T07:54:10.007Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-02T10:47:39.030Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-02T10:51:48.002Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-02T10:55:20.041Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-02T10:56:30.897Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-02T11:07:11.528Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-08-13T10:11:53.566Z ERROR: createAccount error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "tomsebastian715@gmail.com",
+    password_hash: "$2b$10$wvznnRQGL3As1DaOSUmy2eFNcSHpdPX3O5q9hOlWZdVt90lYpx0z2",
+    first_name: "Admin",
+    last_name: "",
+    phone_number: "",
+    organization_id: "5e682900-a5b6-4cd7-bfdc-97c5b8fcabe9",
+    role_id: "098034d2-975f-4c2a-995e-c1a15912bd79",
++   user_type: UserTypes
+  }
+}
+
+Argument `user_type` is missing.
+2025-08-13T10:57:54.787Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+{
+  data: {
+    organization_id: "34f22218-c379-40b7-9f0e-887eef354035",
+    name: "Local",
+    address_line_1: "west",
+    address_line_2: "",
+    city: "Alappy",
+    state: "Kl",
+    zip_code: "688530",
+    contact_email: "test@gmail.com",
+    contact_phone: "9999999999",
++   contact_name: String
+  }
+}
+
+Argument `contact_name` is missing.
+2025-08-13T11:01:27.739Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+{
+  data: {
+    organization_id: "34f22218-c379-40b7-9f0e-887eef354035",
+    name: "Local",
+    address_line_1: "west",
+    address_line_2: "",
+    city: "Alappy",
+    state: "Kl",
+    zip_code: "688530",
+    contact_email: "test@gmail.com",
+    contact_phone: "9999999999",
++   contact_name: String
+  }
+}
+
+Argument `contact_name` is missing.
+2025-08-13T11:02:55.870Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+{
+  data: {
+    organization_id: "34f22218-c379-40b7-9f0e-887eef354035",
+    name: "Local",
+    address_line_1: "west",
+    address_line_2: "",
+    city: "Alappy",
+    state: "Kl",
+    zip_code: "688530",
+    contact_email: "test@gmail.com",
+    contact_phone: "9999999999",
++   contact_name: String
+  }
+}
+
+Argument `contact_name` is missing.
+2025-08-13T11:03:49.940Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+{
+  data: {
+    organization_id: "34f22218-c379-40b7-9f0e-887eef354035",
+    name: "Local",
+    address_line_1: "west",
+    address_line_2: "",
+    city: "Alappy",
+    state: "Kl",
+    zip_code: "688530",
+    contact_email: "test@gmail.com",
+    contact_phone: "9898765676",
++   contact_name: String
+  }
+}
+
+Argument `contact_name` is missing.
+2025-08-13T11:09:38.528Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+{
+  data: {
+    organization_id: "b7f3c847-1414-42dc-bef9-dd8fbf7e9a31",
+    name: "Local",
+    address_line_1: "west",
+    address_line_2: "",
+    city: "Alappy",
+    state: "kl",
+    zip_code: "688530",
+    contact_email: "test@gmail.com",
+    contact_phone: "9876787678",
++   contact_name: String
+  }
+}
+
+Argument `contact_name` is missing.
+2025-08-13T11:46:05.318Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+{
+  data: {
+    organization_id: "e56773ed-e595-48be-ade8-39952c0a4497",
+    name: "Local",
+    address_line_1: "West",
+    address_line_2: "",
+    city: "Alappuzha",
+    state: "kerala",
+    zip_code: "688530",
+    contact_email: "test@gmail.com",
+    contact_phone: "9898989898",
++   contact_name: String
+  }
+}
+
+Argument `contact_name` is missing.
+2025-08-13T12:44:07.752Z ERROR: createEmployee error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "tomvalo28@gmail.com",
+    password_hash: "$2b$10$uQ15riUkQrVqvCU5Bmkj7Ou6jzJWmrqG7NsJZi7kdd5ksxQ84nZI6",
+    first_name: "tommy",
+    last_name: "",
+    phone_number: "9878786555",
+    is_active: true,
+    role_id: "494668be-8fc4-4a5b-b34a-8c6681fba456",
+    organization_id: "e56773ed-e595-48be-ade8-39952c0a4497",
++   user_type: UserTypes
+  }
+}
+
+Argument `user_type` is missing.
+2025-08-13T12:44:40.537Z ERROR: createEmployee error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "tomvalo28@gmail.com",
+    password_hash: "$2b$10$xjJh6zxPgFJ6UCLrLx274OlFHmpZRmPhoQAxpO/g.6ci3W7e.BD/u",
+    first_name: "tommy",
+    last_name: "",
+    phone_number: "9878786555",
+    is_active: true,
+    role_id: "494668be-8fc4-4a5b-b34a-8c6681fba456",
+    organization_id: "e56773ed-e595-48be-ade8-39952c0a4497",
++   user_type: UserTypes
+  }
+}
+
+Argument `user_type` is missing.
+2025-08-13T12:46:04.367Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-09-26T13:40:21.060Z ERROR: createEmployee error: Cannot read properties of null (reading 'id')
+2025-09-26T13:42:12.182Z ERROR: createEmployee error: Cannot read properties of null (reading 'id')
+2025-09-26T13:45:26.086Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-10-07T05:57:55.127Z ERROR: createAccount error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "tomsebastian715@gmail.com",
+    password_hash: "$2b$10$TfNOOpULEUTAhhnAA/o3eeHog5kP2LdzBXlJXZRg6nzddOJVfHj1.",
+    first_name: "George",
+    last_name: "",
+    phone_number: "",
+    organization_id: "74f865f6-6b32-4a5f-a8a0-2d2df0ef5cb7",
+    role_id: "0a2fd3f3-5d92-4532-a3ce-9921edd11a20",
++   user_type: UserTypes
+  }
+}
+
+Argument `user_type` is missing.
+2025-10-07T06:01:20.657Z ERROR: createAccount error: 
+Invalid `prisma.users.create()` invocation:
+
+
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "22P02", message: "invalid input value for enum \"UserTypes\": \"employee\"", severity: "ERROR", detail: None, column: None, hint: None }), transient: false })
+2025-10-07T06:17:35.046Z ERROR: createEmployee error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "tomvalo28@gmail.com",
+    password_hash: "$2b$10$9qt951vWQks.hIPzSCTw0ubM5y9fWW2aDL2HRQgOig10aGK5on5dy",
+    first_name: "tim",
+    last_name: "",
+    phone_number: "9562377168",
+    is_active: true,
+    user_type: "EMPLOYEE",
+               ~~~~~~~~~~
+    role_id: "460b5823-9d15-48ed-bcba-036ceef1ad5d",
+    organization_id: "61450f00-c594-49ec-8b10-e5b289bbc6f8"
+  }
+}
+
+Invalid value for argument `user_type`. Expected UserTypes.
+2025-10-07T08:13:00.044Z ERROR: createEmployee error: organization_id is not defined
+2025-10-07T08:31:27.929Z ERROR: createEmployee error: organization_id is not defined
+2025-10-16T06:10:16.424Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-10-16T06:53:33.178Z ERROR: createEmployee error: Cannot read properties of null (reading 'name')
+2025-10-16T06:58:11.415Z ERROR: createEmployee error: Cannot read properties of null (reading 'name')
+2025-10-16T13:23:06.048Z ERROR: [WORKER] Job 3 failed for alert 6160b045-b554-4f7a-a548-30325ab11959:
+2025-10-16T13:23:06.057Z ERROR: Job 3 has failed with admin is not defined
+2025-10-16T13:23:07.161Z ERROR: [WORKER] Job 3 failed for alert 6160b045-b554-4f7a-a548-30325ab11959:
+2025-10-16T13:23:07.163Z ERROR: Job 3 has failed with admin is not defined
+2025-10-16T13:23:09.170Z ERROR: [WORKER] Job 3 failed for alert 6160b045-b554-4f7a-a548-30325ab11959:
+2025-10-16T13:23:09.215Z ERROR: Job 3 has failed with admin is not defined
+2025-10-16T13:34:52.678Z ERROR: [WORKER] Job 4 failed for alert 42ff7522-86ad-435d-9def-8ae900bdc420:
+2025-10-16T13:34:52.681Z ERROR: Job 4 has failed with admin is not defined
+2025-10-16T13:34:53.775Z ERROR: [WORKER] Job 4 failed for alert 42ff7522-86ad-435d-9def-8ae900bdc420:
+2025-10-16T13:34:53.778Z ERROR: Job 4 has failed with admin is not defined
+2025-10-16T13:34:55.884Z ERROR: [WORKER] Job 4 failed for alert 42ff7522-86ad-435d-9def-8ae900bdc420:
+2025-10-16T13:34:55.933Z ERROR: Job 4 has failed with admin is not defined
+2025-10-17T05:35:24.957Z ERROR: Login error: Cannot read properties of null (reading 'name')
+2025-10-21T11:26:09.428Z ERROR: [WORKER] Job 1 failed for alert 14d7f2a3-c471-455c-b18e-157112a44b26:
+2025-10-21T11:26:09.436Z ERROR: Job 1 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:09.454Z ERROR: [WORKER] Job 2 failed for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980:
+2025-10-21T11:26:09.460Z ERROR: Job 2 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:10.445Z ERROR: [WORKER] Job 1 failed for alert 14d7f2a3-c471-455c-b18e-157112a44b26:
+2025-10-21T11:26:10.449Z ERROR: Job 1 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:10.542Z ERROR: [WORKER] Job 2 failed for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980:
+2025-10-21T11:26:10.549Z ERROR: Job 2 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:12.460Z ERROR: [WORKER] Job 1 failed for alert 14d7f2a3-c471-455c-b18e-157112a44b26:
+2025-10-21T11:26:12.517Z ERROR: Job 1 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:12.572Z ERROR: [WORKER] Job 2 failed for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980:
+2025-10-21T11:26:12.577Z ERROR: Job 2 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:59:47.993Z ERROR: [WORKER] Job 6 failed for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175:
+2025-10-21T11:59:48.001Z ERROR: Job 6 has failed with admin is not defined
+2025-10-21T11:59:49.079Z ERROR: [WORKER] Job 6 failed for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175:
+2025-10-21T11:59:49.081Z ERROR: Job 6 has failed with admin is not defined
+2025-10-21T11:59:51.198Z ERROR: [WORKER] Job 6 failed for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175:
+2025-10-21T11:59:51.204Z ERROR: Job 6 has failed with admin is not defined
+2025-10-22T05:02:28.580Z ERROR: [WORKER] Job 8 failed for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64:
+2025-10-22T05:02:28.606Z ERROR: Job 8 has failed with admin is not defined
+2025-10-22T05:02:29.648Z ERROR: [WORKER] Job 8 failed for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64:
+2025-10-22T05:02:29.653Z ERROR: Job 8 has failed with admin is not defined
+2025-10-22T05:02:31.772Z ERROR: [WORKER] Job 8 failed for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64:
+2025-10-22T05:02:31.832Z ERROR: Job 8 has failed with admin is not defined
+2025-10-22T05:07:34.517Z ERROR: [WORKER] Job 9 failed for alert 656a9c99-ecbb-4465-9659-016932cbf858:
+2025-10-22T05:07:34.520Z ERROR: Job 9 has failed with admin is not defined
+2025-10-22T05:07:35.533Z ERROR: [WORKER] Job 9 failed for alert 656a9c99-ecbb-4465-9659-016932cbf858:
+2025-10-22T05:07:35.535Z ERROR: Job 9 has failed with admin is not defined
+2025-10-22T05:07:37.547Z ERROR: [WORKER] Job 9 failed for alert 656a9c99-ecbb-4465-9659-016932cbf858:
+2025-10-22T05:07:37.550Z ERROR: Job 9 has failed with admin is not defined
+2025-10-22T05:49:24.592Z ERROR: [WORKER] Job 10 failed for alert 2657cd45-b821-46ed-af41-55927aec25e9:
+2025-10-22T05:49:24.601Z ERROR: Job 10 has failed with admin is not defined
+2025-10-22T05:49:25.704Z ERROR: [WORKER] Job 10 failed for alert 2657cd45-b821-46ed-af41-55927aec25e9:
+2025-10-22T05:49:25.709Z ERROR: Job 10 has failed with admin is not defined
+2025-10-22T05:49:27.816Z ERROR: [WORKER] Job 10 failed for alert 2657cd45-b821-46ed-af41-55927aec25e9:
+2025-10-22T05:49:27.820Z ERROR: Job 10 has failed with admin is not defined
+2025-10-23T05:23:15.431Z ERROR: [WORKER] Job 11 failed for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1:
+2025-10-23T05:23:15.448Z ERROR: Job 11 has failed with admin is not defined
+2025-10-23T05:23:16.530Z ERROR: [WORKER] Job 11 failed for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1:
+2025-10-23T05:23:16.537Z ERROR: Job 11 has failed with admin is not defined
+2025-10-23T05:23:18.629Z ERROR: [WORKER] Job 11 failed for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1:
+2025-10-23T05:23:18.691Z ERROR: Job 11 has failed with admin is not defined
+2025-10-23T05:24:28.188Z ERROR: [WORKER] Job 12 failed for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760:
+2025-10-23T05:24:28.196Z ERROR: Job 12 has failed with admin is not defined
+2025-10-23T05:24:29.275Z ERROR: [WORKER] Job 12 failed for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760:
+2025-10-23T05:24:29.280Z ERROR: Job 12 has failed with admin is not defined
+2025-10-23T05:24:31.395Z ERROR: [WORKER] Job 12 failed for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760:
+2025-10-23T05:24:31.400Z ERROR: Job 12 has failed with admin is not defined
+2025-10-23T05:33:53.556Z ERROR: [WORKER] Job 13 failed for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5:
+2025-10-23T05:33:53.558Z ERROR: Job 13 has failed with admin is not defined
+2025-10-23T05:33:54.636Z ERROR: [WORKER] Job 13 failed for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5:
+2025-10-23T05:33:54.640Z ERROR: Job 13 has failed with admin is not defined
+2025-10-23T05:33:56.759Z ERROR: [WORKER] Job 13 failed for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5:
+2025-10-23T05:33:56.765Z ERROR: Job 13 has failed with admin is not defined
+2025-10-23T09:43:57.031Z ERROR: [WORKER] Job 15 failed for alert ea1a3078-b53e-40e2-ab05-c195429f22b6:
+2025-10-23T09:43:57.040Z ERROR: Job 15 has failed with admin is not defined
+2025-10-23T09:43:58.113Z ERROR: [WORKER] Job 15 failed for alert ea1a3078-b53e-40e2-ab05-c195429f22b6:
+2025-10-23T09:43:58.119Z ERROR: Job 15 has failed with admin is not defined
+2025-10-23T09:44:00.217Z ERROR: [WORKER] Job 15 failed for alert ea1a3078-b53e-40e2-ab05-c195429f22b6:
+2025-10-23T09:44:00.265Z ERROR: Job 15 has failed with admin is not defined
+2025-10-23T14:22:12.174Z ERROR: [WORKER] Job 16 failed for alert f52a5d49-6a62-4ead-a89f-968f21861949:
+2025-10-23T14:22:12.204Z ERROR: Job 16 has failed with admin is not defined
+2025-10-23T14:22:13.220Z ERROR: [WORKER] Job 16 failed for alert f52a5d49-6a62-4ead-a89f-968f21861949:
+2025-10-23T14:22:13.228Z ERROR: Job 16 has failed with admin is not defined
+2025-10-23T14:22:15.367Z ERROR: [WORKER] Job 16 failed for alert f52a5d49-6a62-4ead-a89f-968f21861949:
+2025-10-23T14:22:15.476Z ERROR: Job 16 has failed with admin is not defined
+2025-10-29T04:49:01.447Z ERROR: [WORKER] Job 16 failed for alert f52a5d49-6a62-4ead-a89f-968f21861949:
+2025-10-29T04:49:01.494Z ERROR: Job 16 has failed with admin is not defined
+2025-10-31T10:42:00.463Z ERROR: [WORKER] Job 14 failed for alert d8663b8f-968f-4256-9107-0f1362e9a75f:
+2025-10-31T10:42:00.491Z ERROR: Job 14 has failed with admin is not defined
+2025-10-31T10:42:01.514Z ERROR: [WORKER] Job 14 failed for alert d8663b8f-968f-4256-9107-0f1362e9a75f:
+2025-10-31T10:42:01.535Z ERROR: Job 14 has failed with admin is not defined
+2025-10-31T10:42:03.639Z ERROR: [WORKER] Job 14 failed for alert d8663b8f-968f-4256-9107-0f1362e9a75f:
+2025-10-31T10:42:03.705Z ERROR: Job 14 has failed with admin is not defined
+2025-10-31T13:00:00.973Z ERROR: [WORKER] Job 7 failed for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2:
+2025-10-31T13:00:01.014Z ERROR: Job 7 has failed with admin is not defined
+2025-10-31T13:00:02.089Z ERROR: [WORKER] Job 7 failed for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2:
+2025-10-31T13:00:02.095Z ERROR: Job 7 has failed with admin is not defined
+2025-10-31T13:00:04.175Z ERROR: [WORKER] Job 7 failed for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2:
+2025-10-31T13:00:04.192Z ERROR: Job 7 has failed with admin is not defined

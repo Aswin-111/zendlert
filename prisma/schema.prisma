@@ -1,0 +1,627 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organizations {
+  organization_id    String    @id @default(uuid()) //index
+  name               String    @unique
+  email_domain       String    @unique
+  main_contact_name  String?
+  main_contact_email String?   @unique
+  main_contact_phone String?   @unique
+  is_active          Boolean   @default(true)
+  industry_type_id   String?
+  status_id          String?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  last_activity_at   DateTime?
+
+  // Relations (assuming FK references to these models exist)
+  industry_type Industry_Types?        @relation(fields: [industry_type_id], references: [id])
+  status        Organization_Statuses? @relation(fields: [status_id], references: [id])
+
+  Sites           Sites[] //optional organization field
+  Users           Users[] //optional organization field
+  Alerts          Alerts[] //optional organization field
+  Subscriptions   Subscriptions[] //optional organization field
+  Invitations     Invitations[]
+  // Messages      Messages[]
+  Chat_Messages   Chat_Messages[]
+  Emergency_Types Emergency_Types[]
+}
+
+enum OrgStatus {
+  pending
+
+  active
+  archived
+  suspended
+  payment_failed
+  terminated
+}
+
+model Organization_Statuses {
+  id            String          @id @default(uuid())
+  name          String          @unique
+  description   String?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  Organizations Organizations[]
+  Alerts        Alerts[]
+}
+
+model Sites {
+  id              String   @id @default(uuid()) // UUID Primary Key
+  organization_id String?
+  name            String   @db.VarChar(255)
+  address_line_1  String
+  address_line_2  String?
+  city            String
+  state           String
+  zip_code        String
+  contact_name    String
+  contact_email   String   @unique
+  contact_phone   String?  @unique
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+
+  // Relations
+  organization Organizations? @relation(fields: [organization_id], references: [organization_id])
+  Areas        Areas[]
+  Users        Users[]
+  Alert_Sites  Alert_Sites[]
+}
+
+model Areas {
+  id          String   @id @default(uuid()) // UUID primary key
+  site_id     String // UUID foreign key to Sites
+  name        String   @db.VarChar(255)
+  description String? // Nullable
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relations
+  site        Sites         @relation(fields: [site_id], references: [id])
+  Users       Users[]
+  Alert_Areas Alert_Areas[]
+}
+
+enum UserTypes {
+  employee
+  contractor
+}
+
+// model Users {
+//   user_id         String    @id @default(uuid()) //index
+//   organization_id String? // set as optional
+//   site_id         String? // set as optional
+//   area_id         String? // set as optional 
+//   email           String    @unique
+//   password_hash   String
+//   first_name      String
+//   last_name       String
+//   phone_number    String
+//   phone_verified  Boolean   @default(false)
+//   is_active       Boolean   @default(true)
+//   role_id         String
+//   profile_pic     String?
+//   user_type       UserTypes
+
+//   must_reset_password Boolean? @default(false)
+//   fcm_token           String?
+//   created_at          DateTime @default(now())
+//   updated_at          DateTime @updatedAt
+
+//   organization Organizations? @relation(fields: [organization_id], references: [organization_id])
+//   employee     Employees?
+//   site         Sites?         @relation(fields: [site_id], references: [id])
+//   area         Areas?         @relation(fields: [area_id], references: [id])
+//   role         Roles          @relation(fields: [role_id], references: [id])
+
+//   // Alerts                    Alerts[]
+//   // Visitor_Status            Visitor_Status[]
+//   // Notification_Recipients   Notification_Recipients[]
+//   // User_Locations            User_Locations[]
+//   // Audit_Logs                Audit_Logs[]
+//   // Incident_Reports          Incident_Reports[]
+//   // reported_visitor_statuses Visitor_Status[]          @relation("ReportedBy")
+//   Phone_Verifications     Phone_Verifications[]
+//   Alerts                  Alerts[]
+//   Visitor_Status          Visitor_Status[]
+//   Notification_Recipients Notification_Recipients[]
+//   User_Locations          User_Locations[]
+//   Audit_Logs              Audit_Logs[]
+//   contractors             Contractors[] // back-relation
+//   // Invitations             Invitations[]
+//   invitationsReceived     Invitations[]             @relation("InvitedUser")
+//   invitationsSent         Invitations[]             @relation("InvitationCreator")
+//   // Messages                Messages[]
+//   messagesSent            Messages[]                @relation("MessageSender")
+//   messagesReceived        Messages[]                @relation("MessageReceiver")
+// }
+
+model Users {
+  user_id         String    @id @default(uuid())
+  organization_id String?
+  site_id         String?
+  area_id         String?
+  email           String    @unique
+  password_hash   String
+  first_name      String
+  last_name       String
+  phone_number    String
+  phone_verified  Boolean   @default(false)
+  is_active       Boolean   @default(true)
+  role_id         String
+  profile_pic     String?
+  user_type       UserTypes
+
+  must_reset_password Boolean? @default(false)
+  fcm_token           String?
+  // =========================================================
+  // === HIGHLIGHT: Added field for chat public key ========
+  // =========================================================
+  e2ee_public_key     String?  @db.Text
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  organization Organizations? @relation(fields: [organization_id], references: [organization_id])
+  employee     Employees?
+  site         Sites?         @relation(fields: [site_id], references: [id])
+  area         Areas?         @relation(fields: [area_id], references: [id])
+  role         Roles          @relation(fields: [role_id], references: [id])
+
+  Phone_Verifications     Phone_Verifications[]
+  Alerts                  Alerts[]
+  Visitor_Status          Visitor_Status[]
+  Notification_Recipients Notification_Recipients[]
+  User_Locations          User_Locations[]
+  Audit_Logs              Audit_Logs[]
+  contractors             Contractors[]
+
+  invitationsReceived Invitations[] @relation("InvitedUser")
+  invitationsSent     Invitations[] @relation("InvitationCreator")
+
+  // ✅ Now correctly linked to Chat_Messages model
+  messagesSent     Chat_Messages[] @relation("MessageSender")
+  messagesReceived Chat_Messages[] @relation("MessageReceiver")
+}
+
+// =================================================================
+// === HIGHLIGHT: New model for Chat Messages, matching your image ===
+// =================================================================
+enum MessageType {
+  text
+  image
+  file
+}
+
+enum MessageStatus {
+  sent
+  delivered
+  read
+  failed
+}
+
+model Chat_Messages {
+  id              String @id @default(uuid())
+  organization_id String
+  sender_id       String
+  receiver_id     String
+
+  encrypted_message String @db.Text
+  encrypted_sym_key String @db.Text
+
+  message_type MessageType   @default(text)
+  sent_at      DateTime      @default(now())
+  status       MessageStatus @default(sent)
+  read_at      DateTime?
+
+  deleted_by_sender   Boolean @default(false)
+  deleted_by_receiver Boolean @default(false)
+
+  // Relations
+  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade)
+  sender       Users         @relation("MessageSender", fields: [sender_id], references: [user_id], onDelete: Cascade)
+  receiver     Users         @relation("MessageReceiver", fields: [receiver_id], references: [user_id], onDelete: Cascade)
+
+  // Indexes
+  @@index([organization_id])
+  @@index([sender_id])
+  @@index([receiver_id])
+}
+
+model Employees {
+  user_id String @id
+  user    Users  @relation(fields: [user_id], references: [user_id])
+}
+
+model Contractors {
+  user_id                String
+  contracting_company_id String
+
+  user                Users                 @relation(fields: [user_id], references: [user_id])
+  contracting_company Contracting_Companies @relation(fields: [contracting_company_id], references: [id])
+
+  // optional extra fields, e.g. role, start/end dates, etc.
+  // role        String?
+  // start_date  DateTime?
+  // end_date    DateTime?
+  // Helpful indexes (optional):
+  // @@index([user_id])
+  // @@index([contracting_company_id])
+
+  @@id([user_id, contracting_company_id]) // composite primary key
+}
+
+model Contracting_Companies {
+  id              String  @id @default(uuid())
+  organization_id String
+  name            String
+  contact_email   String?
+  phone           String?
+  address         String?
+
+  contractors Contractors[] // back-relation
+}
+
+enum DeliveryMethod {
+  email
+  sms
+  both
+}
+
+model Invitations {
+  invitation_id   String         @id @default(uuid())
+  organization_id String
+  user_id         String
+  token           String         @unique @db.VarChar(255)
+  expires_at      DateTime
+  is_used         Boolean        @default(false)
+  created_by      String? // nullable so we can onDelete: SetNull
+  delivery_method DeliveryMethod
+  sent_at         DateTime?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  // Relations
+  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+  user         Users         @relation("InvitedUser", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  createdBy    Users?        @relation("InvitationCreator", fields: [created_by], references: [user_id], onDelete: SetNull, onUpdate: Cascade)
+  // Uncomment if you want to disallow duplicate invites per org-user pair entirely:
+  // @@unique([organization_id, user_id])
+
+  // Helpful indexes
+  @@index([organization_id])
+  @@index([user_id])
+  @@index([expires_at])
+  @@index([is_used, expires_at])
+}
+
+model Phone_Verifications {
+  id                String    @id @default(uuid())
+  employee_id       String
+  phone_number      String
+  verification_code String    @db.VarChar(6)
+  code_sent_at      DateTime
+  expires_at        DateTime
+  verified_at       DateTime?
+
+  employee Users @relation(fields: [employee_id], references: [user_id])
+}
+
+model Roles {
+  id String @id @default(uuid())
+
+  role_name        String             @unique
+  description      String
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @default(now())
+  Users            Users[]
+  Role_Permissions Role_Permissions[]
+}
+
+enum SeverityLevel {
+  critical
+  high
+  medium
+  low
+}
+
+enum AlertStatus {
+  draft 
+  scheduled
+  active
+  resolved
+  ended
+  cancelled
+}
+
+model Alerts {
+  id                String         @id @default(uuid())
+  user_id           String
+  organization_id   String
+  emergency_type_id String
+  severity          SeverityLevel? // Consider using enum (see below)
+  message           String
+  action_required   String?
+  status            AlertStatus    @default(active)
+  response_required Boolean        @default(true)
+  scheduled_time    DateTime?
+  start_time        DateTime?
+  end_time          DateTime?
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+
+  user           Users           @relation(fields: [user_id], references: [user_id])
+  organization   Organizations   @relation(fields: [organization_id], references: [organization_id])
+  emergency_type Emergency_Types @relation(fields: [emergency_type_id], references: [id])
+
+  Organization_Statuses   Organization_Statuses?    @relation(fields: [organization_StatusesId], references: [id])
+  organization_StatusesId String?
+  Alert_Sites             Alert_Sites[]
+  Alert_Areas             Alert_Areas[]
+  Visitor_Status          Visitor_Status[]
+  Notification_Recipients Notification_Recipients[]
+  User_Locations          User_Locations[]
+}
+
+model Alert_Sites {
+  alert_id String
+  site_id  String
+
+  alert Alerts @relation(fields: [alert_id], references: [id])
+  site  Sites  @relation(fields: [site_id], references: [id])
+
+  @@id([alert_id, site_id]) // Composite Primary Key
+}
+
+model Alert_Areas {
+  alert_id String
+  area_id  String
+
+  alert Alerts @relation(fields: [alert_id], references: [id])
+  area  Areas  @relation(fields: [area_id], references: [id])
+
+  @@id([alert_id, area_id]) // Composite Primary Key
+}
+
+model Emergency_Types {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String   @unique
+  description     String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization Organizations? @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+  Alerts       Alerts[]
+
+  @@index([organization_id])
+}
+
+model Industry_Types {
+  id            String          @id @default(uuid())
+  name          String          @unique
+  description   String?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  Organizations Organizations[]
+}
+
+model Companies {
+  id String @id @default(uuid())
+
+  name       String
+  address    String?
+  created_at DateTime @default(now())
+
+  updated_at DateTime   @default(now())
+  Visitors   Visitors[]
+}
+
+model Visitors {
+  id         String   @id @default(uuid())
+  first_name String
+  last_name  String?
+  email      String?
+  phone      String?
+  company_id String
+  created_at DateTime @default(now())
+  is_active  Boolean  @default(true)
+
+  company        Companies        @relation(fields: [company_id], references: [id])
+  Visitor_Status Visitor_Status[]
+}
+
+model Visitor_Status {
+  id                  String   @id @default(uuid())
+  alert_id            String
+  reported_by_user_id String
+  visitor_id          String
+  status              String
+  location            String?
+  notes               String?
+  reported_at         DateTime @default(now())
+
+  alert       Alerts   @relation(fields: [alert_id], references: [id])
+  reported_by Users    @relation(fields: [reported_by_user_id], references: [user_id])
+  visitor     Visitors @relation(fields: [visitor_id], references: [id])
+}
+
+enum DeliveryStatus {
+  pending
+  send
+  delivered
+  failed
+}
+
+enum UserResponse {
+  safe
+  not_safe
+  evacuated
+  seeking_shelter
+}
+
+model Notification_Recipients {
+  id                  String         @id @default(uuid())
+  alert_id            String
+  user_id             String
+  delivery_status     DeliveryStatus @default(pending)
+  delivered_at        DateTime?
+  acknowledged_at     DateTime?
+  response            UserResponse?
+  response_updated_at DateTime?
+  response_history    Json?
+  created_at          DateTime       @default(now())
+  updated_at          DateTime       @updatedAt
+
+  alert Alerts @relation(fields: [alert_id], references: [id])
+  user  Users  @relation(fields: [user_id], references: [user_id])
+}
+
+model User_Locations {
+  id            String   @id @default(uuid())
+  user_id       String
+  alert_id      String
+  latitude      Decimal  @db.Decimal(10, 6)
+  longitude     Decimal  @db.Decimal(10, 6)
+  location_name String?
+  timestamp     DateTime @default(now())
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user  Users  @relation(fields: [user_id], references: [user_id])
+  alert Alerts @relation(fields: [alert_id], references: [id])
+}
+
+model Permissions {
+  id String @id @default(uuid())
+
+  permission_name        String             @unique
+  permission_description String?
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @default(now())
+  Role_Permissions       Role_Permissions[]
+}
+
+model Role_Permissions {
+  role_id       String
+  permission_id String
+  assigned_at   DateTime @default(now())
+
+  role       Roles       @relation(fields: [role_id], references: [id])
+  permission Permissions @relation(fields: [permission_id], references: [id])
+
+  @@id([role_id, permission_id])
+}
+
+model Audit_Logs {
+  id                  String   @id @default(uuid())
+  action              String
+  action_performed_by String
+  action_target       String?
+  action_timestamp    DateTime @default(now())
+  old_value           String?
+  new_value           String?
+  ip_address          String?
+  user_agent          String?
+
+  performed_by_user Users @relation(fields: [action_performed_by], references: [user_id])
+}
+
+enum IncidentSeverity {
+  low
+  high
+}
+
+enum IncidentStatus {
+  open
+  resolved
+}
+
+// model Incident_Reports {
+//   incident_id         String           @id @default(uuid())
+//   tenant_id           String
+//   reported_by_user_id String
+//   incident_type       IncidentType
+//   severity            IncidentSeverity
+//   location            String?
+//   description         String?
+//   actions_taken       String?
+//   status              IncidentStatus
+//   created_at          DateTime         @default(now())
+//   updated_at          DateTime         @updatedAt
+
+//   tenant           Tenants @relation(fields: [tenant_id], references: [tenant_id])
+//   reported_by_user Users   @relation(fields: [reported_by_user_id], references: [id])
+// }
+
+model Subscriptions {
+  id String @id @default(uuid())
+
+  organization_id String?
+  plan_id         String
+  status          String    @default("inactive")
+  payment_method  String?
+  payment_status  String    @default("unpaid")
+  start_date      DateTime
+  end_date        DateTime?
+  auto_renew      Boolean   @default(false)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime? @updatedAt
+
+  organization Organizations?     @relation(fields: [organization_id], references: [organization_id])
+  plan         Subscription_Plans @relation(fields: [plan_id], references: [id])
+}
+
+model Subscription_Plans {
+  id String @id @default(uuid())
+
+  name          String          @unique
+  description   String?
+  monthly_price Decimal         @default(0.00) @db.Decimal(10, 2)
+  annual_price  Decimal         @default(0.00) @db.Decimal(10, 2)
+  user_limit    Int             @default(0)
+  site_limit    Int             @default(0)
+  area_limit    Int             @default(0)
+  is_active     Boolean         @default(true)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime?
+  Subscriptions Subscriptions[]
+  Plan_Features Plan_Features[]
+}
+
+model Plan_Features {
+  id String @id @default(uuid())
+
+  plan_id    String
+  feature_id String
+  is_enabled Boolean            @default(false)
+  created_at DateTime           @default(now())
+  updated_at DateTime?
+  plan       Subscription_Plans @relation(fields: [plan_id], references: [id])
+  feature    Features           @relation(fields: [feature_id], references: [id])
+}
+
+model Features {
+  id String @id @default(uuid())
+
+  name          String
+  code          String          @unique
+  description   String?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime?
+  Plan_Features Plan_Features[]
+}

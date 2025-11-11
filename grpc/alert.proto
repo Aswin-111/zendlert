@@ -1,0 +1,67 @@
+syntax = "proto3";
+package alert;
+
+import "google/protobuf/timestamp.proto";
+
+// The service definition for fetching and streaming alert data.
+service AlertService {
+  rpc GetAlertData (AlertDataRequest) returns (AlertDataResponse);
+
+  // Streams the full list of active alerts for an org, refreshed periodically.
+  rpc StreamActiveAlerts (StreamActiveAlertsRequest) returns (stream ActiveAlertsResponse);
+}
+
+// === Messages for GetAlertData ===
+
+message AlertDataRequest {
+  string alert_id = 1;
+}
+
+message EmployeeCounts {
+  int32 total_employees     = 1;
+  int32 responded_employees = 2;
+  int32 safe_count          = 3;
+  int32 need_help_count     = 4;
+  int32 not_responded_count = 5;
+  int32 delivered_count     = 6;
+}
+
+message AlertDataResponse {
+  string emergency_type               = 1;
+  repeated string sites               = 2;
+  repeated string areas               = 3;
+  string message                      = 4;
+  EmployeeCounts employee_counts      = 5;
+  string status                       = 6;
+  string priority                     = 7;
+  google.protobuf.Timestamp delivered_time = 8;
+}
+
+// === Messages for the Stream ===
+
+message StreamActiveAlertsRequest {
+  string organization_id = 1;
+}
+
+// Extend ActiveAlert with count fields (backward compatible in proto3)
+message ActiveAlert {
+  string alert_id                    = 1;
+  string emergency_type              = 2;
+  string message                     = 3;
+  string severity                    = 4;
+  google.protobuf.Timestamp start_time = 5;
+
+  // NEW FIELDS
+  int32 safe_count             = 6;
+  int32 need_help_count        = 7;  // maps to 'not_safe'
+  int32 evacuated_count        = 8;
+  int32 seeking_shelter_count  = 9;
+  int32 not_responded_count    = 10;
+  int32 total_recipients       = 11;
+}
+
+message ActiveAlertsResponse {
+  repeated ActiveAlert active_alerts = 1;
+}
+
+ 

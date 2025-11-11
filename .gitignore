@@ -1,0 +1,10 @@
+.env*
+/src/generated/prisma
+/node_modules
+/config/firebase/google-services.json
+/docker-tars
+generated/
+generated/prisma/
+generated/prisma/*.node
+generated/prisma/*.dll
+generated/prisma/*.wasm

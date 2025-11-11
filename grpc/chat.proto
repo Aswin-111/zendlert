@@ -1,0 +1,94 @@
+// chat.proto
+
+syntax = "proto3";
+package chat;
+import "google/protobuf/empty.proto";
+
+service ChatService {
+  rpc SendMessage (SendMessageRequest) returns (google.protobuf.Empty);
+  rpc ReceiveMessages (ReceiveMessagesRequest) returns (stream Message);
+  rpc UpdateMessageStatus (UpdateStatusRequest) returns (google.protobuf.Empty);
+  rpc ChatStream (stream ClientEvent) returns (stream ServerEvent);
+  rpc GetContacts (ContactRequest) returns (ContactList);
+}
+
+// === REQUESTS ===
+
+message SendMessageRequest {
+  string sender_id = 1;         // UUID
+  string receiver_id = 2;       // UUID
+  string organization_id = 3;   // UUID
+  string encrypted_message = 4; // base64 ciphertext (nonce.cipher.tag)
+  string encrypted_sym_key = 5; // base64 encrypted symmetric key
+}
+
+message ReceiveMessagesRequest {
+  string userId = 1;            // UUID of the person requesting history
+  string organization_id = 2;   // UUID for tenant isolation
+}
+
+message UpdateStatusRequest {
+  string messageId = 1;         // UUID
+  string status = 2;            // "sent" | "delivered" | "read"
+  string organization_id = 3;   // UUID for scoping the update
+}
+
+
+// === STREAMING & RESPONSES ===
+
+message Message {
+  string id = 1;                      // UUID
+  string sender_id = 2;               // UUID
+  string receiver_id = 3;             // UUID
+  string organization_id = 4;         // UUID
+  string encrypted_message = 5;
+  string encrypted_sym_key = 6;
+  string sent_at = 7;                 // ISO-8601
+  string status = 8;
+}
+
+message Heartbeat {
+  string userId = 1;                 // UUID
+  string organization_id = 2;        // UUID
+  optional string activeChatWith = 3; // UUID of chat partner
+}
+
+message ClientEvent {
+  Heartbeat heartbeat = 1;
+}
+
+message ServerEvent {
+  oneof event {
+    Message message = 1;
+    PresenceUpdate presence = 2;
+  }
+}
+
+// === CONTACTS & PRESENCE ===
+
+message User {
+  string id = 1;           // UUID
+  string first_name = 2;
+  string last_name = 3;
+}
+
+message PresenceUpdate {
+  repeated User users = 1;
+}
+
+message ContactRequest {
+  string userId = 1;          // UUID
+  string organization_id = 2; // UUID
+}
+
+message Contact {
+  string id = 1;              // UUID
+  string first_name = 2;
+  string last_name = 3;
+  string last_message_encrypted = 4; // Ciphertext
+  string sent_at = 5;           // ISO-8601
+}
+
+message ContactList {
+  repeated Contact contacts = 1;
+}

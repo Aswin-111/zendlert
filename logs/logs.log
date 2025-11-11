@@ -1,0 +1,459 @@
+2025-08-19T09:41:03.435Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-19T09:50:11.062Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-19T10:14:05.435Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T05:57:07.123Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T06:13:17.634Z WARN: Login failed for user: tomsebastian715@gmail.com - Incorrect password
+2025-08-20T06:13:42.033Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T06:15:27.028Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T06:33:57.194Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T08:44:31.050Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T08:44:47.245Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T10:24:01.587Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T11:06:22.196Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-20T14:18:26.292Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T08:36:27.725Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T09:05:25.774Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T09:19:31.488Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T12:37:12.913Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T12:38:35.846Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T12:40:03.441Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T13:01:35.030Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T13:17:09.970Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T13:25:13.047Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-21T13:28:30.434Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-22T06:40:08.494Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-22T06:48:30.366Z WARN: Login failed for unknown email: tomsebastian715@gmail.om
+2025-08-22T06:48:53.510Z WARN: Login failed for unknown email: tomsebastian715@gmail.om
+2025-08-22T06:49:11.189Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-22T14:55:46.482Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-22T14:59:21.593Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-22T15:04:16.443Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-22T15:07:29.917Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-25T13:24:38.463Z INFO: Site and area assigned to user d8ab77d4-be89-4bcd-a6d1-6d5628a0da0a
+2025-08-25T13:33:31.675Z INFO: Login success: tomsebastian715@gmail.com
+2025-08-25T13:33:54.734Z INFO: Login success: tomvalo28@gmail.com
+2025-09-15T12:05:43.429Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-15T12:06:29.774Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-15T12:13:08.425Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-17T05:59:01.131Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-17T06:00:55.188Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-19T11:47:44.019Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-19T12:08:46.904Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-23T12:47:01.293Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-23T13:18:19.841Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T09:10:49.652Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T09:11:44.875Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T09:19:10.319Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T09:19:40.177Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T09:24:28.315Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T09:31:15.051Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T10:08:26.778Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T10:11:41.164Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T10:21:01.799Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T10:24:43.050Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T10:31:10.161Z WARN: Login failed for unknown email: tomsebastian715@gmail.co
+2025-09-26T10:31:18.476Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T13:20:51.391Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T13:29:13.157Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T13:33:23.920Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T13:35:59.395Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T13:40:21.060Z ERROR: createEmployee error: Cannot read properties of null (reading 'id')
+2025-09-26T13:42:12.182Z ERROR: createEmployee error: Cannot read properties of null (reading 'id')
+2025-09-26T13:45:25.818Z INFO: Site and area assigned to user 61b80d8d-d099-4d45-a56d-6ba7596947aa
+2025-09-26T13:45:26.086Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-09-26T13:50:44.192Z INFO: Login success: tomvalo28@gmail.com
+2025-09-26T13:56:29.911Z INFO: Login success: tomvalo28@gmail.com
+2025-09-26T14:13:19.743Z INFO: Login success: tomsebastian715@gmail.com
+2025-09-26T14:13:59.793Z INFO: Login success: tomvalo28@gmail.com
+2025-09-26T14:26:40.936Z INFO: Login success: tomvalo28@gmail.com
+2025-09-26T14:27:14.348Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-07T05:57:55.127Z ERROR: createAccount error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "tomsebastian715@gmail.com",
+    password_hash: "$2b$10$TfNOOpULEUTAhhnAA/o3eeHog5kP2LdzBXlJXZRg6nzddOJVfHj1.",
+    first_name: "George",
+    last_name: "",
+    phone_number: "",
+    organization_id: "74f865f6-6b32-4a5f-a8a0-2d2df0ef5cb7",
+    role_id: "0a2fd3f3-5d92-4532-a3ce-9921edd11a20",
++   user_type: UserTypes
+  }
+}
+
+Argument `user_type` is missing.
+2025-10-07T06:01:20.657Z ERROR: createAccount error: 
+Invalid `prisma.users.create()` invocation:
+
+
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "22P02", message: "invalid input value for enum \"UserTypes\": \"employee\"", severity: "ERROR", detail: None, column: None, hint: None }), transient: false })
+2025-10-07T06:17:35.046Z ERROR: createEmployee error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "tomvalo28@gmail.com",
+    password_hash: "$2b$10$9qt951vWQks.hIPzSCTw0ubM5y9fWW2aDL2HRQgOig10aGK5on5dy",
+    first_name: "tim",
+    last_name: "",
+    phone_number: "9562377168",
+    is_active: true,
+    user_type: "EMPLOYEE",
+               ~~~~~~~~~~
+    role_id: "460b5823-9d15-48ed-bcba-036ceef1ad5d",
+    organization_id: "61450f00-c594-49ec-8b10-e5b289bbc6f8"
+  }
+}
+
+Invalid value for argument `user_type`. Expected UserTypes.
+2025-10-07T06:22:04.210Z INFO: Site and area assigned to user 30ecc619-da33-4674-b03f-5923fdb5b511
+2025-10-07T08:13:00.044Z ERROR: createEmployee error: organization_id is not defined
+2025-10-07T08:31:27.929Z ERROR: createEmployee error: organization_id is not defined
+2025-10-07T09:50:54.731Z INFO: Site and area assigned to user 88f595e4-8616-4d2b-9585-4d4245fd2233
+2025-10-07T09:51:23.590Z INFO: Login success: tomvalo28@gmail.com
+2025-10-07T09:56:04.342Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-07T10:17:15.024Z INFO: Site and area assigned to user 4c522ed8-e120-4cf6-9fad-8768f590c463
+2025-10-07T10:21:52.631Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-07T10:22:27.827Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-07T10:28:25.894Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-07T11:18:13.961Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-07T11:19:31.571Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-07T11:20:14.776Z INFO: Login success: tomvalo28@gmail.com
+2025-10-07T11:21:54.478Z INFO: Login success: tomvalo28@gmail.com
+2025-10-07T11:23:35.658Z INFO: Login success: tomvalo28@gmail.com
+2025-10-07T11:29:27.118Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-08T08:52:42.963Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-08T11:25:54.791Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-08T11:42:34.093Z INFO: Login success: tomvalo28@gmail.com
+2025-10-08T11:42:40.662Z WARN: Login failed for unknown email: jefinalpy@gmail.com
+2025-10-08T11:42:53.969Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-08T11:43:59.219Z WARN: Login failed for unknown email: jefinalpy@gmail.com
+2025-10-08T11:44:03.995Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-08T11:44:22.836Z INFO: Login success: tomvalo28@gmail.com
+2025-10-08T11:45:59.860Z INFO: Login success: tomvalo28@gmail.com
+2025-10-08T11:48:43.700Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-08T12:46:05.528Z INFO: Login success: tomvalo28@gmail.com
+2025-10-08T12:46:39.597Z WARN: Login failed for user: jeffinalpy@gmail.com - Incorrect password
+2025-10-08T12:46:52.071Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-08T12:56:48.952Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-10T09:18:00.559Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-13T05:26:16.517Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-13T06:07:23.624Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-14T09:24:37.052Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-14T09:25:39.626Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-14T09:39:35.714Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-14T09:44:15.780Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-14T09:45:32.883Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-14T09:45:36.141Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-14T09:45:38.100Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-14T09:51:20.995Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-16T05:43:10.083Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-16T06:03:42.569Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-16T06:05:19.592Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-16T06:10:16.261Z INFO: Site and area assigned to user 9985e2b7-204e-4c8c-8351-e3a11717d7a8
+2025-10-16T06:10:16.424Z ERROR: Cannot read properties of null (reading 'first_name')
+2025-10-16T06:53:33.178Z ERROR: createEmployee error: Cannot read properties of null (reading 'name')
+2025-10-16T06:55:51.265Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-16T06:58:11.415Z ERROR: createEmployee error: Cannot read properties of null (reading 'name')
+2025-10-16T07:04:48.779Z INFO: Site and area assigned to user d66db7f5-cc3a-4155-9877-91556d7faeba
+2025-10-16T07:21:31.780Z INFO: Site and area assigned to user a8f5a868-8eec-4250-9385-0823afd89b69
+2025-10-16T11:40:57.605Z INFO: Site and area assigned to user 120d7317-65f1-4b25-9639-283874ddf02e
+2025-10-16T11:55:37.051Z INFO: Site and area assigned to user f79e2a2e-2cf0-4f35-92d3-1af3ed311b2f
+2025-10-16T12:00:40.950Z INFO: Login success: sebastiantom715@gmail.com
+2025-10-16T12:02:05.623Z INFO: Login success: sebastiantom715@gmail.com
+2025-10-16T12:07:07.669Z INFO: Login success: sebastiantom715@gmail.com
+2025-10-16T12:16:37.919Z WARN: Login failed for unknown email: tomsebastian715@gmail.com
+2025-10-16T12:17:35.026Z WARN: Login failed for unknown email: tomsebastian715@gmail.com
+2025-10-16T12:18:05.024Z INFO: Login success: sebastiantom715@gmail.com
+2025-10-16T12:19:34.543Z WARN: Login failed for unknown email: tomsebastian715@gmail.com
+2025-10-16T12:19:37.546Z WARN: Login failed for unknown email: tomsebastian715@gmail.com
+2025-10-16T12:26:58.270Z INFO: Login success: tomvalo28@gmail.com
+2025-10-16T12:28:57.214Z INFO: Login success: sebastiantom715@gmail.com
+2025-10-16T12:50:32.369Z WARN: Login failed for user: sebastiantom715@gmail.com - Incorrect password
+2025-10-16T12:50:58.981Z INFO: Login success: sebastiantom715@gmail.com
+2025-10-16T12:57:58.940Z INFO: Login success: tomvalo28@gmail.com
+2025-10-16T13:01:55.213Z INFO: Login success: tomvalo28@gmail.com
+2025-10-16T13:22:26.030Z INFO: [API] Job scheduled in queue for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980 with a delay of 89254s
+2025-10-16T13:23:06.018Z INFO: [API] Job added to queue for active alert 6160b045-b554-4f7a-a548-30325ab11959
+2025-10-16T13:23:06.021Z INFO: [WORKER] Processing job 3 for alert 6160b045-b554-4f7a-a548-30325ab11959
+2025-10-16T13:23:06.036Z INFO: [WORKER] Alert 6160b045-b554-4f7a-a548-30325ab11959 status updated to ACTIVE.
+2025-10-16T13:23:06.048Z ERROR: [WORKER] Job 3 failed for alert 6160b045-b554-4f7a-a548-30325ab11959:
+2025-10-16T13:23:06.057Z ERROR: Job 3 has failed with admin is not defined
+2025-10-16T13:23:07.154Z INFO: [WORKER] Processing job 3 for alert 6160b045-b554-4f7a-a548-30325ab11959
+2025-10-16T13:23:07.157Z INFO: [WORKER] Alert 6160b045-b554-4f7a-a548-30325ab11959 status updated to ACTIVE.
+2025-10-16T13:23:07.161Z ERROR: [WORKER] Job 3 failed for alert 6160b045-b554-4f7a-a548-30325ab11959:
+2025-10-16T13:23:07.163Z ERROR: Job 3 has failed with admin is not defined
+2025-10-16T13:23:09.164Z INFO: [WORKER] Processing job 3 for alert 6160b045-b554-4f7a-a548-30325ab11959
+2025-10-16T13:23:09.167Z INFO: [WORKER] Alert 6160b045-b554-4f7a-a548-30325ab11959 status updated to ACTIVE.
+2025-10-16T13:23:09.170Z ERROR: [WORKER] Job 3 failed for alert 6160b045-b554-4f7a-a548-30325ab11959:
+2025-10-16T13:23:09.215Z ERROR: Job 3 has failed with admin is not defined
+2025-10-16T13:34:52.661Z INFO: [API] Job added to queue for active alert 42ff7522-86ad-435d-9def-8ae900bdc420
+2025-10-16T13:34:52.664Z INFO: [WORKER] Processing job 4 for alert 42ff7522-86ad-435d-9def-8ae900bdc420
+2025-10-16T13:34:52.672Z INFO: [WORKER] Alert 42ff7522-86ad-435d-9def-8ae900bdc420 status updated to ACTIVE.
+2025-10-16T13:34:52.678Z ERROR: [WORKER] Job 4 failed for alert 42ff7522-86ad-435d-9def-8ae900bdc420:
+2025-10-16T13:34:52.681Z ERROR: Job 4 has failed with admin is not defined
+2025-10-16T13:34:53.769Z INFO: [WORKER] Processing job 4 for alert 42ff7522-86ad-435d-9def-8ae900bdc420
+2025-10-16T13:34:53.772Z INFO: [WORKER] Alert 42ff7522-86ad-435d-9def-8ae900bdc420 status updated to ACTIVE.
+2025-10-16T13:34:53.775Z ERROR: [WORKER] Job 4 failed for alert 42ff7522-86ad-435d-9def-8ae900bdc420:
+2025-10-16T13:34:53.778Z ERROR: Job 4 has failed with admin is not defined
+2025-10-16T13:34:55.877Z INFO: [WORKER] Processing job 4 for alert 42ff7522-86ad-435d-9def-8ae900bdc420
+2025-10-16T13:34:55.881Z INFO: [WORKER] Alert 42ff7522-86ad-435d-9def-8ae900bdc420 status updated to ACTIVE.
+2025-10-16T13:34:55.884Z ERROR: [WORKER] Job 4 failed for alert 42ff7522-86ad-435d-9def-8ae900bdc420:
+2025-10-16T13:34:55.933Z ERROR: Job 4 has failed with admin is not defined
+2025-10-16T14:12:56.102Z INFO: [API] Job added to queue for active alert 4be9cb3c-d276-4a18-b816-f862f723be31
+2025-10-16T14:12:56.105Z INFO: [WORKER] Processing job 5 for alert 4be9cb3c-d276-4a18-b816-f862f723be31
+2025-10-16T14:12:56.112Z INFO: [WORKER] Alert 4be9cb3c-d276-4a18-b816-f862f723be31 status updated to ACTIVE.
+2025-10-16T14:12:56.114Z INFO: [WORKER] No recipients for alert 4be9cb3c-d276-4a18-b816-f862f723be31. Job complete.
+2025-10-16T14:15:26.401Z INFO: [API] Job added to queue for active alert 23ab90bf-8287-476f-ace3-d5005b7940ba
+2025-10-16T14:15:26.402Z INFO: [WORKER] Processing job 6 for alert 23ab90bf-8287-476f-ace3-d5005b7940ba
+2025-10-16T14:15:26.405Z INFO: [WORKER] Alert 23ab90bf-8287-476f-ace3-d5005b7940ba status updated to ACTIVE.
+2025-10-17T05:32:10.426Z INFO: [WORKER] Processing job 5 for alert 4be9cb3c-d276-4a18-b816-f862f723be31
+2025-10-17T05:32:11.026Z INFO: [WORKER] Alert 4be9cb3c-d276-4a18-b816-f862f723be31 status updated to ACTIVE.
+2025-10-17T05:32:11.089Z INFO: [WORKER] No recipients for alert 4be9cb3c-d276-4a18-b816-f862f723be31. Job complete.
+2025-10-17T05:35:24.955Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-17T05:35:24.957Z ERROR: Login error: Cannot read properties of null (reading 'name')
+2025-10-17T05:38:37.904Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-17T05:49:50.966Z WARN: Login failed for user: aswindkumar764@gmail.com - Incorrect password
+2025-10-17T05:50:30.816Z WARN: Login failed for user: aswindkumar764@gmail.com - Incorrect password
+2025-10-17T05:50:44.399Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-17T05:51:23.691Z WARN: Login failed for user: aswindkumar764@gmail.com - Incorrect password
+2025-10-17T05:51:56.692Z WARN: Login failed for user: aswindkumar764@gmail.com - Incorrect password
+2025-10-17T05:52:12.876Z WARN: Login failed for user: aswindkumar764@gmail.com - Incorrect password
+2025-10-17T05:53:04.750Z WARN: Login failed for user: aswindkumar764@gmail.com - Incorrect password
+2025-10-17T05:53:08.783Z WARN: Login failed for user: aswindkumar764@gmail.com - Incorrect password
+2025-10-17T05:53:09.740Z WARN: Login failed for user: aswindkumar764@gmail.com - Incorrect password
+2025-10-17T05:53:35.892Z WARN: Login failed for user: tomsebastian715@gmail.com - Incorrect password
+2025-10-17T05:53:47.251Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-17T05:58:05.728Z INFO: Site and area assigned to user d3d3ab25-58a7-489a-be80-aa19d155629b
+2025-10-17T05:58:42.335Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-17T05:59:04.530Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-17T05:59:56.477Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-17T06:00:11.371Z INFO: Login success: aswindkumar764@gmail.com
+2025-10-21T11:26:09.021Z INFO: [WORKER] Processing job 1 for alert 14d7f2a3-c471-455c-b18e-157112a44b26
+2025-10-21T11:26:09.428Z ERROR: [WORKER] Job 1 failed for alert 14d7f2a3-c471-455c-b18e-157112a44b26:
+2025-10-21T11:26:09.436Z ERROR: Job 1 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:09.445Z INFO: [WORKER] Processing job 2 for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980
+2025-10-21T11:26:09.454Z ERROR: [WORKER] Job 2 failed for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980:
+2025-10-21T11:26:09.460Z ERROR: Job 2 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:10.438Z INFO: [WORKER] Processing job 1 for alert 14d7f2a3-c471-455c-b18e-157112a44b26
+2025-10-21T11:26:10.445Z ERROR: [WORKER] Job 1 failed for alert 14d7f2a3-c471-455c-b18e-157112a44b26:
+2025-10-21T11:26:10.449Z ERROR: Job 1 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:10.537Z INFO: [WORKER] Processing job 2 for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980
+2025-10-21T11:26:10.542Z ERROR: [WORKER] Job 2 failed for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980:
+2025-10-21T11:26:10.549Z ERROR: Job 2 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:12.452Z INFO: [WORKER] Processing job 1 for alert 14d7f2a3-c471-455c-b18e-157112a44b26
+2025-10-21T11:26:12.460Z ERROR: [WORKER] Job 1 failed for alert 14d7f2a3-c471-455c-b18e-157112a44b26:
+2025-10-21T11:26:12.517Z ERROR: Job 1 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:26:12.554Z INFO: [WORKER] Processing job 2 for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980
+2025-10-21T11:26:12.572Z ERROR: [WORKER] Job 2 failed for alert 7c7bf8c9-fcd9-42ce-9721-3121668ca980:
+2025-10-21T11:26:12.577Z ERROR: Job 2 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2025-10-21T11:40:11.562Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-21T11:59:47.959Z INFO: [API] Job added to queue for active alert 41e79dae-772b-4ab1-bce3-8f98c0b19175
+2025-10-21T11:59:47.967Z INFO: [WORKER] Processing job 6 for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175
+2025-10-21T11:59:47.979Z INFO: [WORKER] Alert 41e79dae-772b-4ab1-bce3-8f98c0b19175 status updated to ACTIVE.
+2025-10-21T11:59:47.993Z ERROR: [WORKER] Job 6 failed for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175:
+2025-10-21T11:59:48.001Z ERROR: Job 6 has failed with admin is not defined
+2025-10-21T11:59:49.072Z INFO: [WORKER] Processing job 6 for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175
+2025-10-21T11:59:49.075Z INFO: [WORKER] Alert 41e79dae-772b-4ab1-bce3-8f98c0b19175 status updated to ACTIVE.
+2025-10-21T11:59:49.079Z ERROR: [WORKER] Job 6 failed for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175:
+2025-10-21T11:59:49.081Z ERROR: Job 6 has failed with admin is not defined
+2025-10-21T11:59:51.180Z INFO: [WORKER] Processing job 6 for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175
+2025-10-21T11:59:51.194Z INFO: [WORKER] Alert 41e79dae-772b-4ab1-bce3-8f98c0b19175 status updated to ACTIVE.
+2025-10-21T11:59:51.198Z ERROR: [WORKER] Job 6 failed for alert 41e79dae-772b-4ab1-bce3-8f98c0b19175:
+2025-10-21T11:59:51.204Z ERROR: Job 6 has failed with admin is not defined
+2025-10-21T12:57:09.897Z INFO: [API] Job scheduled in queue for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2 with a delay of 864170s
+2025-10-21T13:30:13.733Z WARN: Login failed for user: lijoy4ever@gmail.com - Incorrect password
+2025-10-21T13:31:01.710Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-21T13:32:02.294Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-22T04:51:39.144Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-22T04:52:28.299Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-22T05:01:07.789Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-22T05:02:09.966Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-22T05:02:28.524Z INFO: [API] Job added to queue for active alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64
+2025-10-22T05:02:28.538Z INFO: [WORKER] Processing job 8 for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64
+2025-10-22T05:02:28.555Z INFO: [WORKER] Alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64 status updated to ACTIVE.
+2025-10-22T05:02:28.580Z ERROR: [WORKER] Job 8 failed for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64:
+2025-10-22T05:02:28.606Z ERROR: Job 8 has failed with admin is not defined
+2025-10-22T05:02:29.627Z INFO: [WORKER] Processing job 8 for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64
+2025-10-22T05:02:29.637Z INFO: [WORKER] Alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64 status updated to ACTIVE.
+2025-10-22T05:02:29.648Z ERROR: [WORKER] Job 8 failed for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64:
+2025-10-22T05:02:29.653Z ERROR: Job 8 has failed with admin is not defined
+2025-10-22T05:02:31.749Z INFO: [WORKER] Processing job 8 for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64
+2025-10-22T05:02:31.760Z INFO: [WORKER] Alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64 status updated to ACTIVE.
+2025-10-22T05:02:31.772Z ERROR: [WORKER] Job 8 failed for alert 0c53fda9-cac9-4214-8b3d-2c79ea7b9f64:
+2025-10-22T05:02:31.832Z ERROR: Job 8 has failed with admin is not defined
+2025-10-22T05:07:34.503Z INFO: [API] Job added to queue for active alert 656a9c99-ecbb-4465-9659-016932cbf858
+2025-10-22T05:07:34.506Z INFO: [WORKER] Processing job 9 for alert 656a9c99-ecbb-4465-9659-016932cbf858
+2025-10-22T05:07:34.511Z INFO: [WORKER] Alert 656a9c99-ecbb-4465-9659-016932cbf858 status updated to ACTIVE.
+2025-10-22T05:07:34.517Z ERROR: [WORKER] Job 9 failed for alert 656a9c99-ecbb-4465-9659-016932cbf858:
+2025-10-22T05:07:34.520Z ERROR: Job 9 has failed with admin is not defined
+2025-10-22T05:07:35.526Z INFO: [WORKER] Processing job 9 for alert 656a9c99-ecbb-4465-9659-016932cbf858
+2025-10-22T05:07:35.529Z INFO: [WORKER] Alert 656a9c99-ecbb-4465-9659-016932cbf858 status updated to ACTIVE.
+2025-10-22T05:07:35.533Z ERROR: [WORKER] Job 9 failed for alert 656a9c99-ecbb-4465-9659-016932cbf858:
+2025-10-22T05:07:35.535Z ERROR: Job 9 has failed with admin is not defined
+2025-10-22T05:07:37.541Z INFO: [WORKER] Processing job 9 for alert 656a9c99-ecbb-4465-9659-016932cbf858
+2025-10-22T05:07:37.544Z INFO: [WORKER] Alert 656a9c99-ecbb-4465-9659-016932cbf858 status updated to ACTIVE.
+2025-10-22T05:07:37.547Z ERROR: [WORKER] Job 9 failed for alert 656a9c99-ecbb-4465-9659-016932cbf858:
+2025-10-22T05:07:37.550Z ERROR: Job 9 has failed with admin is not defined
+2025-10-22T05:09:44.581Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-22T05:23:33.398Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-22T05:48:57.504Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-22T05:49:24.562Z INFO: [API] Job added to queue for active alert 2657cd45-b821-46ed-af41-55927aec25e9
+2025-10-22T05:49:24.565Z INFO: [WORKER] Processing job 10 for alert 2657cd45-b821-46ed-af41-55927aec25e9
+2025-10-22T05:49:24.578Z INFO: [WORKER] Alert 2657cd45-b821-46ed-af41-55927aec25e9 status updated to ACTIVE.
+2025-10-22T05:49:24.592Z ERROR: [WORKER] Job 10 failed for alert 2657cd45-b821-46ed-af41-55927aec25e9:
+2025-10-22T05:49:24.601Z ERROR: Job 10 has failed with admin is not defined
+2025-10-22T05:49:25.686Z INFO: [WORKER] Processing job 10 for alert 2657cd45-b821-46ed-af41-55927aec25e9
+2025-10-22T05:49:25.695Z INFO: [WORKER] Alert 2657cd45-b821-46ed-af41-55927aec25e9 status updated to ACTIVE.
+2025-10-22T05:49:25.704Z ERROR: [WORKER] Job 10 failed for alert 2657cd45-b821-46ed-af41-55927aec25e9:
+2025-10-22T05:49:25.709Z ERROR: Job 10 has failed with admin is not defined
+2025-10-22T05:49:27.802Z INFO: [WORKER] Processing job 10 for alert 2657cd45-b821-46ed-af41-55927aec25e9
+2025-10-22T05:49:27.808Z INFO: [WORKER] Alert 2657cd45-b821-46ed-af41-55927aec25e9 status updated to ACTIVE.
+2025-10-22T05:49:27.816Z ERROR: [WORKER] Job 10 failed for alert 2657cd45-b821-46ed-af41-55927aec25e9:
+2025-10-22T05:49:27.820Z ERROR: Job 10 has failed with admin is not defined
+2025-10-22T05:49:46.225Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-22T06:01:18.151Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-22T06:28:34.175Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-23T05:23:15.372Z INFO: [API] Job added to queue for active alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1
+2025-10-23T05:23:15.406Z INFO: [WORKER] Processing job 11 for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1
+2025-10-23T05:23:15.417Z INFO: [WORKER] Alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1 status updated to ACTIVE.
+2025-10-23T05:23:15.431Z ERROR: [WORKER] Job 11 failed for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1:
+2025-10-23T05:23:15.448Z ERROR: Job 11 has failed with admin is not defined
+2025-10-23T05:23:16.505Z INFO: [WORKER] Processing job 11 for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1
+2025-10-23T05:23:16.515Z INFO: [WORKER] Alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1 status updated to ACTIVE.
+2025-10-23T05:23:16.530Z ERROR: [WORKER] Job 11 failed for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1:
+2025-10-23T05:23:16.537Z ERROR: Job 11 has failed with admin is not defined
+2025-10-23T05:23:18.617Z INFO: [WORKER] Processing job 11 for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1
+2025-10-23T05:23:18.624Z INFO: [WORKER] Alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1 status updated to ACTIVE.
+2025-10-23T05:23:18.629Z ERROR: [WORKER] Job 11 failed for alert 13fa3b61-19e7-41a1-9c4f-fe265a3ec3b1:
+2025-10-23T05:23:18.691Z ERROR: Job 11 has failed with admin is not defined
+2025-10-23T05:24:28.143Z INFO: [API] Job added to queue for active alert f8a928e2-9eab-4ec7-a309-3d858ba6a760
+2025-10-23T05:24:28.147Z INFO: [WORKER] Processing job 12 for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760
+2025-10-23T05:24:28.165Z INFO: [WORKER] Alert f8a928e2-9eab-4ec7-a309-3d858ba6a760 status updated to ACTIVE.
+2025-10-23T05:24:28.188Z ERROR: [WORKER] Job 12 failed for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760:
+2025-10-23T05:24:28.196Z ERROR: Job 12 has failed with admin is not defined
+2025-10-23T05:24:29.251Z INFO: [WORKER] Processing job 12 for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760
+2025-10-23T05:24:29.263Z INFO: [WORKER] Alert f8a928e2-9eab-4ec7-a309-3d858ba6a760 status updated to ACTIVE.
+2025-10-23T05:24:29.275Z ERROR: [WORKER] Job 12 failed for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760:
+2025-10-23T05:24:29.280Z ERROR: Job 12 has failed with admin is not defined
+2025-10-23T05:24:31.373Z INFO: [WORKER] Processing job 12 for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760
+2025-10-23T05:24:31.383Z INFO: [WORKER] Alert f8a928e2-9eab-4ec7-a309-3d858ba6a760 status updated to ACTIVE.
+2025-10-23T05:24:31.395Z ERROR: [WORKER] Job 12 failed for alert f8a928e2-9eab-4ec7-a309-3d858ba6a760:
+2025-10-23T05:24:31.400Z ERROR: Job 12 has failed with admin is not defined
+2025-10-23T05:33:53.542Z INFO: [API] Job added to queue for active alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5
+2025-10-23T05:33:53.543Z INFO: [WORKER] Processing job 13 for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5
+2025-10-23T05:33:53.549Z INFO: [WORKER] Alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5 status updated to ACTIVE.
+2025-10-23T05:33:53.556Z ERROR: [WORKER] Job 13 failed for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5:
+2025-10-23T05:33:53.558Z ERROR: Job 13 has failed with admin is not defined
+2025-10-23T05:33:54.617Z INFO: [WORKER] Processing job 13 for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5
+2025-10-23T05:33:54.627Z INFO: [WORKER] Alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5 status updated to ACTIVE.
+2025-10-23T05:33:54.636Z ERROR: [WORKER] Job 13 failed for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5:
+2025-10-23T05:33:54.640Z ERROR: Job 13 has failed with admin is not defined
+2025-10-23T05:33:56.732Z INFO: [WORKER] Processing job 13 for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5
+2025-10-23T05:33:56.749Z INFO: [WORKER] Alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5 status updated to ACTIVE.
+2025-10-23T05:33:56.759Z ERROR: [WORKER] Job 13 failed for alert 99c3dc35-3b0a-4a1b-afa4-9f59daccb7d5:
+2025-10-23T05:33:56.765Z ERROR: Job 13 has failed with admin is not defined
+2025-10-23T06:55:10.281Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-23T09:16:31.406Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-23T09:18:25.369Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-23T09:19:30.240Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-23T09:20:43.333Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-23T09:27:42.563Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-23T09:28:18.467Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-23T09:29:59.147Z INFO: Login success: aswindkumar764@gmail.com
+2025-10-23T09:38:01.412Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-23T09:43:04.344Z INFO: [API] Job scheduled in queue for alert d8663b8f-968f-4256-9107-0f1362e9a75f with a delay of 694736s
+2025-10-23T09:43:57.010Z INFO: [API] Job added to queue for active alert ea1a3078-b53e-40e2-ab05-c195429f22b6
+2025-10-23T09:43:57.013Z INFO: [WORKER] Processing job 15 for alert ea1a3078-b53e-40e2-ab05-c195429f22b6
+2025-10-23T09:43:57.021Z INFO: [WORKER] Alert ea1a3078-b53e-40e2-ab05-c195429f22b6 status updated to ACTIVE.
+2025-10-23T09:43:57.031Z ERROR: [WORKER] Job 15 failed for alert ea1a3078-b53e-40e2-ab05-c195429f22b6:
+2025-10-23T09:43:57.040Z ERROR: Job 15 has failed with admin is not defined
+2025-10-23T09:43:58.087Z INFO: [WORKER] Processing job 15 for alert ea1a3078-b53e-40e2-ab05-c195429f22b6
+2025-10-23T09:43:58.099Z INFO: [WORKER] Alert ea1a3078-b53e-40e2-ab05-c195429f22b6 status updated to ACTIVE.
+2025-10-23T09:43:58.113Z ERROR: [WORKER] Job 15 failed for alert ea1a3078-b53e-40e2-ab05-c195429f22b6:
+2025-10-23T09:43:58.119Z ERROR: Job 15 has failed with admin is not defined
+2025-10-23T09:44:00.201Z INFO: [WORKER] Processing job 15 for alert ea1a3078-b53e-40e2-ab05-c195429f22b6
+2025-10-23T09:44:00.208Z INFO: [WORKER] Alert ea1a3078-b53e-40e2-ab05-c195429f22b6 status updated to ACTIVE.
+2025-10-23T09:44:00.217Z ERROR: [WORKER] Job 15 failed for alert ea1a3078-b53e-40e2-ab05-c195429f22b6:
+2025-10-23T09:44:00.265Z ERROR: Job 15 has failed with admin is not defined
+2025-10-23T12:38:00.456Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-23T12:38:34.176Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-23T12:39:13.644Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-23T14:22:12.080Z INFO: [API] Job added to queue for active alert f52a5d49-6a62-4ead-a89f-968f21861949
+2025-10-23T14:22:12.115Z INFO: [WORKER] Processing job 16 for alert f52a5d49-6a62-4ead-a89f-968f21861949
+2025-10-23T14:22:12.146Z INFO: [WORKER] Alert f52a5d49-6a62-4ead-a89f-968f21861949 status updated to ACTIVE.
+2025-10-23T14:22:12.174Z ERROR: [WORKER] Job 16 failed for alert f52a5d49-6a62-4ead-a89f-968f21861949:
+2025-10-23T14:22:12.204Z ERROR: Job 16 has failed with admin is not defined
+2025-10-23T14:22:13.200Z INFO: [WORKER] Processing job 16 for alert f52a5d49-6a62-4ead-a89f-968f21861949
+2025-10-23T14:22:13.210Z INFO: [WORKER] Alert f52a5d49-6a62-4ead-a89f-968f21861949 status updated to ACTIVE.
+2025-10-23T14:22:13.220Z ERROR: [WORKER] Job 16 failed for alert f52a5d49-6a62-4ead-a89f-968f21861949:
+2025-10-23T14:22:13.228Z ERROR: Job 16 has failed with admin is not defined
+2025-10-23T14:22:15.322Z INFO: [WORKER] Processing job 16 for alert f52a5d49-6a62-4ead-a89f-968f21861949
+2025-10-23T14:22:15.333Z INFO: [WORKER] Alert f52a5d49-6a62-4ead-a89f-968f21861949 status updated to ACTIVE.
+2025-10-23T14:22:15.367Z ERROR: [WORKER] Job 16 failed for alert f52a5d49-6a62-4ead-a89f-968f21861949:
+2025-10-23T14:22:15.476Z ERROR: Job 16 has failed with admin is not defined
+2025-10-23T14:22:31.252Z WARN: Login failed for unknown email: jefffinalpy@gmail.com
+2025-10-23T14:22:38.975Z WARN: Login failed for unknown email: jefffinalpy@gmail.com
+2025-10-23T14:22:44.963Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-23T14:24:03.604Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-29T04:49:00.279Z INFO: [WORKER] Processing job 16 for alert f52a5d49-6a62-4ead-a89f-968f21861949
+2025-10-29T04:49:01.387Z INFO: [WORKER] Alert f52a5d49-6a62-4ead-a89f-968f21861949 status updated to ACTIVE.
+2025-10-29T04:49:01.447Z ERROR: [WORKER] Job 16 failed for alert f52a5d49-6a62-4ead-a89f-968f21861949:
+2025-10-29T04:49:01.494Z ERROR: Job 16 has failed with admin is not defined
+2025-10-29T04:50:25.145Z WARN: Login failed for user: tomsebastian715@gmail.com - Incorrect password
+2025-10-29T04:50:37.085Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-31T06:06:12.894Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-31T06:13:14.975Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-31T08:56:04.775Z INFO: Login success: jeffinalpy@gmail.com
+2025-10-31T09:15:20.975Z INFO: Login success: tomsebastian715@gmail.com
+2025-10-31T10:42:00.184Z INFO: [WORKER] Processing job 14 for alert d8663b8f-968f-4256-9107-0f1362e9a75f
+2025-10-31T10:42:00.423Z INFO: [WORKER] Alert d8663b8f-968f-4256-9107-0f1362e9a75f status updated to ACTIVE.
+2025-10-31T10:42:00.463Z ERROR: [WORKER] Job 14 failed for alert d8663b8f-968f-4256-9107-0f1362e9a75f:
+2025-10-31T10:42:00.491Z ERROR: Job 14 has failed with admin is not defined
+2025-10-31T10:42:01.494Z INFO: [WORKER] Processing job 14 for alert d8663b8f-968f-4256-9107-0f1362e9a75f
+2025-10-31T10:42:01.503Z INFO: [WORKER] Alert d8663b8f-968f-4256-9107-0f1362e9a75f status updated to ACTIVE.
+2025-10-31T10:42:01.514Z ERROR: [WORKER] Job 14 failed for alert d8663b8f-968f-4256-9107-0f1362e9a75f:
+2025-10-31T10:42:01.535Z ERROR: Job 14 has failed with admin is not defined
+2025-10-31T10:42:03.612Z INFO: [WORKER] Processing job 14 for alert d8663b8f-968f-4256-9107-0f1362e9a75f
+2025-10-31T10:42:03.627Z INFO: [WORKER] Alert d8663b8f-968f-4256-9107-0f1362e9a75f status updated to ACTIVE.
+2025-10-31T10:42:03.639Z ERROR: [WORKER] Job 14 failed for alert d8663b8f-968f-4256-9107-0f1362e9a75f:
+2025-10-31T10:42:03.705Z ERROR: Job 14 has failed with admin is not defined
+2025-10-31T13:00:00.215Z INFO: [WORKER] Processing job 7 for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2
+2025-10-31T13:00:00.902Z INFO: [WORKER] Alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2 status updated to ACTIVE.
+2025-10-31T13:00:00.973Z ERROR: [WORKER] Job 7 failed for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2:
+2025-10-31T13:00:01.014Z ERROR: Job 7 has failed with admin is not defined
+2025-10-31T13:00:02.035Z INFO: [WORKER] Processing job 7 for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2
+2025-10-31T13:00:02.074Z INFO: [WORKER] Alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2 status updated to ACTIVE.
+2025-10-31T13:00:02.089Z ERROR: [WORKER] Job 7 failed for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2:
+2025-10-31T13:00:02.095Z ERROR: Job 7 has failed with admin is not defined
+2025-10-31T13:00:04.141Z INFO: [WORKER] Processing job 7 for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2
+2025-10-31T13:00:04.158Z INFO: [WORKER] Alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2 status updated to ACTIVE.
+2025-10-31T13:00:04.175Z ERROR: [WORKER] Job 7 failed for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2:
+2025-10-31T13:00:04.192Z ERROR: Job 7 has failed with admin is not defined
