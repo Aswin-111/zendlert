@@ -262,6 +262,183 @@ const SettingsController = {
         .json({ message: "Server error", error: error.message });
     }
   },
+  // CREATE Severity Level
+  createSeverityLevel: async (req, res) => {
+    try {
+      const { organization_id, severity_name, description } = req.body;
+      if (!organization_id || !severity_name) {
+        return res.status(400).json({ message: "organization_id and severity_name are required" });
+      }
+
+      // Check if organization already exists
+      const orgExists = await prisma.organizations.findUnique({
+        where: { organization_id: String(organization_id) }
+      });
+      if (!orgExists) {
+        return res.status(404).json({ message: "organization not exist" });
+      }
+
+      // Check if severity name exists for this org
+      const sevExists = await prisma.severity_Levels.findFirst({
+        where: {
+          organization_id: String(organization_id),
+          name: severity_name.trim()
+        }
+      });
+      if (sevExists) {
+        return res.status(409).json({ message: "severity name already exists" });
+      }
+
+      // Create new severity level
+      const newSeverity = await prisma.severity_Levels.create({
+        data: {
+          organization_id: String(organization_id),
+          name: severity_name.trim(),
+          description: description || null
+        }
+      });
+
+      return res.status(201).json({
+        message: "Severity level created successfully",
+        severity_level: newSeverity
+      });
+    } catch (error) {
+      logger.error("createSeverityLevel error:", error);
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
+  },
+   // GET ALL Severity Levels for organization
+  getAllSeverityLevels: async (req, res) => {
+    try {
+      const { organization_id } = req.query;
+      if (!organization_id) {
+        return res.status(400).json({ message: "organization_id is required" });
+      }
+
+      // Check organization exists
+      const orgExists = await prisma.organizations.findUnique({
+        where: { organization_id: String(organization_id) }
+      });
+      if (!orgExists) {
+        return res.status(404).json({ message: "organization not exist" });
+      }
+
+      const severityLevels = await prisma.severity_Levels.findMany({
+        where: { organization_id: String(organization_id) },
+        select: { id: true, name: true, description: true }
+      });
+
+      if (!severityLevels.length) {
+        return res.status(404).json({ message: "No severity levels found for this organization." });
+      }
+
+      return res.status(200).json({
+        organization_id,
+        total: severityLevels.length,
+        severity_levels: severityLevels
+      });
+    } catch (error) {
+      logger.error("getAllSeverityLevels error:", error);
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
+  },
+   // EDIT Severity Level
+  editSeverityLevel: async (req, res) => {
+    try {
+      const { organization_id, severity_name, description, id } = req.body;
+      if (!organization_id || !id) {
+        return res.status(400).json({ message: "organization_id and severity_level id are required" });
+      }
+
+      // Check organization exists
+      const orgExists = await prisma.organizations.findUnique({
+        where: { organization_id: String(organization_id) }
+      });
+      if (!orgExists) {
+        return res.status(404).json({ message: "organization not exist" });
+      }
+
+      // Check severity exists
+      const severityExists = await prisma.severity_Levels.findUnique({
+        where: { id: String(id) }
+      });
+      if (!severityExists) {
+        return res.status(404).json({ message: "severity not exist" });
+      }
+
+      // Build update data
+      const updateData = {};
+      if (severity_name) {
+        // Check for duplicate severity_name
+        const nameExists = await prisma.severity_Levels.findFirst({
+          where: {
+            id: { not: String(id) },
+            organization_id: String(organization_id),
+            name: severity_name.trim()
+          }
+        });
+        if (nameExists) {
+          return res.status(409).json({ message: "severity name already exists" });
+        }
+        updateData.name = severity_name.trim();
+      }
+      if (description !== undefined) updateData.description = description;
+
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ message: "No fields provided to update" });
+      }
+
+      const updatedSeverity = await prisma.severity_Levels.update({
+        where: { id: String(id) },
+        data: updateData
+      });
+
+      return res.status(200).json({
+        message: "Severity level updated successfully",
+        severity_level: updatedSeverity
+      });
+    } catch (error) {
+      logger.error("editSeverityLevel error:", error);
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
+  },
+// DELETE Severity Level
+  deleteSeverityLevel: async (req, res) => {
+    try {
+      const { organization_id, id } = req.query;
+      if (!organization_id || !id) {
+        return res.status(400).json({ message: "organization_id and severity_level id are required" });
+      }
+
+      // Check organization exists
+      const orgExists = await prisma.organizations.findUnique({
+        where: { organization_id: String(organization_id) }
+      });
+      if (!orgExists) {
+        return res.status(404).json({ message: "organization not exist" });
+      }
+
+      // Check severity exists
+      const severityExists = await prisma.severity_Levels.findUnique({
+        where: { id: String(id) }
+      });
+      if (!severityExists) {
+        return res.status(404).json({ message: "severity not exist" });
+      }
+
+      await prisma.severity_Levels.delete({
+        where: { id: String(id) }
+      });
+
+      return res.status(200).json({
+        message: "Severity level deleted successfully",
+        deleted_id: id
+      });
+    } catch (error) {
+      logger.error("deleteSeverityLevel error:", error);
+      return res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
 
 };
 

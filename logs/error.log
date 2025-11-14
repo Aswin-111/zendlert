@@ -697,3 +697,53 @@ An operation failed because it depends on one or more records that were required
 2025-10-31T13:00:02.095Z ERROR: Job 7 has failed with admin is not defined
 2025-10-31T13:00:04.175Z ERROR: [WORKER] Job 7 failed for alert 5f6abbe4-0503-43a3-b10b-d51fa16ed8a2:
 2025-10-31T13:00:04.192Z ERROR: Job 7 has failed with admin is not defined
+2025-11-11T12:46:47.739Z ERROR: Error checking business name: 
+Invalid `prisma.organizations.findFirst()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-11T12:49:25.779Z ERROR: Error checking business name: 
+Invalid `prisma.organizations.findFirst()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-11T12:54:24.222Z ERROR: Error checking business name: 
+Invalid `prisma.organizations.findFirst()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-11T12:54:24.251Z ERROR: Error checking business name: 
+Invalid `prisma.organizations.findFirst()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-11T13:03:29.313Z ERROR: Error checking business name: 
+Invalid `prisma.organizations.findFirst()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-11T13:03:44.057Z ERROR: Error checking business name: 
+Invalid `prisma.organizations.findFirst()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-11T13:04:16.744Z ERROR: Error checking business name: 
+Invalid `prisma.organizations.findFirst()` invocation:
+
+
+The table `public.Organizations` does not exist in the current database.
+2025-11-11T13:06:48.289Z ERROR: sendOtp error: The client is closed
+2025-11-11T13:07:36.865Z ERROR: sendOtp error: The client is closed
+2025-11-11T13:09:55.930Z ERROR: sendOtp error: The client is closed

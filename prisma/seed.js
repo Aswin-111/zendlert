@@ -60,19 +60,19 @@ async function main() {
         }
     ];
     console.log(`🌱 Seeding emergency types...`);
-    for (const type of emergencyTypes) {
-        const post = await prisma.emergency_Types.upsert({
-            where: { name: type.name },
-            update: {},
-            create: {
-                organization_id: "1c6df909-6788-4866-9956-92a2ca3519f3",
-                name: type.name,
-                description: type.description,
-                // These types are global, so organization_id is left as null
-            },
-        });
-        console.log(`✅ Created/verified emergency type: ${post.name}`);
-    }
+    // for (const type of emergencyTypes) {
+    //     const post = await prisma.emergency_Types.upsert({
+    //         where: { name: type.name },
+    //         update: {},
+    //         create: {
+    //             organization_id: "1c6df909-6788-4866-9956-92a2ca3519f3",
+    //             name: type.name,
+    //             description: type.description,
+    //             // These types are global, so organization_id is left as null
+    //         },
+    //     });
+    //     console.log(`✅ Created/verified emergency type: ${post.name}`);
+    // }
     console.log(`Seeding finished. 🎉`);
 
 

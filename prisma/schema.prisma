@@ -39,6 +39,7 @@ model Organizations {
   // Messages      Messages[]
   Chat_Messages   Chat_Messages[]
   Emergency_Types Emergency_Types[]
+  Severity_Levels Severity_Levels[]
 }
 
 enum OrgStatus {
@@ -340,7 +341,7 @@ enum SeverityLevel {
 }
 
 enum AlertStatus {
-  draft 
+  draft
   scheduled
   active
   resolved
@@ -407,6 +408,20 @@ model Emergency_Types {
 
   organization Organizations? @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
   Alerts       Alerts[]
+
+  @@index([organization_id])
+}
+
+model Severity_Levels {
+  id              String   @id @default(uuid()) // Unique identifier for each severity level
+  organization_id String // Foreign key to Organizations
+  name            String   @unique @db.VarChar(255) // Severity level name (e.g. Fire, Tornado)
+  description     String?  @db.Text // Detailed description
+  created_at      DateTime @default(now()) // Timestamp when created
+  updated_at      DateTime @updatedAt // Timestamp when last updated
+
+  // Relations
+  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade)
 
   @@index([organization_id])
 }
