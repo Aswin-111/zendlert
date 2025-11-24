@@ -1,6 +1,9 @@
-// ----------------------
-// Prisma boilerplate
-// ----------------------
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,127 +13,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ----------------------
-// Enums
-// ----------------------
-
-enum OrgStatus {
-  pending
-  active
-  archived
-  suspended
-  payment_failed
-  terminated
-}
-
-enum UserTypes {
-  employee
-  contractor
-}
-
-enum MessageType {
-  text
-  image
-  file
-}
-
-enum MessageStatus {
-  sent
-  delivered
-  read
-  failed
-}
-
-enum DeliveryMethod {
-  email
-  sms
-  both
-}
-
-enum SeverityLevel {
-  critical
-  high
-  medium
-  low
-}
-
-enum AlertStatus {
-  draft
-  scheduled
-  active
-  resolved
-  ended
-  cancelled
-}
-
-enum DeliveryStatus {
-  pending
-  send
-  delivered
-  failed
-}
-
-enum UserResponse {
-  safe
-  not_safe
-  evacuated
-  seeking_shelter
-}
-
-enum IncidentSeverity {
-  low
-  high
-}
-
-enum IncidentStatus {
-  open
-  resolved
-}
-
-enum IncidentType {
-  fire
-  chemical_spill
-  medical
-  security
-  equipment_failure
-  other
-}
-
-// ----------------------
-// Core org models
-// ----------------------
-
+//changed
 model Organizations {
-  organization_id String @id @default(uuid()) // PK
-  name            String @unique // org name
-  email_domain    String @unique @db.VarChar(255)
+  organization_id String @id @default(uuid()) // Primary Key (UUID)
+  name            String @unique // NOT NULL, UNIQUE
+  email_domain    String @unique @db.VarChar(255) // NOT NULL, UNIQUE
 
+  // Main contact fields (UNIQUE, allow NULL)
   main_contact_name  String? @unique @db.VarChar(255)
   main_contact_email String? @unique @db.VarChar(255)
   main_contact_phone String? @unique @db.VarChar(255)
 
   is_active        Boolean   @default(true)
-  industry_type_id String?
-  status_id        String?
-  time_zone        String    @db.VarChar(100) // e.g. "America/Chicago"
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
-  last_activity_at DateTime?
+  industry_type_id String? // FK → Industry_Types(id)
+  status_id        String? // FK → Organization_Statuses(id)
+  time_zone        String    @db.VarChar(100) // NOT NULL (e.g. "America/Chicago")
+  created_at       DateTime  @default(now()) // Default: current timestamp
+  updated_at       DateTime  @updatedAt // Auto-updated on modification
+  last_activity_at DateTime? // Nullable
 
   // Relations
   industry_type Industry_Types?        @relation(fields: [industry_type_id], references: [id])
   status        Organization_Statuses? @relation(fields: [status_id], references: [id])
 
-  Sites                 Sites[]
-  Users                 Users[]
-  Alerts                Alerts[]
-  Subscriptions         Subscriptions[]
-  Invitations           Invitations[]
-  Chat_Messages         Chat_Messages[]
-  Emergency_Types       Emergency_Types[]
-  Severity_Levels       Severity_Levels[]
-  Contracting_Companies Contracting_Companies[]
-  Incident_Reports      Incident_Reports[]
+  Sites         Sites[]
+  Users         Users[]
+  Alerts        Alerts[]
+  Subscriptions Subscriptions[]
+  Invitations   Invitations[]
+  Chat_Messages Chat_Messages[]
+  Alert_Types   Alert_Types[]
+}
+
+enum OrgStatus {
+  pending
+
+  active
+  archived
+  suspended
+  payment_failed
+  terminated
 }
 
 model Organization_Statuses {
@@ -143,12 +65,8 @@ model Organization_Statuses {
   Alerts        Alerts[]
 }
 
-// ----------------------
-// Sites & Areas
-// ----------------------
-
 model Sites {
-  id              String   @id @default(uuid())
+  id              String   @id @default(uuid()) // UUID Primary Key
   organization_id String?
   name            String   @db.VarChar(255)
   address_line_1  String
@@ -162,6 +80,7 @@ model Sites {
   is_active       Boolean  @default(true)
   created_at      DateTime @default(now())
 
+  // Relations
   organization Organizations? @relation(fields: [organization_id], references: [organization_id])
   Areas        Areas[]
   Users        Users[]
@@ -169,21 +88,72 @@ model Sites {
 }
 
 model Areas {
-  id          String   @id @default(uuid())
-  site_id     String
+  id          String   @id @default(uuid()) // UUID primary key
+  site_id     String // UUID foreign key to Sites
   name        String   @db.VarChar(255)
-  description String?
+  description String? // Nullable
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  // Relations
   site        Sites         @relation(fields: [site_id], references: [id])
   Users       Users[]
   Alert_Areas Alert_Areas[]
 }
 
-// ----------------------
-// Users & auth-ish
-// ----------------------
+enum UserTypes {
+  employee
+  contractor
+}
+
+// model Users {
+//   user_id         String    @id @default(uuid()) //index
+//   organization_id String? // set as optional
+//   site_id         String? // set as optional
+//   area_id         String? // set as optional 
+//   email           String    @unique
+//   password_hash   String
+//   first_name      String
+//   last_name       String
+//   phone_number    String
+//   phone_verified  Boolean   @default(false)
+//   is_active       Boolean   @default(true)
+//   role_id         String
+//   profile_pic     String?
+//   user_type       UserTypes
+
+//   must_reset_password Boolean? @default(false)
+//   fcm_token           String?
+//   created_at          DateTime @default(now())
+//   updated_at          DateTime @updatedAt
+
+//   organization Organizations? @relation(fields: [organization_id], references: [organization_id])
+//   employee     Employees?
+//   site         Sites?         @relation(fields: [site_id], references: [id])
+//   area         Areas?         @relation(fields: [area_id], references: [id])
+//   role         Roles          @relation(fields: [role_id], references: [id])
+
+//   // Alerts                    Alerts[]
+//   // Visitor_Status            Visitor_Status[]
+//   // Notification_Recipients   Notification_Recipients[]
+//   // User_Locations            User_Locations[]
+//   // Audit_Logs                Audit_Logs[]
+//   // Incident_Reports          Incident_Reports[]
+//   // reported_visitor_statuses Visitor_Status[]          @relation("ReportedBy")
+//   Phone_Verifications     Phone_Verifications[]
+//   Alerts                  Alerts[]
+//   Visitor_Status          Visitor_Status[]
+//   Notification_Recipients Notification_Recipients[]
+//   User_Locations          User_Locations[]
+//   Audit_Logs              Audit_Logs[]
+//   contractors             Contractors[] // back-relation
+//   // Invitations             Invitations[]
+//   invitationsReceived     Invitations[]             @relation("InvitedUser")
+//   invitationsSent         Invitations[]             @relation("InvitationCreator")
+//   // Messages                Messages[]
+//   messagesSent            Messages[]                @relation("MessageSender")
+//   messagesReceived        Messages[]                @relation("MessageReceiver")
+// }
 
 model Users {
   user_id         String    @id @default(uuid())
@@ -203,6 +173,9 @@ model Users {
 
   must_reset_password Boolean? @default(false)
   fcm_token           String?
+  // =========================================================
+  // === HIGHLIGHT: Added field for chat public key ========
+  // =========================================================
   e2ee_public_key     String?  @db.Text
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
@@ -213,12 +186,8 @@ model Users {
   area         Areas?         @relation(fields: [area_id], references: [id])
   role         Roles          @relation(fields: [role_id], references: [id])
 
-  Phone_Verifications Phone_Verifications[]
-
-  // Alerts relations
-  alertsCreated  Alerts[] @relation("AlertCreator")
-  alertsResolved Alerts[] @relation("AlertResolvedBy")
-
+  Phone_Verifications     Phone_Verifications[]
+  Alerts                  Alerts[]
   Visitor_Status          Visitor_Status[]
   Notification_Recipients Notification_Recipients[]
   User_Locations          User_Locations[]
@@ -228,14 +197,25 @@ model Users {
   invitationsReceived Invitations[] @relation("InvitedUser")
   invitationsSent     Invitations[] @relation("InvitationCreator")
 
+  // ✅ Now correctly linked to Chat_Messages model
   messagesSent     Chat_Messages[] @relation("MessageSender")
   messagesReceived Chat_Messages[] @relation("MessageReceiver")
+}
 
-  incidentReports Incident_Reports[]
+// =================================================================
+// === HIGHLIGHT: New model for Chat Messages, matching your image ===
+// =================================================================
+enum MessageType {
+  text
+  image
+  file
+}
 
-  @@index([organization_id])
-  @@index([site_id])
-  @@index([area_id])
+enum MessageStatus {
+  sent
+  delivered
+  read
+  failed
 }
 
 model Chat_Messages {
@@ -255,10 +235,12 @@ model Chat_Messages {
   deleted_by_sender   Boolean @default(false)
   deleted_by_receiver Boolean @default(false)
 
+  // Relations
   organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade)
   sender       Users         @relation("MessageSender", fields: [sender_id], references: [user_id], onDelete: Cascade)
   receiver     Users         @relation("MessageReceiver", fields: [receiver_id], references: [user_id], onDelete: Cascade)
 
+  // Indexes
   @@index([organization_id])
   @@index([sender_id])
   @@index([receiver_id])
@@ -276,19 +258,33 @@ model Contractors {
   user                Users                 @relation(fields: [user_id], references: [user_id])
   contracting_company Contracting_Companies @relation(fields: [contracting_company_id], references: [id])
 
-  @@id([user_id, contracting_company_id])
+  // optional extra fields, e.g. role, start/end dates, etc.
+  // role        String?
+  // start_date  DateTime?
+  // end_date    DateTime?
+  // Helpful indexes (optional):
+  // @@index([user_id])
+  // @@index([contracting_company_id])
+
+  @@id([user_id, contracting_company_id]) // composite primary key
 }
 
+// changed
 model Contracting_Companies {
   id              String  @id @default(uuid())
   organization_id String
-  name            String
+  contact_name    String
   contact_email   String?
   phone           String?
   address         String?
 
-  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
-  contractors  Contractors[]
+  contractors Contractors[] // back-relation
+}
+
+enum DeliveryMethod {
+  email
+  sms
+  both
 }
 
 model Invitations {
@@ -298,16 +294,20 @@ model Invitations {
   token           String         @unique @db.VarChar(255)
   expires_at      DateTime
   is_used         Boolean        @default(false)
-  created_by      String?
+  created_by      String? // nullable so we can onDelete: SetNull
   delivery_method DeliveryMethod
   sent_at         DateTime?
   created_at      DateTime       @default(now())
   updated_at      DateTime       @updatedAt
 
+  // Relations
   organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
   user         Users         @relation("InvitedUser", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
   createdBy    Users?        @relation("InvitationCreator", fields: [created_by], references: [user_id], onDelete: SetNull, onUpdate: Cascade)
+  // Uncomment if you want to disallow duplicate invites per org-user pair entirely:
+  // @@unique([organization_id, user_id])
 
+  // Helpful indexes
   @@index([organization_id])
   @@index([user_id])
   @@index([expires_at])
@@ -326,89 +326,60 @@ model Phone_Verifications {
   employee Users @relation(fields: [employee_id], references: [user_id])
 }
 
-// ----------------------
-// Roles / Permissions
-// ----------------------
-
 model Roles {
-  id          String   @id @default(uuid())
-  role_name   String   @unique
-  description String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id String @id @default(uuid())
 
+  role_name        String             @unique
+  description      String
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @default(now())
   Users            Users[]
   Role_Permissions Role_Permissions[]
 }
 
-model Permissions {
-  id                     String             @id @default(uuid())
-  permission_name        String             @unique
-  permission_description String?
-  created_at             DateTime           @default(now())
-  updated_at             DateTime           @updatedAt
-  Role_Permissions       Role_Permissions[]
+enum SeverityLevel {
+  critical
+  high
+  medium
+  low
 }
 
-model Role_Permissions {
-  role_id       String
-  permission_id String
-  assigned_at   DateTime @default(now())
-
-  role       Roles       @relation(fields: [role_id], references: [id])
-  permission Permissions @relation(fields: [permission_id], references: [id])
-
-  @@id([role_id, permission_id])
+enum AlertStatus {
+  draft
+  scheduled
+  active
+  resolved
+  ended
+  cancelled
 }
-
-// ----------------------
-// Alerts & related
-// ----------------------
 
 model Alerts {
-  id                String @id @default(uuid())
-  organization_id   String
+  id                String         @id @default(uuid())
   user_id           String
+  organization_id   String
   emergency_type_id String
-
-  severity          SeverityLevel?
+  severity          SeverityLevel? // Consider using enum (see below)
   message           String
   action_required   String?
   status            AlertStatus    @default(active)
   response_required Boolean        @default(true)
+  scheduled_time    DateTime?
+  start_time        DateTime?
+  end_time          DateTime?
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
 
-  scheduled_time       DateTime?
-  start_time           DateTime?
-  end_time             DateTime?
-  resolved_by          String?
-  resolved_at          DateTime?
-  resolution_reason_id Int?
-  resolution_notes     String?
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  user           Users           @relation("AlertCreator", fields: [user_id], references: [user_id])
+  user           Users           @relation(fields: [user_id], references: [user_id])
   organization   Organizations   @relation(fields: [organization_id], references: [organization_id])
   emergency_type Emergency_Types @relation(fields: [emergency_type_id], references: [id])
 
-  resolvedByUser    Users?              @relation("AlertResolvedBy", fields: [resolved_by], references: [user_id])
-  resolution_reason Resolution_Reasons? @relation(fields: [resolution_reason_id], references: [reason_id])
-
-  Organization_Statuses   Organization_Statuses? @relation(fields: [organization_StatusesId], references: [id])
+  Organization_Statuses   Organization_Statuses?    @relation(fields: [organization_StatusesId], references: [id])
   organization_StatusesId String?
-
   Alert_Sites             Alert_Sites[]
   Alert_Areas             Alert_Areas[]
   Visitor_Status          Visitor_Status[]
   Notification_Recipients Notification_Recipients[]
   User_Locations          User_Locations[]
-
-  @@index([organization_id])
-  @@index([user_id])
-  @@index([emergency_type_id])
-  @@index([status])
-  @@index([severity])
 }
 
 model Alert_Sites {
@@ -418,7 +389,7 @@ model Alert_Sites {
   alert Alerts @relation(fields: [alert_id], references: [id])
   site  Sites  @relation(fields: [site_id], references: [id])
 
-  @@id([alert_id, site_id])
+  @@id([alert_id, site_id]) // Composite Primary Key
 }
 
 model Alert_Areas {
@@ -428,51 +399,23 @@ model Alert_Areas {
   alert Alerts @relation(fields: [alert_id], references: [id])
   area  Areas  @relation(fields: [area_id], references: [id])
 
-  @@id([alert_id, area_id])
+  @@id([alert_id, area_id]) // Composite Primary Key
 }
 
-model Emergency_Types {
+// changed (Emergency types)
+model Alert_Types {
   id              String   @id @default(uuid())
   organization_id String
-  name            String
+  name            String   @unique
   description     String?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+  organization Organizations? @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
   Alerts       Alerts[]
 
-  @@unique([organization_id, name])
   @@index([organization_id])
 }
-
-// Dynamic severity catalog per org
-model Severity_Levels {
-  id              String   @id @default(uuid())
-  organization_id String
-  name            String   @unique @db.VarChar(255)
-  description     String?  @db.Text
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@index([organization_id])
-}
-
-// Resolution reasons for alerts
-model Resolution_Reasons {
-  reason_id          Int     @id @default(autoincrement())
-  reason_code        String  @unique @db.VarChar(50)
-  reason_description String  @db.Text
-  is_active          Boolean @default(true)
-
-  Alerts Alerts[]
-}
-
-// ----------------------
-// Visitors & companies
-// ----------------------
 
 model Industry_Types {
   id            String          @id @default(uuid())
@@ -484,13 +427,14 @@ model Industry_Types {
 }
 
 model Companies {
-  id         String   @id @default(uuid())
+  id String @id @default(uuid())
+
   name       String
   address    String?
   created_at DateTime @default(now())
-  updated_at DateTime @default(now())
 
-  Visitors Visitors[]
+  updated_at DateTime   @default(now())
+  Visitors   Visitors[]
 }
 
 model Visitors {
@@ -522,9 +466,19 @@ model Visitor_Status {
   visitor     Visitors @relation(fields: [visitor_id], references: [id])
 }
 
-// ----------------------
-// Notification & tracking
-// ----------------------
+enum DeliveryStatus {
+  pending
+  send
+  delivered
+  failed
+}
+
+enum UserResponse {
+  safe
+  not_safe
+  evacuated
+  seeking_shelter
+}
 
 model Notification_Recipients {
   id                  String         @id @default(uuid())
@@ -541,9 +495,6 @@ model Notification_Recipients {
 
   alert Alerts @relation(fields: [alert_id], references: [id])
   user  Users  @relation(fields: [user_id], references: [user_id])
-
-  @@index([alert_id])
-  @@index([user_id])
 }
 
 model User_Locations {
@@ -559,14 +510,28 @@ model User_Locations {
 
   user  Users  @relation(fields: [user_id], references: [user_id])
   alert Alerts @relation(fields: [alert_id], references: [id])
-
-  @@index([user_id])
-  @@index([alert_id])
 }
 
-// ----------------------
-// Audit logs
-// ----------------------
+model Permissions {
+  id String @id @default(uuid())
+
+  permission_name        String             @unique
+  permission_description String?
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @default(now())
+  Role_Permissions       Role_Permissions[]
+}
+
+model Role_Permissions {
+  role_id       String
+  permission_id String
+  assigned_at   DateTime @default(now())
+
+  role       Roles       @relation(fields: [role_id], references: [id])
+  permission Permissions @relation(fields: [permission_id], references: [id])
+
+  @@id([role_id, permission_id])
+}
 
 model Audit_Logs {
   id                  String   @id @default(uuid())
@@ -582,103 +547,65 @@ model Audit_Logs {
   performed_by_user Users @relation(fields: [action_performed_by], references: [user_id])
 }
 
-// ----------------------
-// Incident reports
-// ----------------------
-
-model Incident_Reports {
-  incident_id         String @id @default(uuid())
-  organization_id     String
-  reported_by_user_id String
-
-  incident_type IncidentType
-  severity      IncidentSeverity
-  location      String?          @db.Text
-  description   String?          @db.Text
-  actions_taken String?          @db.Text
-  status        IncidentStatus
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  organization     Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
-  reported_by_user Users         @relation(fields: [reported_by_user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@index([organization_id])
-  @@index([reported_by_user_id])
-  @@index([status])
-  @@index([severity])
+enum IncidentSeverity {
+  low
+  high
 }
 
-// ----------------------
-// Subscriptions / Plans
-// ----------------------
-// ----------------------
-// Subscriptions / Plans
-// ----------------------
+enum IncidentStatus {
+  open
+  resolved
+}
+
+// model Incident_Reports {
+//   incident_id         String           @id @default(uuid())
+//   tenant_id           String
+//   reported_by_user_id String
+//   incident_type       IncidentType
+//   severity            IncidentSeverity
+//   location            String?
+//   description         String?
+//   actions_taken       String?
+//   status              IncidentStatus
+//   created_at          DateTime         @default(now())
+//   updated_at          DateTime         @updatedAt
+
+//   tenant           Tenants @relation(fields: [tenant_id], references: [tenant_id])
+//   reported_by_user Users   @relation(fields: [reported_by_user_id], references: [id])
+// }
 
 model Subscriptions {
   id String @id @default(uuid())
 
-  organization_id      String
-  subscription_plan_id String
+  organization_id String?
+  plan_id         String
+  status          String    @default("inactive")
+  payment_method  String?
+  payment_status  String    @default("unpaid")
+  start_date      DateTime
+  end_date        DateTime?
+  auto_renew      Boolean   @default(false)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime? @updatedAt
 
-  stripe_customer_id     String @unique
-  stripe_subscription_id String @unique
-  stripe_price_id        String @unique
-
-  status         String  @default("inactive") @db.VarChar(50)
-  payment_method String? @db.VarChar(50)
-  payment_status String  @default("unpaid") @db.VarChar(50)
-
-  // billing cycle dates
-  current_period_start DateTime @db.Date
-  current_period_end   DateTime @db.Date
-
-  auto_renew Boolean   @default(false)
-  created_at DateTime  @default(now())
-  updated_at DateTime? @updatedAt
-
-  // Relations
-  organization Organizations      @relation(fields: [organization_id], references: [organization_id])
-  plan         Subscription_Plans @relation(fields: [subscription_plan_id], references: [id])
-
-  @@index([organization_id])
-  @@index([subscription_plan_id])
+  organization Organizations?     @relation(fields: [organization_id], references: [organization_id])
+  plan         Subscription_Plans @relation(fields: [plan_id], references: [id])
 }
 
 model Subscription_Plans {
   id String @id @default(uuid())
 
-  plan_name       String  @unique @db.VarChar(50)
-  description     String?
-  stripe_price_id String  @unique
-
-  monthly_price Decimal @default(0.00) @db.Decimal(10, 2)
-  annual_price  Decimal @default(0.00) @db.Decimal(10, 2)
-
-  user_limit  Int @default(0)
-  site_limit  Int @default(0)
-  area_limit  Int @default(0)
-  alert_limit Int @default(0)
-
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
+  name          String          @unique
+  description   String?
+  monthly_price Decimal         @default(0.00) @db.Decimal(10, 2)
+  annual_price  Decimal         @default(0.00) @db.Decimal(10, 2)
+  user_limit    Int             @default(0)
+  site_limit    Int             @default(0)
+  area_limit    Int             @default(0)
+  is_active     Boolean         @default(true)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime?
   Subscriptions Subscriptions[]
-  Plan_Features Plan_Features[]
-}
-
-model Features {
-  id String @id @default(uuid())
-
-  name        String
-  code        String   @unique
-  description String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
   Plan_Features Plan_Features[]
 }
 
@@ -687,13 +614,20 @@ model Plan_Features {
 
   plan_id    String
   feature_id String
-  is_enabled Boolean  @default(false)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  is_enabled Boolean            @default(false)
+  created_at DateTime           @default(now())
+  updated_at DateTime?
+  plan       Subscription_Plans @relation(fields: [plan_id], references: [id])
+  feature    Features           @relation(fields: [feature_id], references: [id])
+}
 
-  plan    Subscription_Plans @relation(fields: [plan_id], references: [id])
-  feature Features           @relation(fields: [feature_id], references: [id])
+model Features {
+  id String @id @default(uuid())
 
-  @@index([plan_id])
-  @@index([feature_id])
+  name          String
+  code          String          @unique
+  description   String?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime?
+  Plan_Features Plan_Features[]
 }
