@@ -1,32 +1,48 @@
+// app.js
 import express from "express";
 import cors from "cors";
-
-
 
 import organizationRoutes from "./routes/organization.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import employeeRoutes from "./routes/employee.routes.js";
-import alertRoutes from "./routes/alert.routes.js"
-import userRoutes from "./routes/user.routes.js"
-import settingsRoutes from "./routes/settings.routes.js"
-import adminAuth from "./middlewares/admin.middleware.js";
+import alertRoutes from "./routes/alert.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
+import subscriptionsRoutes from "./routes/subscriptions.routes.js";
+import configRoutes from "./routes/config.routes.js";
 
-import configRoutes from './routes/config.routes.js'
+import { SubscriptionsController } from "./controllers/subscriptions.controller.js";
+
 const app = express();
 
 app.use(cors());
+
+// 1️⃣ RAW BODY WEBHOOK ROUTE — MUST BE FIRST
+app.post(
+    "/subscriptions/webhook",
+    express.raw({ type: "application/json" }),
+    SubscriptionsController.webhookHandler
+);
+
+// 2️⃣ Normal body parser AFTER webhook
 app.use(express.json());
-// app.use("/health", (req, res, next) => { console.log("health routes"); next() }, (req, res) => res.json({ message: "Healthy" }));
+app.use(express.urlencoded({ extended: true }));
 
+// Debug route
+app.use("/test", (req, res) => {
+    res.send("qwert");
+});
 
-
-
-app.use('/test', (req, res, next) => { console.log('qwert'); res.send("qwert") })
-app.use("/config", configRoutes)
-app.use("/api/v1/organizations", (req, res, next) => { console.log("organization routes"); next() }, organizationRoutes);
+// Routes
+app.use("/config", configRoutes);
+app.use("/api/v1/organizations", organizationRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/alert", alertRoutes);
 app.use("/api/v1/employee", employeeRoutes);
 app.use("/api/v1/settings", settingsRoutes);
+
+// ❗ Correct subscription route
+app.use("/api/v1/subscriptions", subscriptionsRoutes);
+
 export default app;
