@@ -17,11 +17,6 @@ router.get("/get-dashboard", AlertController.getDashboardStats);
  * @access  Private
  * @query   organization_id={uuid}&filter={overview|performance|details}
  */
-router.get(
-    '/get_reports',
-    // authMiddleware, // TODO: Protect this route with authentication
-    AlertController.getReports
-);
 
 router.get("/get-alertdashboard", AlertController.getAlertDashboard)
 
@@ -80,5 +75,6 @@ router.put(
     // authMiddleware, // TODO: Protect this route
     AlertController.resolveAlert
 );
+
 
 export default router

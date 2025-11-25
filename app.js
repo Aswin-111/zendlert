@@ -8,10 +8,11 @@ import employeeRoutes from "./routes/employee.routes.js";
 import alertRoutes from "./routes/alert.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
-import subscriptionsRoutes from "./routes/subscriptions.routes.js";
+import subscriptionsRoutes from "./routes/subscription.routes.js";
 import configRoutes from "./routes/config.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 
-import { SubscriptionsController } from "./controllers/subscriptions.controller.js";
+import { SubscriptionsController } from "./controllers/subscription.controller.js";
 
 const app = express();
 
@@ -19,9 +20,9 @@ app.use(cors());
 
 // 1️⃣ RAW BODY WEBHOOK ROUTE — MUST BE FIRST
 app.post(
-    "/subscriptions/webhook",
-    express.raw({ type: "application/json" }),
-    SubscriptionsController.webhookHandler
+  "/subscriptions/webhook",
+  express.raw({ type: "application/json" }),
+  SubscriptionsController.webhookHandler
 );
 
 // 2️⃣ Normal body parser AFTER webhook
@@ -30,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Debug route
 app.use("/test", (req, res) => {
-    res.send("qwert");
+  res.send("qwert");
 });
 
 // Routes
@@ -41,6 +42,7 @@ app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/alert", alertRoutes);
 app.use("/api/v1/employee", employeeRoutes);
 app.use("/api/v1/settings", settingsRoutes);
+app.use("/api/v1/analytics", analyticsRoutes);
 
 // ❗ Correct subscription route
 app.use("/api/v1/subscriptions", subscriptionsRoutes);

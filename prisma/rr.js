@@ -17,63 +17,63 @@ async function main() {
         skipDuplicates: true, // Avoid duplicates on rerun
     });
 
-    const emergencyTypes = [
-        {
-            name: 'Fire',
-            description: 'For incidents involving fire, smoke, or risk of explosion.'
-        },
-        {
-            name: 'Medical Emergency',
-            description: 'For any situation requiring immediate medical attention, such as injury or sudden illness.'
-        },
-        {
-            name: 'Security Breach',
-            description: 'For unauthorized access, suspicious activity, or direct threats to personnel or property.'
-        },
-        {
-            name: 'Active Intruder',
-            description: 'For situations involving an individual actively attempting to cause harm to people in a confined area.'
-        },
-        {
-            name: 'HAZMAT Spill',
-            description: 'For the accidental release or spill of hazardous materials that pose a threat to health or the environment.'
-        },
-        {
-            name: 'Severe Weather',
-            description: 'For alerts related to dangerous weather conditions like tornadoes, hurricanes, floods, or blizzards.'
-        },
-        {
-            name: 'Earthquake',
-            description: 'For incidents related to seismic activity affecting facility safety and structural integrity.'
-        },
-        {
-            name: 'Power Outage',
-            description: 'For unplanned loss of electrical power affecting operations and safety systems.'
-        },
-        {
-            name: 'Evacuation',
-            description: 'A general-purpose alert to initiate a full or partial evacuation of a site or area.'
-        },
-        {
-            name: 'Gas Leak',
-            description: 'For the suspected or confirmed leakage of natural gas or other dangerous gaseous substances.'
-        }
-    ];
-    console.log(`🌱 Seeding emergency types...`);
-    for (const type of emergencyTypes) {
-        const post = await prisma.emergency_Types.upsert({
-            where: { name: type.name },
-            update: {},
-            create: {
-                organization_id: "1c6df909-6788-4866-9956-92a2ca3519f3",
-                name: type.name,
-                description: type.description,
-                // These types are global, so organization_id is left as null
-            },
-        });
-        console.log(`✅ Created/verified emergency type: ${post.name}`);
-    }
-    console.log(`Seeding finished. 🎉`);
+    // const emergencyTypes = [
+    //     {
+    //         name: 'Fire',
+    //         description: 'For incidents involving fire, smoke, or risk of explosion.'
+    //     },
+    //     {
+    //         name: 'Medical Emergency',
+    //         description: 'For any situation requiring immediate medical attention, such as injury or sudden illness.'
+    //     },
+    //     {
+    //         name: 'Security Breach',
+    //         description: 'For unauthorized access, suspicious activity, or direct threats to personnel or property.'
+    //     },
+    //     {
+    //         name: 'Active Intruder',
+    //         description: 'For situations involving an individual actively attempting to cause harm to people in a confined area.'
+    //     },
+    //     {
+    //         name: 'HAZMAT Spill',
+    //         description: 'For the accidental release or spill of hazardous materials that pose a threat to health or the environment.'
+    //     },
+    //     {
+    //         name: 'Severe Weather',
+    //         description: 'For alerts related to dangerous weather conditions like tornadoes, hurricanes, floods, or blizzards.'
+    //     },
+    //     {
+    //         name: 'Earthquake',
+    //         description: 'For incidents related to seismic activity affecting facility safety and structural integrity.'
+    //     },
+    //     {
+    //         name: 'Power Outage',
+    //         description: 'For unplanned loss of electrical power affecting operations and safety systems.'
+    //     },
+    //     {
+    //         name: 'Evacuation',
+    //         description: 'A general-purpose alert to initiate a full or partial evacuation of a site or area.'
+    //     },
+    //     {
+    //         name: 'Gas Leak',
+    //         description: 'For the suspected or confirmed leakage of natural gas or other dangerous gaseous substances.'
+    //     }
+    // ];
+    // console.log(`🌱 Seeding emergency types...`);
+    // for (const type of emergencyTypes) {
+    //     const post = await prisma.emergency_Types.upsert({
+    //         where: { name: type.name },
+    //         update: {},
+    //         create: {
+    //             organization_id: "1c6df909-6788-4866-9956-92a2ca3519f3",
+    //             name: type.name,
+    //             description: type.description,
+    //             // These types are global, so organization_id is left as null
+    //         },
+    //     });
+    //     console.log(`✅ Created/verified emergency type: ${post.name}`);
+    // }
+    // console.log(`Seeding finished. 🎉`);
 
 
     // emergency, weather, traffic, event, others

@@ -11,8 +11,8 @@ import redisClient from "../utils/redis.client.js"; // Redis
 import logger from "../utils/logger.js";
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_KEY);
-import jwt from "jsonwebtoken"
-const OTP_EXPIRY_SECONDS = 600
+import jwt from "jsonwebtoken";
+const OTP_EXPIRY_SECONDS = 600;
 const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 };
@@ -22,13 +22,14 @@ const assignSchema = z.object({
   area_id: z.string({ required_error: "Area ID is required" }),
 });
 const OrganizationController = {
-
   checkBusinessName: async (req, res) => {
     try {
       const { business_name } = req.query;
       // console.log(business_name)
       if (!business_name || typeof business_name !== "string") {
-        return res.status(400).json({ success: false, message: "Invalid business_name" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid business_name" });
       }
 
       const existing = await prisma.organizations.findFirst({
@@ -41,7 +42,9 @@ const OrganizationController = {
       });
     } catch (error) {
       logger.error("Error checking business name:", error);
-      return res.status(500).json({ success: false, message: "Internal Server Error" });
+      return res
+        .status(500)
+        .json({ success: false, message: "Internal Server Error" });
     }
   },
   checkEmailDomain: async (req, res) => {
@@ -74,7 +77,7 @@ const OrganizationController = {
         "zoho.com",
         "gmx.com",
         "yandex.com",
-        "rediffmail.com"
+        "rediffmail.com",
       ];
 
       if (commonDomains.includes(emailDomain)) {
@@ -102,8 +105,7 @@ const OrganizationController = {
         message: "Internal Server Error",
       });
     }
-  }
-  ,
+  },
   sendOtp: async (req, res) => {
     try {
       const { email } = req.body;
@@ -114,7 +116,9 @@ const OrganizationController = {
         !email.includes("@") ||
         email.split("@")[1].trim().length < 3
       ) {
-        return res.status(400).json({ message: "Invalid or missing email address." });
+        return res
+          .status(400)
+          .json({ message: "Invalid or missing email address." });
       }
 
       const domain = email.split("@")[1].toLowerCase();
@@ -129,7 +133,6 @@ const OrganizationController = {
       // }
 
       const otp = generateOtp();
-
 
       // Store OTP in Redis with expiry
       await redisClient.setEx(`otp:${email}`, OTP_EXPIRY_SECONDS, otp);
@@ -159,8 +162,7 @@ const OrganizationController = {
       </p>
     </div>
   </div>
-`
-
+`,
       });
 
       return res.status(200).json({
@@ -174,8 +176,7 @@ const OrganizationController = {
         error: err.message,
       });
     }
-  }
-  ,
+  },
   verifyOtp: async (req, res) => {
     try {
       const { email, otp } = req.body;
@@ -184,16 +185,17 @@ const OrganizationController = {
         return res.status(400).json({ message: "Email and OTP are required." });
       }
 
-
-
-
       const storedOtp = await redisClient.get(`otp:${email}`);
 
       if (storedOtp === otp) {
         await redisClient.del(`otp:${email}`);
-        return res.status(200).json({ verified: true, message: "OTP verified successfully." });
+        return res
+          .status(200)
+          .json({ verified: true, message: "OTP verified successfully." });
       } else {
-        return res.status(401).json({ verified: false, message: "Invalid or expired OTP." });
+        return res
+          .status(401)
+          .json({ verified: false, message: "Invalid or expired OTP." });
       }
     } catch (error) {
       logger.error(`verifyOtp error: ${error.message}`, { error });
@@ -202,15 +204,19 @@ const OrganizationController = {
         message: "Internal Server Error",
       });
     }
-  }
-  ,
+  },
   createOrganization: async (req, res) => {
     try {
       const parsed = createOrganizationSchema.safeParse(req.body);
 
       if (!parsed.success) {
-        const simplifiedErrors = parsed.error.errors.map(err => err.message);
-        return res.status(400).json({ message: "Please provide valid data", errors: simplifiedErrors });
+        const simplifiedErrors = parsed.error.errors.map((err) => err.message);
+        return res
+          .status(400)
+          .json({
+            message: "Please provide valid data",
+            errors: simplifiedErrors,
+          });
       }
 
       const email_domain = parsed.data.email.split("@")[1].toLowerCase();
@@ -221,33 +227,38 @@ const OrganizationController = {
         where: {
           OR: [
             { name: organization_name },
-            { email_domain: email_domain.toLowerCase() }
-          ]
-        }
+            { email_domain: email_domain.toLowerCase() },
+          ],
+        },
       });
 
       if (existingOrg) {
-        return res.status(400).json({ message: "Organization already exists." });
+        return res
+          .status(400)
+          .json({ message: "Organization already exists." });
       }
       const adminRole = await prisma.roles.findUnique({
         where: {
-          role_name: 'admin'
-        }
+          role_name: "admin",
+        },
       });
 
       if (!adminRole) {
-        return res.status(500).json({ message: "Admin role not found in database." });
+        return res
+          .status(500)
+          .json({ message: "Admin role not found in database." });
       }
       // Create new organization
       const newOrg = await prisma.organizations.create({
         data: {
           name: organization_name,
           email_domain: email_domain.toLowerCase(),
-          is_active: true
-        }
+          is_active: true,
+          time_zone: parsed.data.time_zone ?? "UTC",
+        },
       });
 
-      const salt_rounds = 10
+      const salt_rounds = 10;
       // Hash password
       const password_hash = await bcrypt.hash(password, salt_rounds);
 
@@ -261,8 +272,8 @@ const OrganizationController = {
           last_name: full_name.split(" ").slice(1).join(" ") || "",
           phone_number: "",
           organization_id: newOrg.organization_id,
-          role_id: adminRole.id
-        }
+          role_id: adminRole.id,
+        },
       });
 
       return res.status(200).json({
@@ -272,12 +283,14 @@ const OrganizationController = {
           email: newUser.email,
           name: newUser.first_name,
           role: adminRole.role_name,
-          user_id: newUser.user_id
-        }
+          user_id: newUser.user_id,
+        },
       });
     } catch (error) {
       logger.error("createAccount error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
   },
   getOrganizationName: async (req, res) => {
@@ -296,7 +309,9 @@ const OrganizationController = {
       });
 
       if (!userWithOrg || !userWithOrg.organization) {
-        return res.status(404).json({ message: "Organization not found for this user" });
+        return res
+          .status(404)
+          .json({ message: "Organization not found for this user" });
       }
 
       const industryTypes = await prisma.industry_Types.findMany();
@@ -307,23 +322,26 @@ const OrganizationController = {
       });
     } catch (error) {
       logger.error("getOrganizationName error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
   },
   updateOrganization: async (req, res) => {
     try {
-
       const {
         name,
         industry_type_id,
         main_contact_name,
         main_contact_email,
         main_contact_phone,
-        organization_id
+        organization_id,
       } = req.body;
 
       if (!organization_id) {
-        return res.status(400).json({ message: "Organization ID is required." });
+        return res
+          .status(400)
+          .json({ message: "Organization ID is required." });
       }
 
       // Build dynamic update payload
@@ -331,11 +349,15 @@ const OrganizationController = {
       if (name) dataToUpdate.name = name;
       if (industry_type_id) dataToUpdate.industry_type_id = industry_type_id;
       if (main_contact_name) dataToUpdate.main_contact_name = main_contact_name;
-      if (main_contact_email) dataToUpdate.main_contact_email = main_contact_email;
-      if (main_contact_phone) dataToUpdate.main_contact_phone = main_contact_phone;
+      if (main_contact_email)
+        dataToUpdate.main_contact_email = main_contact_email;
+      if (main_contact_phone)
+        dataToUpdate.main_contact_phone = main_contact_phone;
 
       if (Object.keys(dataToUpdate).length === 0) {
-        return res.status(400).json({ message: "Fields are not provided for update." });
+        return res
+          .status(400)
+          .json({ message: "Fields are not provided for update." });
       }
 
       const updatedOrg = await prisma.organizations.update({
@@ -351,7 +373,11 @@ const OrganizationController = {
       logger.error("updateOrganization error:", error);
       if (error.code === "P2002") {
         // Unique constraint error (e.g., duplicate name or email)
-        return res.status(409).json({ message: "Duplicate field value violates unique constraint." });
+        return res
+          .status(409)
+          .json({
+            message: "Duplicate field value violates unique constraint.",
+          });
       }
       return res.status(500).json({
         message: "Server error",
@@ -361,12 +387,11 @@ const OrganizationController = {
   },
   createSite: async (req, res) => {
     try {
-
       const parsed = createSiteSchema.safeParse(req.body);
-      console.log(req.body)
+      console.log(req.body);
       if (!parsed.success) {
-        const errors = parsed.error.errors.map(err => err.message);
-        console.log(req.body)
+        const errors = parsed.error.errors.map((err) => err.message);
+        console.log(req.body);
         return res.status(400).json({ message: "Validation failed", errors });
       }
 
@@ -380,7 +405,7 @@ const OrganizationController = {
         contact_email,
         contact_phone,
         contact_name,
-        organization_id
+        organization_id,
       } = parsed.data;
       const existingOrg = await prisma.organizations.findUnique({
         where: { organization_id },
@@ -402,19 +427,19 @@ const OrganizationController = {
           zip_code,
           contact_name,
           contact_email,
-          contact_phone
-        }
+          contact_phone,
+        },
       });
-
 
       return res.status(200).json({
         message: "Site created and organization updated successfully",
-        site: newSite
+        site: newSite,
       });
-
     } catch (error) {
       logger.error("createSite error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
   },
   getAllSites: async (req, res) => {
@@ -422,10 +447,10 @@ const OrganizationController = {
       const { organization_id } = req.query;
       const sites = await prisma.sites.findMany({
         where: { organization_id },
-        orderBy: { created_at: 'desc' }, // optional sorting
+        orderBy: { created_at: "desc" }, // optional sorting
         select: {
           id: true,
-          name: true
+          name: true,
         },
         // include: {
         //   organization: {
@@ -436,18 +461,22 @@ const OrganizationController = {
         //   },
         // },
       });
-      console.log(sites)
-      return res.status(200).json({ message: "Sites fetched successfully", data: sites });
+      console.log(sites);
+      return res
+        .status(200)
+        .json({ message: "Sites fetched successfully", data: sites });
     } catch (error) {
       logger.error("getAllSites error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
   },
   createArea: async (req, res) => {
     try {
       const parsed = createAreaSchema.safeParse(req.body);
       if (!parsed.success) {
-        const errors = parsed.error.errors.map(e => e.message);
+        const errors = parsed.error.errors.map((e) => e.message);
         return res.status(400).json({ message: "Invalid input", errors });
       }
 
@@ -463,14 +492,16 @@ const OrganizationController = {
         data: {
           site_id,
           name,
-          description
-        }
+          description,
+        },
       });
 
       return res.status(200).json({ message: "Area created", area: newArea });
     } catch (error) {
       console.error("createArea error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
   },
 
@@ -478,42 +509,44 @@ const OrganizationController = {
   checkEmailForEmployee: async (req, res) => {
     try {
       const { domain } = req.query;
-      console.log(domain)
+      console.log(domain);
       const checkDomainSchema = z.object({
-        domain: z.string().email().transform(val => val.split("@")[1]).refine(val => !!val, {
-          message: "Invalid email format. Must include a domain."
-        })
+        domain: z
+          .string()
+          .email()
+          .transform((val) => val.split("@")[1])
+          .refine((val) => !!val, {
+            message: "Invalid email format. Must include a domain.",
+          }),
       });
       const parsed = checkDomainSchema.safeParse({ domain });
       if (!parsed.success) {
-        const errors = parsed.error.errors.map(e => e.message);
+        const errors = parsed.error.errors.map((e) => e.message);
         return res.status(400).json({ message: "Invalid input", errors });
       }
 
       const email_domain = parsed.data.domain.toLowerCase();
 
       const existingOrg = await prisma.organizations.findFirst({
-        where: { email_domain }
+        where: { email_domain },
       });
       if (!existingOrg) {
         return res.status(200).json({
           exists: false,
-          message: "Your email domain is not registered with any organization"
+          message: "Your email domain is not registered with any organization",
         });
       }
       return res.status(200).json({
         exists: true,
         organization_name: existingOrg.name,
-        id: existingOrg.organization_id
-
-
+        id: existingOrg.organization_id,
       });
-
     } catch (error) {
       console.error("checkEmailDomain error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
-
   },
   sendOtpForEmployeeSignup: async (req, res) => {
     try {
@@ -525,7 +558,9 @@ const OrganizationController = {
         !email.includes("@") ||
         email.split("@")[1].trim().length < 3
       ) {
-        return res.status(400).json({ message: "Invalid or missing email address." });
+        return res
+          .status(400)
+          .json({ message: "Invalid or missing email address." });
       }
 
       const domain = email.split("@")[1].toLowerCase();
@@ -540,7 +575,6 @@ const OrganizationController = {
       // }
 
       const otp = generateOtp();
-
 
       // Store OTP in Redis with expiry
       await redisClient.setEx(`otp:${email}`, OTP_EXPIRY_SECONDS, otp);
@@ -570,8 +604,7 @@ const OrganizationController = {
       </p>
     </div>
   </div>
-`
-
+`,
       });
 
       return res.status(200).json({
@@ -585,8 +618,7 @@ const OrganizationController = {
         error: err.message,
       });
     }
-  }
-  ,
+  },
   verifyOtpForEmployeeSignup: async (req, res) => {
     try {
       const { email, otp } = req.body;
@@ -595,16 +627,17 @@ const OrganizationController = {
         return res.status(400).json({ message: "Email and OTP are required." });
       }
 
-
-
-
       const storedOtp = await redisClient.get(`otp:${email}`);
 
       if (storedOtp === otp) {
         await redisClient.del(`otp:${email}`);
-        return res.status(200).json({ verified: true, message: "OTP verified successfully." });
+        return res
+          .status(200)
+          .json({ verified: true, message: "OTP verified successfully." });
       } else {
-        return res.status(401).json({ verified: false, message: "Invalid or expired OTP." });
+        return res
+          .status(401)
+          .json({ verified: false, message: "Invalid or expired OTP." });
       }
     } catch (error) {
       logger.error(`verifyOtp error: ${error.message}`, { error });
@@ -619,7 +652,7 @@ const OrganizationController = {
     try {
       const parsed = createEmployeeSchema.safeParse(req.body);
       if (!parsed.success) {
-        const errors = parsed.error.errors.map(e => e.message);
+        const errors = parsed.error.errors.map((e) => e.message);
         return res.status(400).json({ message: "Invalid input", errors });
       }
 
@@ -631,17 +664,21 @@ const OrganizationController = {
       });
 
       if (existingUser) {
-        return res.status(409).json({ message: "User with this email already exists" });
+        return res
+          .status(409)
+          .json({ message: "User with this email already exists" });
       }
 
       // 2. Find the organization using the provided domain
       const existingOrg = await prisma.organizations.findUnique({
-        where: { email_domain: domain }
+        where: { email_domain: domain },
       });
 
       // 3. Validate that the organization was found
       if (!existingOrg) {
-        return res.status(404).json({ message: `Organization with domain '${domain}' not found.` });
+        return res
+          .status(404)
+          .json({ message: `Organization with domain '${domain}' not found.` });
       }
 
       // Now we can safely get the organization_id
@@ -649,20 +686,24 @@ const OrganizationController = {
 
       // 4. Find the 'employee' role
       const role = await prisma.roles.findUnique({
-        where: { role_name: "employee" }
+        where: { role_name: "employee" },
       });
 
       if (!role) {
         // This is an important check to prevent server errors if the role is missing
         logger.error("'employee' role not found in the database.");
-        return res.status(500).json({ message: "Server configuration error: Employee role not found." });
+        return res
+          .status(500)
+          .json({
+            message: "Server configuration error: Employee role not found.",
+          });
       }
 
       // 5. Prepare user data
       const password_hash = await bcrypt.hash(password, 10);
       const [first_name, ...rest] = full_name.trim().split(" ");
       const last_name = rest.join(" ") || "";
-      console.log("Password : ", password, " Password hash : ", password_hash)
+      console.log("Password : ", password, " Password hash : ", password_hash);
 
       // 6. Create the new user and associate them with the found organization
       const newUser = await prisma.users.create({
@@ -675,10 +716,9 @@ const OrganizationController = {
           is_active: true,
           user_type: "employee", // Note: user_type is an enum, so direct string is fine
           role_id: role.id,
-          organization_id: organization_id // Use the organization_id found via domain
-        }
+          organization_id: organization_id, // Use the organization_id found via domain
+        },
       });
-
 
       return res.status(201).json({
         message: `Employee joined under '${existingOrg.name}' successfully`,
@@ -688,20 +728,20 @@ const OrganizationController = {
           user_id: newUser.user_id,
           email: newUser.email,
           full_name: full_name,
-
-        }
+        },
       });
     } catch (error) {
       console.log(error);
       logger.error("createEmployee error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
-  }
-  ,
+  },
   // employee login
 
   getSitesAndAreasByOrganizationId: async (req, res) => {
-    const { organization_id } = req.query
+    const { organization_id } = req.query;
 
     try {
       const sites = await prisma.sites.findMany({
@@ -710,11 +750,13 @@ const OrganizationController = {
           Areas: true, // Includes all related areas
         },
       });
-      console.log(`organization_id:${organization_id}`, sites)
+      console.log(`organization_id:${organization_id}`, sites);
       return res.status(200).json({ organization_id, sites });
     } catch (error) {
       logger?.error("getSitesAndAreasByOrganizationId error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
   },
   assignSiteAndAreaToUser: async (req, res) => {
@@ -722,7 +764,7 @@ const OrganizationController = {
       const parsed = assignSchema.safeParse(req.body);
 
       if (!parsed.success) {
-        const errors = parsed.error.errors.map(err => err.message);
+        const errors = parsed.error.errors.map((err) => err.message);
         return res.status(400).json({ message: "Invalid data", errors });
       }
 
@@ -735,7 +777,15 @@ const OrganizationController = {
       const updatedUser = await prisma.users.update({
         where: { user_id },
         data: { site_id, area_id },
-        select: { first_name: true, last_name: true, user_id: true, site_id: true, site: true, area_id: true, area: true }
+        select: {
+          first_name: true,
+          last_name: true,
+          user_id: true,
+          site_id: true,
+          site: true,
+          area_id: true,
+          area: true,
+        },
       });
 
       logger.info(`Site and area assigned to user ${user_id}`);
@@ -743,16 +793,23 @@ const OrganizationController = {
         message: "Site and area assigned successfully",
 
         user: {
-          user_id: updatedUser.user_id, user_name: `${updatedUser?.first_name} ${updatedUser?.last_name}`,
+          user_id: updatedUser.user_id,
+          user_name: `${updatedUser?.first_name} ${updatedUser?.last_name}`,
         },
-        area: { area_id: updatedUser.area_id, area_name: updatedUser.area?.name },
+        area: {
+          area_id: updatedUser.area_id,
+          area_name: updatedUser.area?.name,
+        },
         site: {
-          site_id: updatedUser.site_id, site_name: updatedUser.site?.name
+          site_id: updatedUser.site_id,
+          site_name: updatedUser.site?.name,
         },
       });
     } catch (error) {
       logger.error("assignSiteAndAreaToUser error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
   },
 
@@ -760,7 +817,7 @@ const OrganizationController = {
     try {
       const parsed = loginSchema.safeParse(req.body);
       if (!parsed.success) {
-        const errors = parsed.error.errors.map(err => err.message);
+        const errors = parsed.error.errors.map((err) => err.message);
         return res.status(400).json({ message: "Invalid credentials", errors });
       }
 
@@ -782,14 +839,14 @@ const OrganizationController = {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      const JWT_SECRET = process.env.JWT_SECRET
-      const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY
+      const JWT_SECRET = process.env.JWT_SECRET;
+      const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY;
       const token = jwt.sign(
         {
           user_id: user.user_id,
           email: user.email,
           role: user.role?.role_name || "user",
-          organization_id: user.organization_id
+          organization_id: user.organization_id,
         },
         JWT_SECRET,
         { expiresIn: TOKEN_EXPIRY }
@@ -803,11 +860,13 @@ const OrganizationController = {
           email: user.email,
           name: `${user.first_name} ${user.last_name} `,
           role: user.role?.role_name || "user",
-        }
+        },
       });
     } catch (error) {
       logger.error("Login error:", error);
-      return res.status(500).json({ message: "Internal Server Error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Internal Server Error", error: error.message });
     }
   },
   getBuildingAlerts: async (req, res) => {
@@ -823,39 +882,45 @@ const OrganizationController = {
       const site = await prisma.sites.findFirst({
         where: {
           name: building_name,
-          organization_id
+          organization_id,
         },
         include: {
           Areas: {
             include: {
               Alert_Areas: {
                 include: {
-                  alert: true
-                }
-              }
-            }
+                  alert: true,
+                },
+              },
+            },
           },
           Alert_Sites: {
             include: {
-              alert: true
-            }
+              alert: true,
+            },
           },
-          organization: true
-        }
+          organization: true,
+        },
       });
 
       if (!site) {
-        return res.status(404).json({ message: "Building not found in this organization" });
+        return res
+          .status(404)
+          .json({ message: "Building not found in this organization" });
       }
 
       const allAlerts = [
-        ...site.Alert_Sites.map(s => s.alert),
-        ...site.Areas.flatMap(a => a.Alert_Areas.map(aa => aa.alert))
+        ...site.Alert_Sites.map((s) => s.alert),
+        ...site.Areas.flatMap((a) => a.Alert_Areas.map((aa) => aa.alert)),
       ];
 
-      const recentAlerts = allAlerts.filter(a => a.start_time && new Date(a.start_time) < new Date());
-      const upcomingAlerts = allAlerts.filter(a => a.scheduled_time && new Date(a.scheduled_time) > new Date());
-      const scheduledAlerts = allAlerts.filter(a => a.status === "scheduled");
+      const recentAlerts = allAlerts.filter(
+        (a) => a.start_time && new Date(a.start_time) < new Date()
+      );
+      const upcomingAlerts = allAlerts.filter(
+        (a) => a.scheduled_time && new Date(a.scheduled_time) > new Date()
+      );
+      const scheduledAlerts = allAlerts.filter((a) => a.status === "scheduled");
 
       const emergencyContacts = await prisma.users.findMany({
         where: {
@@ -863,16 +928,16 @@ const OrganizationController = {
           site_id: site.id,
           role: {
             role_name: {
-              in: ["Admin", "Security", "Manager"] // or any emergency roles
-            }
-          }
+              in: ["Admin", "Security", "Manager"], // or any emergency roles
+            },
+          },
         },
         select: {
           first_name: true,
           last_name: true,
           email: true,
-          phone_number: true
-        }
+          phone_number: true,
+        },
       });
 
       return res.status(200).json({
@@ -880,15 +945,15 @@ const OrganizationController = {
         recentAlerts,
         upcomingAlerts,
         scheduledAlerts,
-        emergencyContacts
+        emergencyContacts,
       });
-
     } catch (error) {
       logger.error("getBuildingAlerts error:", error);
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
     }
-  }
-
-}
+  },
+};
 
 export default OrganizationController;

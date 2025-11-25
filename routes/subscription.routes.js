@@ -1,5 +1,5 @@
 import express from "express";
-import { SubscriptionsController } from "../controllers/subscriptions.controller.js";
+import { SubscriptionsController } from "../controllers/subscription.controller.js";
 import { validate } from "../middlewares/validate.js";
 import {
     createCustomerSchema,

@@ -4,6 +4,7 @@ import { z } from "zod";
 export const createCustomerSchema = z.object({
     email: z.string().email(),
     name: z.string().min(1).optional(),
+    organization_id: z.string().uuid(),
 });
 
 export const createSubscriptionSchema = z.object({

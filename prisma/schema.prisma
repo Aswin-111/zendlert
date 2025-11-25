@@ -95,7 +95,11 @@ enum IncidentType {
   equipment_failure
   other
 }
-
+enum NotificationChannel {
+  sms
+  push
+  in_app
+}
 // ----------------------
 // Core org models
 // ----------------------
@@ -104,6 +108,7 @@ model Organizations {
   organization_id String @id @default(uuid()) // PK
   name            String @unique // org name
   email_domain    String @unique @db.VarChar(255)
+  stripe_customer_id String? @unique
 
   main_contact_name  String? @unique @db.VarChar(255)
   main_contact_email String? @unique @db.VarChar(255)
@@ -538,6 +543,7 @@ model Notification_Recipients {
   response_history    Json?
   created_at          DateTime       @default(now())
   updated_at          DateTime       @updatedAt
+  channel             NotificationChannel @default(in_app)
 
   alert Alerts @relation(fields: [alert_id], references: [id])
   user  Users  @relation(fields: [user_id], references: [user_id])

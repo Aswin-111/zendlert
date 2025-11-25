@@ -702,3 +702,78 @@ An operation failed because it depends on one or more records that were required
 2025-11-13T10:09:11.872Z ERROR: sendOtp error: The client is closed
 2025-11-13T10:11:21.000Z ERROR: sendOtp error: The client is closed
 2025-11-13T10:11:21.004Z ERROR: sendOtp error: The client is closed
+2025-11-24T08:44:57.671Z ERROR: Login error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+
+The provided database string is invalid. Error parsing connection string: invalid port number in database URL. Please refer to the documentation in https://www.prisma.io/docs/reference/database-reference/connection-urls for constructing a correct connection string. In some cases, certain characters must be escaped. Please check the string for any illegal characters.
+2025-11-24T08:46:23.294Z ERROR: Login error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-24T08:46:32.652Z ERROR: Login error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-24T08:48:37.514Z ERROR: Login error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-24T08:53:07.795Z ERROR: Login error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-24T08:53:42.891Z ERROR: Login error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-24T08:54:00.744Z ERROR: Login error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+
+Authentication failed against database server, the provided database credentials for `postgres` are not valid.
+
+Please make sure to provide valid database credentials for the database server at the configured address.
+2025-11-24T09:02:16.377Z ERROR: getOrganizationAlerts error: 
+Invalid `prisma.alerts.findMany()` invocation:
+
+
+The column `Alerts.resolved_by` does not exist in the current database.
+2025-11-24T09:03:01.776Z ERROR: getOrganizationAlerts error: 
+Invalid `prisma.alerts.findMany()` invocation:
+
+
+The column `Alerts.resolved_by` does not exist in the current database.
+2025-11-24T09:03:06.422Z ERROR: getOrganizationInfo error: 
+Invalid `prisma.organizations.findUnique()` invocation:
+
+
+The column `Organizations.time_zone` does not exist in the current database.
+2025-11-24T09:25:43.731Z ERROR: createAccount error: 
+Invalid `prisma.organizations.create()` invocation:
+
+{
+  data: {
+    name: "Tech World",
+    email_domain: "gmail.com",
+    is_active: true,
++   time_zone: String
+  }
+}
+
+Argument `time_zone` is missing.
