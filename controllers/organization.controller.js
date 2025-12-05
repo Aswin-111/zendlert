@@ -205,18 +205,73 @@ const OrganizationController = {
       });
     }
   },
+  loginWithOtp: async (req, res) => {
+    try {
+      const { email, otp } = req.body;
+
+      if (!email || !otp) {
+        return res.status(400).json({ message: "Email and OTP are required." });
+      }
+
+      const storedOtp = await redisClient.get(`otp:${email}`);
+
+      if (storedOtp !== otp) {
+        return res.status(401).json({ message: "Invalid or expired OTP." });
+      }
+
+      // OTP valid → delete it
+      await redisClient.del(`otp:${email}`);
+
+      // Fetch user
+      const user = await prisma.users.findUnique({
+        where: { email: email.toLowerCase() },
+        include: { role: true },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Create token
+      const token = jwt.sign(
+        {
+          user_id: user.user_id,
+          email: user.email,
+          role: user.role?.role_name,
+          organization_id: user.organization_id,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.TOKEN_EXPIRY }
+      );
+
+      return res.status(200).json({
+        message: "Login successful",
+        token,
+        user: {
+          user_id: user.user_id,
+          organization_id: user.organization_id,
+          email: user.email,
+          name: `${user.first_name} ${user.last_name}`,
+          role: user.role?.role_name,
+        },
+      });
+    } catch (error) {
+      logger.error("loginWithOtp error:", error);
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
+    }
+  },
   createOrganization: async (req, res) => {
     try {
       const parsed = createOrganizationSchema.safeParse(req.body);
 
       if (!parsed.success) {
         const simplifiedErrors = parsed.error.errors.map((err) => err.message);
-        return res
-          .status(400)
-          .json({
-            message: "Please provide valid data",
-            errors: simplifiedErrors,
-          });
+        return res.status(400).json({
+          message: "Please provide valid data",
+          errors: simplifiedErrors,
+        });
       }
 
       const email_domain = parsed.data.email.split("@")[1].toLowerCase();
@@ -373,11 +428,9 @@ const OrganizationController = {
       logger.error("updateOrganization error:", error);
       if (error.code === "P2002") {
         // Unique constraint error (e.g., duplicate name or email)
-        return res
-          .status(409)
-          .json({
-            message: "Duplicate field value violates unique constraint.",
-          });
+        return res.status(409).json({
+          message: "Duplicate field value violates unique constraint.",
+        });
       }
       return res.status(500).json({
         message: "Server error",
@@ -692,11 +745,9 @@ const OrganizationController = {
       if (!role) {
         // This is an important check to prevent server errors if the role is missing
         logger.error("'employee' role not found in the database.");
-        return res
-          .status(500)
-          .json({
-            message: "Server configuration error: Employee role not found.",
-          });
+        return res.status(500).json({
+          message: "Server configuration error: Employee role not found.",
+        });
       }
 
       // 5. Prepare user data
@@ -813,62 +864,6 @@ const OrganizationController = {
     }
   },
 
-  employeeLogin: async (req, res) => {
-    try {
-      const parsed = loginSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const errors = parsed.error.errors.map((err) => err.message);
-        return res.status(400).json({ message: "Invalid credentials", errors });
-      }
-
-      const { email, password } = parsed.data;
-
-      const user = await prisma.users.findUnique({
-        where: { email: email.toLowerCase() },
-        include: { role: true }, // optional: if you want role info
-      });
-
-      if (!user) {
-        logger.warn(`Login failed for unknown email: ${email}`);
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
-      const validPassword = await bcrypt.compare(password, user.password_hash);
-      if (!validPassword) {
-        logger.warn(`Login failed for user: ${email} - Incorrect password`);
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
-      const JWT_SECRET = process.env.JWT_SECRET;
-      const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY;
-      const token = jwt.sign(
-        {
-          user_id: user.user_id,
-          email: user.email,
-          role: user.role?.role_name || "user",
-          organization_id: user.organization_id,
-        },
-        JWT_SECRET,
-        { expiresIn: TOKEN_EXPIRY }
-      );
-
-      logger.info(`Login success: ${email} `);
-      return res.status(200).json({
-        message: "Login successful",
-        token,
-        user: {
-          email: user.email,
-          name: `${user.first_name} ${user.last_name} `,
-          role: user.role?.role_name || "user",
-        },
-      });
-    } catch (error) {
-      logger.error("Login error:", error);
-      return res
-        .status(500)
-        .json({ message: "Internal Server Error", error: error.message });
-    }
-  },
   getBuildingAlerts: async (req, res) => {
     try {
       const { building_name } = req.body;

@@ -540,3 +540,12 @@ Invalid `prisma.organizations.create()` invocation:
 }
 
 Argument `time_zone` is missing.
+2025-11-28T06:06:56.552Z INFO: Login success: tomsebastian715@gmail.com
+2025-11-28T06:09:22.946Z INFO: [API] Job added to queue for active alert 6b12ebc4-9f3e-4e9b-ae1d-dd8622421689
+2025-11-28T06:09:22.949Z INFO: [WORKER] Processing job 8 for alert 6b12ebc4-9f3e-4e9b-ae1d-dd8622421689
+2025-11-28T06:09:22.953Z INFO: [WORKER] Alert 6b12ebc4-9f3e-4e9b-ae1d-dd8622421689 status updated to ACTIVE.
+2025-11-28T06:09:22.954Z INFO: [WORKER] No recipients for alert 6b12ebc4-9f3e-4e9b-ae1d-dd8622421689. Job complete.
+2025-11-28T06:09:50.444Z INFO: [API] Job added to queue for active alert 1c5b7041-193d-4615-9768-aac556390065
+2025-11-28T06:09:50.445Z INFO: [WORKER] Processing job 9 for alert 1c5b7041-193d-4615-9768-aac556390065
+2025-11-28T06:09:50.451Z INFO: [WORKER] Alert 1c5b7041-193d-4615-9768-aac556390065 status updated to ACTIVE.
+2025-11-28T06:09:50.452Z INFO: [WORKER] No recipients for alert 1c5b7041-193d-4615-9768-aac556390065. Job complete.
