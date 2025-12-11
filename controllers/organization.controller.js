@@ -51,23 +51,36 @@ const OrganizationController = {
     try {
       const { email } = req.body;
 
-      if (
-        !email ||
-        typeof email !== "string" ||
-        !email.includes("@") ||
-        email.split("@")[1].trim().length < 3
-      ) {
+      // -------------------------
+      // 1. Basic email validation
+      // -------------------------
+      if (!email || typeof email !== "string") {
         return res.status(400).json({
           success: false,
-          message: "Invalid or missing email",
+          message: "Email is required.",
         });
       }
 
-      const emailDomain = email.split("@")[1].toLowerCase();
+      if (!email.includes("@")) {
+        return res.status(400).json({
+          success: false,
+          message: "Email must contain '@'.",
+        });
+      }
 
-      // Common free/public email domains to block
-      const commonDomains = [
-        // "gmail.com",
+      const domain = email.split("@")[1]?.trim().toLowerCase();
+
+      if (!domain || domain.length < 3) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid email domain.",
+        });
+      }
+
+      // -------------------------
+      // 2. Block public email providers
+      // -------------------------
+      const blockedDomains = [
         "yahoo.com",
         "hotmail.com",
         "outlook.com",
@@ -80,29 +93,40 @@ const OrganizationController = {
         "rediffmail.com",
       ];
 
-      if (commonDomains.includes(emailDomain)) {
+      if (blockedDomains.includes(domain)) {
         return res.status(400).json({
           success: false,
-          message: "Please use your business email.",
+          message: "Please use your organization's business email domain.",
+          blockedDomain: domain,
         });
       }
 
+      // -------------------------
+      // 3. Check if organization exists
+      // -------------------------
       const org = await prisma.organizations.findUnique({
-        where: {
-          email_domain: emailDomain,
-        },
+        where: { email_domain: domain },
       });
+
+      if (!org) {
+        return res.status(200).json({
+          success: true,
+          exists: false,
+          message: "This domain is not registered with any organization.",
+        });
+      }
 
       return res.status(200).json({
         success: true,
-        exists: !!org,
-        organization: org ? org.name : null,
+        exists: true,
+        organization: org.name,
+        message: `Domain belongs to ${org.name}.`,
       });
     } catch (error) {
-      logger.error(`checkEmailDomain error: ${error.message}`, { error });
+      logger.error("checkEmailDomain error:", error);
       return res.status(500).json({
         success: false,
-        message: "Internal Server Error",
+        message: "Internal server error. Please try again later.",
       });
     }
   },
@@ -276,7 +300,9 @@ const OrganizationController = {
 
       const email_domain = parsed.data.email.split("@")[1].toLowerCase();
 
-      const { email, password, full_name, organization_name } = parsed.data;
+      const { email, full_name, organization_name } = parsed.data;
+      const [firstName, ...rest] = full_name.trim().split(" ");
+      const lastName = rest.join(" ");
       // Check if org already exists
       const existingOrg = await prisma.organizations.findFirst({
         where: {
@@ -313,18 +339,13 @@ const OrganizationController = {
         },
       });
 
-      const salt_rounds = 10;
-      // Hash password
-      const password_hash = await bcrypt.hash(password, salt_rounds);
-
       // Create user
       const newUser = await prisma.users.create({
         data: {
           email: email.toLowerCase(),
-          password_hash,
           user_type: UserTypes.employee,
-          first_name: full_name.split(" ")[0],
-          last_name: full_name.split(" ").slice(1).join(" ") || "",
+          first_name: firstName,
+          last_name: lastName,
           phone_number: "",
           organization_id: newOrg.organization_id,
           role_id: adminRole.id,

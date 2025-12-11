@@ -196,7 +196,7 @@ model Users {
   site_id         String?
   area_id         String?
   email           String    @unique
-  password_hash   String
+  password_hash   String?
   first_name      String
   last_name       String
   phone_number    String

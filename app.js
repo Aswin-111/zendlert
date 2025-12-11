@@ -16,7 +16,12 @@ import { SubscriptionsController } from "./controllers/subscription.controller.j
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173","http://localhost:3000", "http://192.168.1.6:5173"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  credentials: true
+}));
+
 
 // 1️⃣ RAW BODY WEBHOOK ROUTE — MUST BE FIRST
 app.post(

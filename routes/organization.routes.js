@@ -6,20 +6,11 @@ const router = express.Router();
 router.get("/test", (req, res) => { res.json({ message: "Hello World" }) });
 router.get("/check-business-name", OrganizationController.checkBusinessName);
 router.post("/check-email-domain", OrganizationController.checkEmailDomain);
+
+//OTP routes
 router.post("/send-otp", OrganizationController.sendOtp);
-
 router.post("/verify-otp", OrganizationController.verifyOtp);
-
-
-
-
-
-
-
-
-
-
-
+router.post("/login-otp", OrganizationController.loginWithOtp);
 
 
 router.post("/create-organization", OrganizationController.createOrganization);

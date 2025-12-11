@@ -549,3 +549,26 @@ Argument `time_zone` is missing.
 2025-11-28T06:09:50.445Z INFO: [WORKER] Processing job 9 for alert 1c5b7041-193d-4615-9768-aac556390065
 2025-11-28T06:09:50.451Z INFO: [WORKER] Alert 1c5b7041-193d-4615-9768-aac556390065 status updated to ACTIVE.
 2025-11-28T06:09:50.452Z INFO: [WORKER] No recipients for alert 1c5b7041-193d-4615-9768-aac556390065. Job complete.
+2025-12-08T09:07:29.421Z ERROR: Login error: data and hash arguments required
+2025-12-08T09:08:08.167Z ERROR: Login error: data and hash arguments required
+2025-12-08T09:08:37.854Z ERROR: Login error: data and hash arguments required
+2025-12-11T11:43:27.723Z ERROR: createAccount error: 
+Invalid `prisma.users.create()` invocation:
+
+{
+  data: {
+    email: "karas.rudolfo@minuteafter.com",
+    user_type: "employee",
+    first_name: "Test",
+    last_name: "Onessss",
+    phone_number: "",
+    organization_id: "a1659cc0-9dca-422c-98bc-3ac984881122",
+    role_id: "add3fd73-e55d-49de-8a05-76443a3dc3a6",
++   password_hash: String
+  }
+}
+
+Argument `password_hash` is missing.
+2025-12-11T12:42:41.001Z INFO: [API] Job added to queue for active alert 72b37c5f-64b1-4d6d-a9bc-c7e2a67d6454
+2025-12-11T12:42:41.005Z INFO: [WORKER] Processing job 10 for alert 72b37c5f-64b1-4d6d-a9bc-c7e2a67d6454
+2025-12-11T12:42:41.009Z INFO: [WORKER] Alert 72b37c5f-64b1-4d6d-a9bc-c7e2a67d6454 status updated to ACTIVE.

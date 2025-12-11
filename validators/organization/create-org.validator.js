@@ -5,10 +5,6 @@ const createAccountSchema = z.object({
     .string({ required_error: "Email is required" })
     .email("Invalid email format"),
 
-  password: z
-    .string({ required_error: "Password is required" })
-    .min(6, "Password must be at least 6 characters"),
-
   full_name: z
     .string({ required_error: "Full name is required" })
     .min(3, "Full name must be at least 3 characters"),
