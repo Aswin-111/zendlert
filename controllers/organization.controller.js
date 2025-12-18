@@ -132,7 +132,7 @@ const OrganizationController = {
   },
   sendOtp: async (req, res) => {
     try {
-      const { email } = req.body;
+      const { email, purpose } = req.body;
 
       if (
         !email ||
@@ -145,53 +145,73 @@ const OrganizationController = {
           .json({ message: "Invalid or missing email address." });
       }
 
-      const domain = email.split("@")[1].toLowerCase();
-      // const org = await prisma.organizations.findUnique({
-      //   where: { email_domain: domain },
-      // });
-
-      // if (!org) {
-      //   return res.status(404).json({
-      //     message: "Organization not found for provided email domain.",
-      //   });
-      // }
+      if (!purpose || !["ORG_VERIFY", "LOGIN"].includes(purpose)) {
+        return res.status(400).json({
+          message: "Invalid or missing OTP purpose",
+        });
+      }
 
       const otp = generateOtp();
 
-      // Store OTP in Redis with expiry
-      await redisClient.setEx(`otp:${email}`, OTP_EXPIRY_SECONDS, otp);
+      // 🔐 LOG OTP ONLY IN DEVELOPMENT
+      if (process.env.NODE_ENV !== "production") {
+        logger.info(`[DEV OTP] ${purpose} | ${email} | OTP: ${otp}`);
+        console.log(`[DEV OTP] ${purpose} | ${email} | OTP: ${otp}`);
+      }
+
+      // Store OTP in Redis (key includes purpose)
+      await redisClient.setEx(
+        `otp:${purpose}:${email}`,
+        OTP_EXPIRY_SECONDS,
+        otp
+      );
+
+      let subject = "";
+      let html = "";
+
+      // ================= TEMPLATE SWITCH =================
+      if (purpose === "ORG_VERIFY") {
+        subject = "OTP for Organization Verification";
+        html = `
+<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc;">
+  <div style="max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 8px;">
+    <h2 style="color:#2c3e50;">🚀 Welcome to Emertify!</h2>
+    <p>Use the OTP below to verify your organization:</p>
+    <h1 style="letter-spacing:4px;">${otp}</h1>
+    <p>This OTP is valid for <strong>10 minutes</strong>.</p>
+  </div>
+</div>
+`;
+      }
+
+      if (purpose === "LOGIN") {
+        subject = "Your Login OTP";
+        html = `
+<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc;">
+  <div style="max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 8px;">
+    <h2 style="color:#2c3e50;">🔐 Login to Emertify</h2>
+    <p>Use the OTP below to login:</p>
+    <h1 style="letter-spacing:4px;">${otp}</h1>
+    <p>If you did not request this login, ignore this email.</p>
+  </div>
+</div>
+`;
+      }
+      // ===================================================
 
       await resend.emails.send({
         from: process.env.FROM_EMAIL,
         to: [email],
-        subject: "OTP for Organization Verification",
-        html: `
-  <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333;">
-    <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 30px;">
-      <h2 style="color: #2c3e50;">🚀 Welcome to Emertify!</h2>
-     
-      <p style="font-size: 16px;">
-        To complete your setup, please use the following OTP:
-      </p>
-      <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #2c3e50; background-color: #f0f0f0; padding: 10px 20px; display: inline-block; border-radius: 6px;">
-        ${otp}
-      </p>
-      <p style="font-size: 14px; color: #777; margin-top: 20px;">
-        This OTP is valid for <strong>10 minutes</strong>. Do not share it with anyone.
-      </p>
-      <hr style="margin: 30px 0;" />
-      <p style="font-size: 14px; color: #999;">
-        If you did not request this, please ignore this email.<br/>
-        Need help? Contact support at <a href="mailto:support@yourcompany.com" style="color: #3498db;">support@yourcompany.com</a>.
-      </p>
-    </div>
-  </div>
-`,
+        subject,
+        html,
       });
 
       return res.status(200).json({
-        exists: true,
-        message: "OTP sent to admin email.",
+        success: true,
+        message:
+          purpose === "LOGIN"
+            ? "Login OTP sent successfully."
+            : "Organization verification OTP sent.",
       });
     } catch (err) {
       logger.error("sendOtp error:", err);
@@ -201,52 +221,147 @@ const OrganizationController = {
       });
     }
   },
+
+  //   sendOtp: async (req, res) => {
+  //     try {
+  //       const { email } = req.body;
+
+  //       if (
+  //         !email ||
+  //         typeof email !== "string" ||
+  //         !email.includes("@") ||
+  //         email.split("@")[1].trim().length < 3
+  //       ) {
+  //         return res
+  //           .status(400)
+  //           .json({ message: "Invalid or missing email address." });
+  //       }
+
+  //       const domain = email.split("@")[1].toLowerCase();
+  //       // const org = await prisma.organizations.findUnique({
+  //       //   where: { email_domain: domain },
+  //       // });
+
+  //       // if (!org) {
+  //       //   return res.status(404).json({
+  //       //     message: "Organization not found for provided email domain.",
+  //       //   });
+  //       // }
+
+  //       const otp = generateOtp();
+  //       // 🔐 LOG OTP ONLY IN DEVELOPMENT
+  //       if (process.env.NODE_ENV !== "production") {
+  //         logger.info(`[DEV OTP] Email: ${email} | OTP: ${otp}`);
+  //         console.log(`[DEV OTP] Email: ${email} | OTP: ${otp}`);
+  //       }
+
+  //       // Store OTP in Redis with expiry
+  //       await redisClient.setEx(`otp:${email}`, OTP_EXPIRY_SECONDS, otp);
+
+  //       await resend.emails.send({
+  //         from: process.env.FROM_EMAIL,
+  //         to: [email],
+  //         subject: "OTP for Organization Verification",
+  //         html: `
+  //   <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333;">
+  //     <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 30px;">
+  //       <h2 style="color: #2c3e50;">🚀 Welcome to Emertify!</h2>
+
+  //       <p style="font-size: 16px;">
+  //         To complete your setup, please use the following OTP:
+  //       </p>
+  //       <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #2c3e50; background-color: #f0f0f0; padding: 10px 20px; display: inline-block; border-radius: 6px;">
+  //         ${otp}
+  //       </p>
+  //       <p style="font-size: 14px; color: #777; margin-top: 20px;">
+  //         This OTP is valid for <strong>10 minutes</strong>. Do not share it with anyone.
+  //       </p>
+  //       <hr style="margin: 30px 0;" />
+  //       <p style="font-size: 14px; color: #999;">
+  //         If you did not request this, please ignore this email.<br/>
+  //         Need help? Contact support at <a href="mailto:support@yourcompany.com" style="color: #3498db;">support@yourcompany.com</a>.
+  //       </p>
+  //     </div>
+  //   </div>
+  // `,
+  //       });
+
+  //       return res.status(200).json({
+  //         exists: true,
+  //         message: "OTP sent to admin email.",
+  //       });
+  //     } catch (err) {
+  //       logger.error("sendOtp error:", err);
+  //       return res.status(500).json({
+  //         message: "Server error",
+  //         error: err.message,
+  //       });
+  //     }
+  //   },
   verifyOtp: async (req, res) => {
     try {
-      const { email, otp } = req.body;
+      const { email, otp, purpose } = req.body;
 
-      if (!email || !otp) {
-        return res.status(400).json({ message: "Email and OTP are required." });
+      if (!email || !otp || !purpose) {
+        return res.status(400).json({
+          message: "Email, OTP and purpose are required.",
+        });
       }
 
-      const storedOtp = await redisClient.get(`otp:${email}`);
-
-      if (storedOtp === otp) {
-        await redisClient.del(`otp:${email}`);
-        return res
-          .status(200)
-          .json({ verified: true, message: "OTP verified successfully." });
-      } else {
-        return res
-          .status(401)
-          .json({ verified: false, message: "Invalid or expired OTP." });
+      if (!["ORG_VERIFY", "LOGIN"].includes(purpose)) {
+        return res.status(400).json({
+          message: "Invalid OTP purpose.",
+        });
       }
+
+      const redisKey = `otp:${purpose}:${email}`;
+      const storedOtp = await redisClient.get(redisKey);
+
+      if (!storedOtp || storedOtp !== otp) {
+        return res.status(401).json({
+          verified: false,
+          message: "Invalid or expired OTP.",
+        });
+      }
+
+      // OTP valid → delete
+      await redisClient.del(redisKey);
+
+      return res.status(200).json({
+        verified: true,
+        message: "OTP verified successfully.",
+      });
     } catch (error) {
-      logger.error(`verifyOtp error: ${error.message}`, { error });
+      logger.error("verifyOtp error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal Server Error",
       });
     }
   },
+
   loginWithOtp: async (req, res) => {
     try {
       const { email, otp } = req.body;
 
       if (!email || !otp) {
-        return res.status(400).json({ message: "Email and OTP are required." });
+        return res.status(400).json({
+          message: "Email and OTP are required.",
+        });
       }
 
-      const storedOtp = await redisClient.get(`otp:${email}`);
+      const redisKey = `otp:LOGIN:${email}`;
+      const storedOtp = await redisClient.get(redisKey);
 
-      if (storedOtp !== otp) {
-        return res.status(401).json({ message: "Invalid or expired OTP." });
+      if (!storedOtp || storedOtp !== otp) {
+        return res.status(401).json({
+          message: "Invalid or expired OTP.",
+        });
       }
 
       // OTP valid → delete it
-      await redisClient.del(`otp:${email}`);
+      await redisClient.del(redisKey);
 
-      // Fetch user
       const user = await prisma.users.findUnique({
         where: { email: email.toLowerCase() },
         include: { role: true },
@@ -256,7 +371,6 @@ const OrganizationController = {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Create token
       const token = jwt.sign(
         {
           user_id: user.user_id,
@@ -269,6 +383,7 @@ const OrganizationController = {
       );
 
       return res.status(200).json({
+        success: true,
         message: "Login successful",
         token,
         user: {
@@ -281,11 +396,13 @@ const OrganizationController = {
       });
     } catch (error) {
       logger.error("loginWithOtp error:", error);
-      return res
-        .status(500)
-        .json({ message: "Server error", error: error.message });
+      return res.status(500).json({
+        message: "Server error",
+        error: error.message,
+      });
     }
   },
+
   createOrganization: async (req, res) => {
     try {
       const parsed = createOrganizationSchema.safeParse(req.body);

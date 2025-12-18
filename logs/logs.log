@@ -572,3 +572,49 @@ Argument `password_hash` is missing.
 2025-12-11T12:42:41.001Z INFO: [API] Job added to queue for active alert 72b37c5f-64b1-4d6d-a9bc-c7e2a67d6454
 2025-12-11T12:42:41.005Z INFO: [WORKER] Processing job 10 for alert 72b37c5f-64b1-4d6d-a9bc-c7e2a67d6454
 2025-12-11T12:42:41.009Z INFO: [WORKER] Alert 72b37c5f-64b1-4d6d-a9bc-c7e2a67d6454 status updated to ACTIVE.
+2025-12-15T10:21:41.042Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 591580
+2025-12-15T10:32:52.656Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 488156
+2025-12-15T10:35:46.599Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 159803
+2025-12-15T10:39:59.589Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 856746
+2025-12-15T10:43:33.218Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 186934
+2025-12-15T10:48:03.881Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 659947
+2025-12-15T11:44:17.950Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 408302
+2025-12-15T11:45:47.213Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 510908
+2025-12-15T11:52:26.012Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 925066
+2025-12-15T11:54:45.800Z INFO: [DEV OTP] Email: alex@mailcatch.com | OTP: 508174
+2025-12-15T12:34:58.570Z INFO: [DEV OTP] Email: Mark@mailwatch.com | OTP: 851546
+2025-12-15T12:41:06.751Z INFO: [DEV OTP] Email: cohen@org12345.com | OTP: 842976
+2025-12-16T09:53:08.370Z INFO: [DEV OTP] Email: tomsebastian715@gmail.com | OTP: 526639
+2025-12-16T09:56:00.475Z INFO: [DEV OTP] Email: tomsebastian715@gmail.com | OTP: 692618
+2025-12-16T11:16:37.696Z INFO: [DEV OTP] Email: alex@mailcatc.com | OTP: 277728
+2025-12-16T12:31:59.709Z INFO: [DEV OTP] Email: mark@mailcatch.com | OTP: 558025
+2025-12-16T12:36:08.259Z INFO: [DEV OTP] Email: rqofbrxozmanlzi@xfavaj.com | OTP: 550554
+2025-12-16T12:36:20.454Z INFO: [DEV OTP] Email: rqofbrxozmanlzi@xfavaj.com | OTP: 752908
+2025-12-16T12:44:40.405Z INFO: [DEV OTP] Email: mark@mailcatch.com | OTP: 660082
+2025-12-16T12:46:56.606Z INFO: [DEV OTP] Email: mark@mailcatch.com | OTP: 817099
+2025-12-16T12:48:50.728Z INFO: [DEV OTP] Email: mark@mailcatch.com | OTP: 976749
+2025-12-16T12:51:10.893Z INFO: [DEV OTP] Email: tomsebastian715@gmail.com | OTP: 635302
+2025-12-16T12:53:30.425Z INFO: [DEV OTP] Email: tomsebastian715@gmail.com | OTP: 650615
+2025-12-16T12:54:38.589Z INFO: [DEV OTP] Email: tomsebastian715@gmail.com | OTP: 740706
+2025-12-17T11:21:25.701Z INFO: [DEV OTP] Email: alex@mailcatc.com | OTP: 935701
+2025-12-17T11:23:54.496Z INFO: [DEV OTP] Email: alex@mailcatu.com | OTP: 478324
+2025-12-17T11:57:10.973Z INFO: [DEV OTP] Email: john@mailcae.com | OTP: 574755
+2025-12-17T11:59:54.066Z INFO: [DEV OTP] Email: alex@mailcatch2.com | OTP: 450533
+2025-12-17T12:01:11.036Z INFO: [DEV OTP] Email: alex@mailcatch2.com | OTP: 787567
+2025-12-17T12:05:07.983Z INFO: [DEV OTP] Email: alex@mailcatch3.com | OTP: 214501
+2025-12-17T12:14:22.856Z INFO: [DEV OTP] Email: cobra66082@mailshanhgfg.com | OTP: 922389
+2025-12-17T12:16:20.868Z INFO: [DEV OTP] Email: cobra66082@mailshanhgfg.com | OTP: 868035
+2025-12-18T04:12:10.018Z INFO: [DEV OTP] Email: alex@mailcatch7.com | OTP: 653231
+2025-12-18T04:13:34.514Z INFO: [DEV OTP] Email: alex@mailcatch7.com | OTP: 138562
+2025-12-18T04:18:57.347Z INFO: [DEV OTP] Email: tomsebastian715@gmail.com | OTP: 208815
+2025-12-18T07:04:54.957Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 593342
+2025-12-18T07:20:39.494Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 578520
+2025-12-18T07:25:11.629Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 952373
+2025-12-18T07:31:36.006Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 995333
+2025-12-18T07:34:07.717Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 580995
+2025-12-18T07:34:07.909Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 372512
+2025-12-18T07:41:34.622Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 138331
+2025-12-18T07:46:00.839Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 970764
+2025-12-18T07:47:04.710Z INFO: [DEV OTP] LOGIN | fghfhfhfhjfjff@gefh.com | OTP: 250549
+2025-12-18T07:48:03.456Z INFO: [DEV OTP] LOGIN | rageyej832@mekuron.com | OTP: 302518
+2025-12-18T07:50:13.592Z INFO: [DEV OTP] ORG_VERIFY | rageyej832@mekuron.com | OTP: 955427
