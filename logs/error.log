@@ -797,3 +797,33 @@ Invalid `prisma.users.create()` invocation:
 }
 
 Argument `password_hash` is missing.
+2025-12-22T06:33:24.329Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-12-22T06:33:39.158Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-12-22T06:34:21.429Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-12-22T12:07:24.460Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-12-22T12:07:41.463Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-12-22T12:14:35.221Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)

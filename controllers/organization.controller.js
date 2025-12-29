@@ -212,6 +212,7 @@ const OrganizationController = {
           purpose === "LOGIN"
             ? "Login OTP sent successfully."
             : "Organization verification OTP sent.",
+        dev_otp: otp,
       });
     } catch (err) {
       logger.error("sendOtp error:", err);
@@ -364,7 +365,14 @@ const OrganizationController = {
 
       const user = await prisma.users.findUnique({
         where: { email: email.toLowerCase() },
-        include: { role: true },
+        include: {
+          role: true,
+          organization: {
+            select: {
+              name: true,
+            },
+          },
+        },
       });
 
       if (!user) {
@@ -377,6 +385,7 @@ const OrganizationController = {
           email: user.email,
           role: user.role?.role_name,
           organization_id: user.organization_id,
+          organization_name: user.organization?.name,
         },
         process.env.JWT_SECRET,
         { expiresIn: process.env.TOKEN_EXPIRY }
@@ -389,6 +398,7 @@ const OrganizationController = {
         user: {
           user_id: user.user_id,
           organization_id: user.organization_id,
+          organization_name: user.organization?.name,
           email: user.email,
           name: `${user.first_name} ${user.last_name}`,
           role: user.role?.role_name,
@@ -469,14 +479,27 @@ const OrganizationController = {
         },
       });
 
+      const token = jwt.sign(
+        {
+          user_id: newUser.user_id,
+          email: newUser.email,
+          role: adminRole.role_name,
+          organization_id: newOrg.organization_id,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.TOKEN_EXPIRY }
+      );
+
       return res.status(200).json({
         message: "Organization created successfully",
         organization: newOrg,
+        token,
         user: {
           email: newUser.email,
           name: newUser.first_name,
           role: adminRole.role_name,
           user_id: newUser.user_id,
+          organization_id: newUser.organization_id,
         },
       });
     } catch (error) {

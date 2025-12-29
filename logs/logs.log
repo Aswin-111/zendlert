@@ -618,3 +618,76 @@ Argument `password_hash` is missing.
 2025-12-18T07:47:04.710Z INFO: [DEV OTP] LOGIN | fghfhfhfhjfjff@gefh.com | OTP: 250549
 2025-12-18T07:48:03.456Z INFO: [DEV OTP] LOGIN | rageyej832@mekuron.com | OTP: 302518
 2025-12-18T07:50:13.592Z INFO: [DEV OTP] ORG_VERIFY | rageyej832@mekuron.com | OTP: 955427
+2025-12-18T08:40:23.323Z INFO: [DEV OTP] ORG_VERIFY | alex@mailcatch8.com | OTP: 971432
+2025-12-18T08:42:52.444Z INFO: [DEV OTP] LOGIN | mark@mailcatch.com | OTP: 588532
+2025-12-18T09:05:12.079Z INFO: [DEV OTP] ORG_VERIFY | dfvsfvs@dfvgh.com | OTP: 274986
+2025-12-19T09:09:01.818Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 335347
+2025-12-19T09:14:43.554Z INFO: [DEV OTP] ORG_VERIFY | cobra66082@mailsn.com | OTP: 851534
+2025-12-19T09:20:26.546Z INFO: [DEV OTP] LOGIN | user@company.com | OTP: 667400
+2025-12-19T09:22:40.545Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 369184
+2025-12-19T10:00:44.943Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 763549
+2025-12-19T10:12:04.470Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 683521
+2025-12-19T10:37:11.697Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 862207
+2025-12-19T11:23:27.820Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 102335
+2025-12-19T11:31:51.473Z INFO: [DEV OTP] ORG_VERIFY | admin@nexora.com | OTP: 651564
+2025-12-19T11:36:21.234Z INFO: [DEV OTP] LOGIN | admin@nexora.com | OTP: 601806
+2025-12-19T11:49:41.489Z INFO: [DEV OTP] ORG_VERIFY | admin@corevia.com | OTP: 298935
+2025-12-19T12:48:16.959Z INFO: [DEV OTP] ORG_VERIFY | cobra66082@ma879ilshan.com | OTP: 782144
+2025-12-19T12:48:49.089Z INFO: [DEV OTP] ORG_VERIFY | cobra66082@ma879ilshan.com | OTP: 664957
+2025-12-22T05:46:21.410Z INFO: [DEV OTP] LOGIN | mark@mailcatch.com | OTP: 561907
+2025-12-22T05:46:35.807Z INFO: [DEV OTP] ORG_VERIFY | cobra66082@ma879ilshan.com | OTP: 760512
+2025-12-22T06:18:37.980Z INFO: [DEV OTP] ORG_VERIFY | test@test.com | OTP: 523825
+2025-12-22T06:19:03.154Z INFO: [DEV OTP] ORG_VERIFY | test@test.com | OTP: 316850
+2025-12-22T06:33:24.329Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-12-22T06:33:39.158Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-12-22T06:34:21.429Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-12-22T12:04:16.991Z INFO: [DEV OTP] ORG_VERIFY | alex@mailcatch77.com | OTP: 103909
+2025-12-22T12:07:24.460Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_email`)
+2025-12-22T12:07:41.463Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-12-22T12:14:35.221Z ERROR: createSite error: 
+Invalid `prisma.sites.create()` invocation:
+
+
+Unique constraint failed on the fields: (`contact_phone`)
+2025-12-22T12:39:32.607Z INFO: [DEV OTP] ORG_VERIFY | alex@mailcatch37.com | OTP: 467870
+2025-12-26T05:37:53.372Z INFO: [DEV OTP] LOGIN | mark@mailcatch.com | OTP: 995084
+2025-12-26T05:49:30.127Z INFO: [DEV OTP] ORG_VERIFY | admin@northstarindustrials.com | OTP: 345191
+2025-12-26T05:50:53.176Z INFO: [DEV OTP] ORG_VERIFY | admin@northstarindustrials.com | OTP: 858985
+2025-12-26T06:09:21.687Z INFO: [DEV OTP] ORG_VERIFY | admin@pioneerlogisticsusa.com | OTP: 985428
+2025-12-26T06:09:33.763Z INFO: [DEV OTP] ORG_VERIFY | admin@pioneerlogisticsusa.com | OTP: 854868
+2025-12-26T06:11:02.210Z INFO: [DEV OTP] ORG_VERIFY | admin@pioneerlogisticsusa.com | OTP: 438514
+2025-12-26T06:12:59.936Z INFO: [DEV OTP] ORG_VERIFY | admin@pioneerlogisticsusa.com | OTP: 950419
+2025-12-26T06:14:09.517Z INFO: [DEV OTP] ORG_VERIFY | admin@pioneerlogisticsusa.com | OTP: 557131
+2025-12-29T04:41:46.497Z INFO: [DEV OTP] ORG_VERIFY | admin@summitprecisionmfg.com | OTP: 986199
+2025-12-29T04:42:00.350Z INFO: [DEV OTP] ORG_VERIFY | admin@summitprecisionmfg.com | OTP: 514188
+2025-12-29T04:58:15.234Z INFO: [DEV OTP] LOGIN | admin@summitprecisionmfg.com | OTP: 931114
+2025-12-29T05:18:41.659Z INFO: [DEV OTP] ORG_VERIFY | admin@evergreenhealthsys.com | OTP: 474481
+2025-12-29T05:18:51.101Z INFO: [DEV OTP] ORG_VERIFY | admin@evergreenhealthsys.com | OTP: 767614
+2025-12-29T05:23:13.219Z INFO: [DEV OTP] ORG_VERIFY | admin@summitridgeuniv.edu | OTP: 679870
+2025-12-29T05:23:20.971Z INFO: [DEV OTP] ORG_VERIFY | admin@summitridgeuniv.edu | OTP: 747521
+2025-12-29T05:43:34.753Z INFO: [DEV OTP] ORG_VERIFY | admin@atlasdatasolutions.com | OTP: 957877
+2025-12-29T05:43:45.134Z INFO: [DEV OTP] ORG_VERIFY | admin@atlasdatasolutions.com | OTP: 258910
+2025-12-29T05:57:12.575Z INFO: [DEV OTP] ORG_VERIFY | admin@harborviewlogisticsgroup.com | OTP: 315449
+2025-12-29T05:57:23.304Z INFO: [DEV OTP] ORG_VERIFY | admin@harborviewlogisticsgroup.com | OTP: 339358
+2025-12-29T05:59:30.791Z INFO: [DEV OTP] ORG_VERIFY | admin@harborviewlogisticsgroup.com | OTP: 797513
+2025-12-29T05:59:35.166Z INFO: [DEV OTP] ORG_VERIFY | admin@harborviewlogisticsgroup.com | OTP: 713073
