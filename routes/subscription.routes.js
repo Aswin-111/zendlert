@@ -1,59 +1,27 @@
 import express from "express";
-import { SubscriptionsController } from "../controllers/subscription.controller.js";
-import { validate } from "../middlewares/validate.js";
-import {
-    createCustomerSchema,
-    createSubscriptionSchema,
-    invoicePreviewSchema,
-    cancelSubscriptionSchema,
-    updateSubscriptionSchema,
-    listSubscriptionsSchema,
-} from "../validators/subscriptions/subscription.validator.js"
+import SubscriptionsController from "../controllers/subscription.controller.js";
 
 const router = express.Router();
 
-// POST /subscriptions/create-customer
+// STEP 1 — Retrieve price for product
+router.get("/stripe/product-price", SubscriptionsController.getPriceForProduct);
+// STEP 2 — Create Stripe customer
+router.post("/stripe/create-customer", SubscriptionsController.createCustomer);
+// STEP 3 — Create payment method using token
 router.post(
-    "/create-customer",
-    validate(createCustomerSchema),
-    SubscriptionsController.createCustomer
+  "/stripe/payment-method",
+  SubscriptionsController.createPaymentMethod
 );
-
-// POST /subscriptions/create-subscription
+// STEP 4 — Attach payment method to customer
 router.post(
-    "/create-subscription",
-    validate(createSubscriptionSchema),
-    SubscriptionsController.createSubscription
+  "/stripe/attach-payment-method",
+  SubscriptionsController.attachPaymentMethodToCustomer
 );
 
-// POST /subscriptions/invoice-preview
+// STEP 5 — Create subscription
 router.post(
-    "/invoice-preview",
-    validate(invoicePreviewSchema),
-    SubscriptionsController.invoicePreview
+  "/stripe/create-subscription",
+  SubscriptionsController.createSubscription
 );
-
-// POST /subscriptions/cancel-subscription
-router.post(
-    "/cancel-subscription",
-    validate(cancelSubscriptionSchema),
-    SubscriptionsController.cancelSubscription
-);
-
-// POST /subscriptions/update-subscription
-router.post(
-    "/update-subscription",
-    validate(updateSubscriptionSchema),
-    SubscriptionsController.updateSubscription
-);
-
-// GET /subscriptions?organization_id=...
-router.get(
-    "/",
-    validate(listSubscriptionsSchema, "query"),
-    SubscriptionsController.listSubscriptions
-);
-
-
 
 export default router;

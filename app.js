@@ -12,7 +12,7 @@ import subscriptionsRoutes from "./routes/subscription.routes.js";
 import configRoutes from "./routes/config.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 
-import { SubscriptionsController } from "./controllers/subscription.controller.js";
+import SubscriptionsController  from "./controllers/subscription.controller.js";
 
 const app = express();
 
@@ -28,12 +28,7 @@ app.use(
   })
 );
 
-// 1️⃣ RAW BODY WEBHOOK ROUTE — MUST BE FIRST
-app.post(
-  "/subscriptions/webhook",
-  express.raw({ type: "application/json" }),
-  SubscriptionsController.webhookHandler
-);
+
 
 // 2️⃣ Normal body parser AFTER webhook
 app.use(express.json());
@@ -53,8 +48,6 @@ app.use("/api/v1/alert", alertRoutes);
 app.use("/api/v1/employee", employeeRoutes);
 app.use("/api/v1/settings", settingsRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);
-
-// ❗ Correct subscription route
 app.use("/api/v1/subscriptions", subscriptionsRoutes);
 
 export default app;

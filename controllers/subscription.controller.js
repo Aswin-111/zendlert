@@ -1,304 +1,412 @@
-import Stripe from "stripe";
-import { PrismaClient } from "@prisma/client";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const prisma = new PrismaClient();
+import logger from "../utils/logger.js";
 
-export const SubscriptionsController = {
-  // ---------------- CREATE CUSTOMER ----------------
-  createCustomer: async (req, res) => {
+const SubscriptionsController = {
+  /**
+   * STEP 1 — Retrieve Stripe Price for a Product
+   * Equivalent to:
+   * GET /v1/prices?product=xxx&limit=1
+   */
+  getPriceForProduct: async (req, res) => {
     try {
-      const { body } = req.validated;
-      const { email, name, organization_id } = body;
+      const { product_id } = req.query;
 
-      // 1) Ensure org exists
-      const org = await prisma.organizations.findUnique({
-        where: { organization_id },
-      });
-      if (!org) {
-        return res.status(404).json({ message: "Organization not found" });
-      }
-
-      // 2) If org already has a customer, you might reuse it
-      if (org.stripe_customer_id) {
-        return res.json({
-          message: "Customer already exists for this organization",
-          customer_id: org.stripe_customer_id,
+      // -------------------------
+      // 1. Validation
+      // -------------------------
+      if (!product_id) {
+        return res.status(400).json({
+          success: false,
+          message: "product_id is required",
         });
       }
 
-      // 3) Create customer in Stripe
-      const customer = await stripe.customers.create({
-        email,
-        name: name || undefined,
+      // -------------------------
+      // 2. Fetch prices from Stripe
+      // -------------------------
+      const prices = await stripe.prices.list({
+        product: product_id,
+        limit: 1,
+        active: true,
       });
 
-      // 4) Save stripe_customer_id in DB
-      const updatedOrg = await prisma.organizations.update({
-        where: { organization_id },
-        data: { stripe_customer_id: customer.id },
-      });
+      if (!prices.data || prices.data.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: `No active price found for product ${product_id}`,
+        });
+      }
 
-      return res.json({
-        message: "Customer created and linked to organization",
-        customer,
-        organization: updatedOrg,
+      const price = prices.data[0];
+
+      // -------------------------
+      // 3. Success response
+      // -------------------------
+      return res.status(200).json({
+        success: true,
+        price: {
+          stripe_price_id: price.id,
+          currency: price.currency,
+          unit_amount: price.unit_amount,
+          recurring: price.recurring,
+          billing_scheme: price.billing_scheme,
+        },
       });
     } catch (error) {
-      console.error("createCustomer error:", error);
-      res.status(500).json({ message: "Failed to create customer" });
+      logger.error("getPriceForProduct error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to retrieve price from Stripe",
+        error: error.message,
+      });
     }
   },
-  // ---------------- CREATE SUBSCRIPTION ----------------
+
+  /**
+   * STEP 2 — Create Stripe Customer
+   */
+  createCustomer: async (req, res) => {
+    try {
+      const {
+        organization_id,
+        name,
+        email,
+        address_line1,
+        city,
+        state,
+        postal_code,
+        country,
+      } = req.body;
+
+      // -------------------------
+      // 1. Validation
+      // -------------------------
+      if (!organization_id || !email || !name) {
+        return res.status(400).json({
+          success: false,
+          message: "organization_id, name and email are required",
+        });
+      }
+
+      // -------------------------
+      // 2. Ensure organization exists
+      // -------------------------
+      const organization = await prisma.organizations.findUnique({
+        where: { organization_id },
+      });
+
+      if (!organization) {
+        return res.status(404).json({
+          success: false,
+          message: "Organization not found",
+        });
+      }
+
+      // Prevent duplicate customer creation
+      if (organization.stripe_customer_id) {
+        return res.status(200).json({
+          success: true,
+          message: "Stripe customer already exists",
+          stripe_customer_id: organization.stripe_customer_id,
+        });
+      }
+
+      // -------------------------
+      // 3. Create customer in Stripe
+      // -------------------------
+      const customer = await stripe.customers.create({
+        name,
+        email,
+        address: {
+          line1: address_line1,
+          city,
+          state,
+          postal_code,
+          country,
+        },
+        metadata: {
+          organization_id,
+          organization_name: organization.name,
+        },
+      });
+
+      // -------------------------
+      // 4. Save customer ID in DB
+      // -------------------------
+      await prisma.organizations.update({
+        where: { organization_id },
+        data: {
+          stripe_customer_id: customer.id,
+        },
+      });
+
+      // -------------------------
+      // 5. Success response
+      // -------------------------
+      return res.status(201).json({
+        success: true,
+        message: "Stripe customer created successfully",
+        customer: {
+          stripe_customer_id: customer.id,
+          name: customer.name,
+          email: customer.email,
+        },
+      });
+    } catch (error) {
+      logger.error("createCustomer error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create Stripe customer",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * STEP 3 — Create Payment Method using Card Token
+   */
+  createPaymentMethod: async (req, res) => {
+    try {
+      const { card_token } = req.body;
+
+      // -------------------------
+      // 1. Validation
+      // -------------------------
+      if (!card_token) {
+        return res.status(400).json({
+          success: false,
+          message: "card_token is required (e.g. tok_visa)",
+        });
+      }
+
+      // -------------------------
+      // 2. Create PaymentMethod
+      // -------------------------
+      const paymentMethod = await stripe.paymentMethods.create({
+        type: "card",
+        card: {
+          token: card_token,
+        },
+      });
+
+      // -------------------------
+      // 3. Success response
+      // -------------------------
+      return res.status(201).json({
+        success: true,
+        message: "Payment method created successfully",
+        payment_method: {
+          payment_method_id: paymentMethod.id,
+          type: paymentMethod.type,
+          card: {
+            brand: paymentMethod.card.brand,
+            last4: paymentMethod.card.last4,
+            exp_month: paymentMethod.card.exp_month,
+            exp_year: paymentMethod.card.exp_year,
+          },
+        },
+      });
+    } catch (error) {
+      logger.error("createPaymentMethod error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create payment method",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * STEP 4 — Attach Payment Method to Customer
+   */
+  attachPaymentMethodToCustomer: async (req, res) => {
+    try {
+      const { organization_id, payment_method_id } = req.body;
+
+      // -------------------------
+      // 1. Validation
+      // -------------------------
+      if (!organization_id || !payment_method_id) {
+        return res.status(400).json({
+          success: false,
+          message: "organization_id and payment_method_id are required",
+        });
+      }
+
+      // -------------------------
+      // 2. Fetch organization & customer
+      // -------------------------
+      const organization = await prisma.organizations.findUnique({
+        where: { organization_id },
+      });
+
+      if (!organization || !organization.stripe_customer_id) {
+        return res.status(404).json({
+          success: false,
+          message: "Stripe customer not found for organization",
+        });
+      }
+
+      const customerId = organization.stripe_customer_id;
+
+      // -------------------------
+      // 3. Attach PaymentMethod
+      // -------------------------
+      await stripe.paymentMethods.attach(payment_method_id, {
+        customer: customerId,
+      });
+
+      // -------------------------
+      // 4. Set as default payment method
+      // -------------------------
+      await stripe.customers.update(customerId, {
+        invoice_settings: {
+          default_payment_method: payment_method_id,
+        },
+      });
+
+      // -------------------------
+      // 5. Success response
+      // -------------------------
+      return res.status(200).json({
+        success: true,
+        message: "Payment method attached and set as default",
+        data: {
+          stripe_customer_id: customerId,
+          payment_method_id,
+        },
+      });
+    } catch (error) {
+      logger.error("attachPaymentMethodToCustomer error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to attach payment method to customer",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * STEP 5 — Create Stripe Subscription
+   */
   createSubscription: async (req, res) => {
     try {
-      const { body } = req.validated;
       const {
         organization_id,
         subscription_plan_id,
-        stripe_customer_id,
         stripe_price_id,
-        auto_renew,
-      } = body;
+        payment_method_id,
+      } = req.body;
 
-      // org check
-      const org = await prisma.organizations.findUnique({
+      // -------------------------
+      // 1. Validation
+      // -------------------------
+      if (
+        !organization_id ||
+        !subscription_plan_id ||
+        !stripe_price_id ||
+        !payment_method_id
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "organization_id, subscription_plan_id, stripe_price_id and payment_method_id are required",
+        });
+      }
+
+      // -------------------------
+      // 2. Fetch organization
+      // -------------------------
+      const organization = await prisma.organizations.findUnique({
         where: { organization_id },
       });
-      if (!org) {
-        return res.status(404).json({ message: "Organization not found" });
+
+      if (!organization || !organization.stripe_customer_id) {
+        return res.status(404).json({
+          success: false,
+          message: "Stripe customer not found for organization",
+        });
       }
 
-      // plan check
-      const plan = await prisma.subscription_Plans.findUnique({
-        where: { id: subscription_plan_id },
-      });
-      if (!plan || !plan.is_active) {
-        return res
-          .status(404)
-          .json({ message: "Subscription plan not found or inactive" });
-      }
+      const customerId = organization.stripe_customer_id;
 
-      // Create subscription in Stripe
+      // -------------------------
+      // 3. Create Stripe subscription
+      // -------------------------
       const subscription = await stripe.subscriptions.create({
-        customer: stripe_customer_id,
+        customer: customerId,
         items: [{ price: stripe_price_id }],
-        payment_behavior: "default_incomplete",
+        default_payment_method: payment_method_id,
         expand: ["latest_invoice.payment_intent"],
       });
 
-      const saved = await prisma.subscriptions.create({
+      // -------------------------
+      // 4. Persist subscription in DB
+      // -------------------------
+      const createdSubscription = await prisma.subscriptions.create({
         data: {
           organization_id,
           subscription_plan_id,
-          stripe_customer_id,
+
+          stripe_customer_id: customerId,
           stripe_subscription_id: subscription.id,
-          stripe_price_id,
+          stripe_price_id: stripe_price_id,
+
           status: subscription.status,
-          payment_status: "unpaid",
-          auto_renew: auto_renew ?? false,
+          payment_status:
+            subscription.latest_invoice?.payment_intent?.status ?? "pending",
+
           current_period_start: new Date(
             subscription.current_period_start * 1000
           ),
           current_period_end: new Date(subscription.current_period_end * 1000),
+
+          auto_renew: true,
         },
       });
 
-      res.json({
-        message: "Subscription created",
-        subscription,
-        db: saved,
-      });
-    } catch (error) {
-      console.error("createSubscription error:", error);
-      res.status(500).json({ message: "Failed to create subscription" });
-    }
-  },
-
-  // ---------------- INVOICE PREVIEW ----------------
-  invoicePreview: async (req, res) => {
-    try {
-      const { body } = req.validated;
-      const { customer_id, price_id } = body;
-
-      const upcoming = await stripe.invoices.retrieveUpcoming({
-        customer: customer_id,
-        subscription_items: [{ price: price_id }],
-      });
-
-      res.json({ invoice_preview: upcoming });
-    } catch (error) {
-      console.error("invoicePreview error:", error);
-      res.status(500).json({ message: "Failed to preview invoice" });
-    }
-  },
-
-  // ---------------- CANCEL SUBSCRIPTION ----------------
-  cancelSubscription: async (req, res) => {
-    try {
-      const { body } = req.validated;
-      const { stripe_subscription_id } = body;
-
-      const canceled = await stripe.subscriptions.del(stripe_subscription_id);
-
-      await prisma.subscriptions.updateMany({
-        where: { stripe_subscription_id },
-        data: { status: "canceled", payment_status: "unpaid" },
-      });
-
-      res.json({
-        message: "Subscription canceled",
-        canceled,
-      });
-    } catch (error) {
-      console.error("cancelSubscription error:", error);
-      res.status(500).json({ message: "Failed to cancel subscription" });
-    }
-  },
-
-  // ---------------- UPDATE SUBSCRIPTION ----------------
-  updateSubscription: async (req, res) => {
-    try {
-      const { body } = req.validated;
-      const { stripe_subscription_id, new_price_id } = body;
-
-      const subscription = await stripe.subscriptions.retrieve(
-        stripe_subscription_id
-      );
-      if (!subscription) {
-        return res
-          .status(404)
-          .json({ message: "Stripe subscription not found" });
-      }
-
-      const updated = await stripe.subscriptions.update(
-        stripe_subscription_id,
-        {
-          cancel_at_period_end: false,
-          items: [
-            {
-              id: subscription.items.data[0].id,
-              price: new_price_id,
-            },
-          ],
-        }
-      );
-
-      await prisma.subscriptions.updateMany({
-        where: { stripe_subscription_id },
+      // -------------------------
+      // 5. Update organization status
+      // -------------------------
+      await prisma.organizations.update({
+        where: { organization_id },
         data: {
-          stripe_price_id: new_price_id,
-          status: updated.status,
-          current_period_start: new Date(updated.current_period_start * 1000),
-          current_period_end: new Date(updated.current_period_end * 1000),
+          status_id: "active", // OR map to Organization_Statuses table if needed
         },
       });
 
-      res.json({
-        message: "Subscription updated",
-        updated,
+      // -------------------------
+      // 6. Success response
+      // -------------------------
+      return res.status(201).json({
+        success: true,
+        message: "Subscription created successfully",
+        subscription: {
+          id: createdSubscription.id,
+          stripe_subscription_id: subscription.id,
+          status: subscription.status,
+          billing_period: {
+            start: createdSubscription.current_period_start,
+            end: createdSubscription.current_period_end,
+          },
+          payment_intent_status:
+            subscription.latest_invoice?.payment_intent?.status,
+        },
       });
     } catch (error) {
-      console.error("updateSubscription error:", error);
-      res.status(500).json({ message: "Failed to update subscription" });
-    }
-  },
+      logger.error("createSubscription error:", error);
 
-  // ---------------- LIST SUBSCRIPTIONS ----------------
-  listSubscriptions: async (req, res) => {
-    try {
-      const { query } = req.validated;
-      const { organization_id } = query || {};
-
-      const where = organization_id ? { organization_id } : {};
-
-      const data = await prisma.subscriptions.findMany({
-        where,
-        orderBy: { created_at: "desc" },
-        include: { plan: true },
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create subscription",
+        error: error.message,
       });
-
-      res.json(data);
-    } catch (error) {
-      console.error("listSubscriptions error:", error);
-      res.status(500).json({ message: "Failed to fetch subscriptions" });
-    }
-  },
-
-  // ---------------- STRIPE WEBHOOK ----------------
-  webhookHandler: async (req, res) => {
-    const sig = req.headers["stripe-signature"];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body, // raw body (buffer)
-        sig,
-        webhookSecret
-      );
-    } catch (err) {
-      console.error("Webhook signature verification failed:", err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    try {
-      switch (event.type) {
-        case "invoice.payment_succeeded": {
-          const invoice = event.data.object;
-          const stripeSubscriptionId = invoice.subscription;
-
-          await prisma.subscriptions.updateMany({
-            where: { stripe_subscription_id: stripeSubscriptionId },
-            data: { payment_status: "paid" },
-          });
-          break;
-        }
-
-        case "invoice.payment_failed": {
-          const invoice = event.data.object;
-          const stripeSubscriptionId = invoice.subscription;
-
-          await prisma.subscriptions.updateMany({
-            where: { stripe_subscription_id: stripeSubscriptionId },
-            data: { payment_status: "failed" },
-          });
-          break;
-        }
-
-        case "customer.subscription.updated": {
-          const sub = event.data.object;
-
-          await prisma.subscriptions.updateMany({
-            where: { stripe_subscription_id: sub.id },
-            data: {
-              status: sub.status,
-              current_period_start: new Date(sub.current_period_start * 1000),
-              current_period_end: new Date(sub.current_period_end * 1000),
-            },
-          });
-          break;
-        }
-
-        case "customer.subscription.deleted": {
-          const sub = event.data.object;
-
-          await prisma.subscriptions.updateMany({
-            where: { stripe_subscription_id: sub.id },
-            data: { status: "canceled" },
-          });
-          break;
-        }
-
-        default:
-          // ignore others for now
-          break;
-      }
-
-      res.json({ received: true });
-    } catch (error) {
-      console.error("Webhook handler error:", error);
-      res.status(500).send("Webhook handler error");
     }
   },
 };
+
+export default SubscriptionsController;
