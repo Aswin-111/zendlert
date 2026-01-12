@@ -24,4 +24,10 @@ router.post(
   SubscriptionsController.createSubscription
 );
 
+// // CREATE CHECKOUT SESSION (Stripe Hosted UI)
+// router.post(
+//   "/stripe/create-checkout-session",
+//   SubscriptionsController.createCheckoutSession
+// );
+
 export default router;

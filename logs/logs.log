@@ -691,3 +691,16 @@ Unique constraint failed on the fields: (`contact_phone`)
 2025-12-29T05:57:23.304Z INFO: [DEV OTP] ORG_VERIFY | admin@harborviewlogisticsgroup.com | OTP: 339358
 2025-12-29T05:59:30.791Z INFO: [DEV OTP] ORG_VERIFY | admin@harborviewlogisticsgroup.com | OTP: 797513
 2025-12-29T05:59:35.166Z INFO: [DEV OTP] ORG_VERIFY | admin@harborviewlogisticsgroup.com | OTP: 713073
+2025-12-30T06:02:02.597Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 341779
+2025-12-30T07:05:47.287Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 726596
+2025-12-30T07:12:34.181Z INFO: [DEV OTP] ORG_VERIFY | admin@northstarindustrials.com | OTP: 256270
+2025-12-30T07:13:18.562Z INFO: [DEV OTP] ORG_VERIFY | admin@northstarindustrials.com | OTP: 173744
+2025-12-30T07:14:25.539Z INFO: [DEV OTP] ORG_VERIFY | admin@northstarindustrials.com | OTP: 456101
+2025-12-30T07:23:24.332Z INFO: [DEV OTP] ORG_VERIFY | admin@northstarindustrials.com | OTP: 322835
+2025-12-30T08:15:18.143Z INFO: [API] Job added to queue for active alert 24bf6506-e9cc-42f6-bfa9-f0204399c12a
+2025-12-30T08:15:18.145Z INFO: [WORKER] Processing job 10 for alert 24bf6506-e9cc-42f6-bfa9-f0204399c12a
+2025-12-30T08:15:18.148Z INFO: [WORKER] Alert 24bf6506-e9cc-42f6-bfa9-f0204399c12a status updated to ACTIVE.
+2025-12-30T08:15:18.150Z INFO: [WORKER] No recipients for alert 24bf6506-e9cc-42f6-bfa9-f0204399c12a. Job complete.
+2025-12-30T08:17:31.371Z INFO: [API] Job scheduled in queue for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a with a delay of 79949s
+2025-12-30T08:21:44.110Z INFO: [DEV OTP] LOGIN | aswindkumar764@gmail.com | OTP: 663977
+2025-12-30T08:43:20.377Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 220559

@@ -1,4 +1,3 @@
-
 import logger from "../utils/logger.js";
 
 const SubscriptionsController = {
@@ -407,6 +406,93 @@ const SubscriptionsController = {
       });
     }
   },
+
+  /**
+   * CREATE STRIPE CHECKOUT SESSION (Subscription)
+   */
+  // createCheckoutSession: async (req, res) => {
+  //   try {
+  //     const { organization_id, stripe_price_id, success_url, cancel_url } =
+  //       req.body;
+
+  //     // -------------------------
+  //     // 1. Validation
+  //     // -------------------------
+  //     if (!organization_id || !stripe_price_id) {
+  //       return res.status(400).json({
+  //         success: false,
+  //         message: "organization_id and stripe_price_id are required",
+  //       });
+  //     }
+
+  //     // -------------------------
+  //     // 2. Fetch organization
+  //     // -------------------------
+  //     const organization = await prisma.organizations.findUnique({
+  //       where: { organization_id },
+  //     });
+
+  //     if (!organization) {
+  //       return res.status(404).json({
+  //         success: false,
+  //         message: "Organization not found",
+  //       });
+  //     }
+
+  //     // -------------------------
+  //     // 3. Create Checkout Session
+  //     // -------------------------
+  //     const session = await stripe.checkout.sessions.create({
+  //       mode: "subscription",
+
+  //       customer: organization.stripe_customer_id || undefined,
+
+  //       line_items: [
+  //         {
+  //           price: stripe_price_id,
+  //           quantity: 1,
+  //         },
+  //       ],
+
+  //       success_url:
+  //         success_url ||
+  //         "http://localhost:5173/billing/success?session_id={CHECKOUT_SESSION_ID}",
+
+  //       cancel_url: cancel_url || "http://localhost:5173/billing/cancel",
+
+  //       allow_promotion_codes: true,
+
+  //       billing_address_collection: "required",
+
+  //       metadata: {
+  //         organization_id,
+  //       },
+
+  //       subscription_data: {
+  //         metadata: {
+  //           organization_id,
+  //         },
+  //       },
+  //     });
+
+  //     // -------------------------
+  //     // 4. Response
+  //     // -------------------------
+  //     return res.status(200).json({
+  //       success: true,
+  //       checkout_url: session.url,
+  //       session_id: session.id,
+  //     });
+  //   } catch (error) {
+  //     logger.error("createCheckoutSession error:", error);
+
+  //     return res.status(500).json({
+  //       success: false,
+  //       message: "Failed to create checkout session",
+  //       error: error.message,
+  //     });
+  //   }
+  // },
 };
 
 export default SubscriptionsController;
