@@ -3,6 +3,8 @@ import AdminController from "../controllers/admin.controller.js";
 
 const router = express.Router();
 
+
+
 router.get("/organization-alerts", AdminController.getOrganizationAlerts);
 
 router.post("/building-alerts", AdminController.getBuildingAlerts);

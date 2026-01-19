@@ -12,7 +12,7 @@ import subscriptionsRoutes from "./routes/subscription.routes.js";
 import configRoutes from "./routes/config.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 
-import SubscriptionsController  from "./controllers/subscription.controller.js";
+import SubscriptionsController from "./controllers/subscription.controller.js";
 
 const app = express();
 
@@ -28,8 +28,6 @@ app.use(
   })
 );
 
-
-
 // 2️⃣ Normal body parser AFTER webhook
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -40,7 +38,7 @@ app.use("/test", (req, res) => {
 });
 
 // Routes
-app.use("/config", configRoutes);
+app.use("/api/v1/config", configRoutes);
 app.use("/api/v1/organizations", organizationRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/admin", adminRoutes);

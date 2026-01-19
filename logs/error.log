@@ -827,3 +827,13 @@ Invalid `prisma.sites.create()` invocation:
 
 
 Unique constraint failed on the fields: (`contact_phone`)
+2026-01-15T11:59:36.612Z ERROR: [WORKER] Job 11 failed for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a:
+2026-01-15T11:59:36.615Z ERROR: Job 11 has failed with admin is not defined
+2026-01-15T11:59:37.771Z ERROR: [WORKER] Job 11 failed for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a:
+2026-01-15T11:59:37.773Z ERROR: Job 11 has failed with admin is not defined
+2026-01-15T11:59:39.976Z ERROR: [WORKER] Job 11 failed for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a:
+2026-01-15T11:59:40.026Z ERROR: Job 11 has failed with admin is not defined
+2026-01-17T11:24:55.215Z ERROR: loginWithOtp error: generateTokens is not defined
+2026-01-17T11:27:54.502Z ERROR: loginWithOtp error: secretOrPrivateKey must have a value
+2026-01-17T11:32:03.953Z ERROR: loginWithOtp error: secretOrPrivateKey must have a value
+2026-01-17T11:32:41.134Z ERROR: loginWithOtp error: sendRefreshTokenCookie is not defined

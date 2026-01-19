@@ -704,3 +704,40 @@ Unique constraint failed on the fields: (`contact_phone`)
 2025-12-30T08:17:31.371Z INFO: [API] Job scheduled in queue for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a with a delay of 79949s
 2025-12-30T08:21:44.110Z INFO: [DEV OTP] LOGIN | aswindkumar764@gmail.com | OTP: 663977
 2025-12-30T08:43:20.377Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 220559
+2026-01-15T11:59:36.372Z INFO: [WORKER] Processing job 11 for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a
+2026-01-15T11:59:36.582Z INFO: [WORKER] Alert 222ca243-80c1-4c33-ba52-41e564bf2c2a status updated to ACTIVE.
+2026-01-15T11:59:36.612Z ERROR: [WORKER] Job 11 failed for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a:
+2026-01-15T11:59:36.615Z ERROR: Job 11 has failed with admin is not defined
+2026-01-15T11:59:37.756Z INFO: [WORKER] Processing job 11 for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a
+2026-01-15T11:59:37.768Z INFO: [WORKER] Alert 222ca243-80c1-4c33-ba52-41e564bf2c2a status updated to ACTIVE.
+2026-01-15T11:59:37.771Z ERROR: [WORKER] Job 11 failed for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a:
+2026-01-15T11:59:37.773Z ERROR: Job 11 has failed with admin is not defined
+2026-01-15T11:59:39.969Z INFO: [WORKER] Processing job 11 for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a
+2026-01-15T11:59:39.973Z INFO: [WORKER] Alert 222ca243-80c1-4c33-ba52-41e564bf2c2a status updated to ACTIVE.
+2026-01-15T11:59:39.976Z ERROR: [WORKER] Job 11 failed for alert 222ca243-80c1-4c33-ba52-41e564bf2c2a:
+2026-01-15T11:59:40.026Z ERROR: Job 11 has failed with admin is not defined
+2026-01-17T10:07:45.993Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian.ptf@gmail.com | OTP: 111111
+2026-01-17T11:23:38.529Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T11:24:46.657Z INFO: [DEV OTP] LOGIN | tomsebastian.ptf@gmail.com | OTP: 111111
+2026-01-17T11:24:55.215Z ERROR: loginWithOtp error: generateTokens is not defined
+2026-01-17T11:27:48.618Z INFO: [DEV OTP] LOGIN | tomsebastian.ptf@gmail.com | OTP: 111111
+2026-01-17T11:27:54.502Z ERROR: loginWithOtp error: secretOrPrivateKey must have a value
+2026-01-17T11:31:59.481Z INFO: [DEV OTP] LOGIN | tomsebastian.ptf@gmail.com | OTP: 111111
+2026-01-17T11:32:03.953Z ERROR: loginWithOtp error: secretOrPrivateKey must have a value
+2026-01-17T11:32:36.978Z INFO: [DEV OTP] LOGIN | tomsebastian.ptf@gmail.com | OTP: 111111
+2026-01-17T11:32:41.134Z ERROR: loginWithOtp error: sendRefreshTokenCookie is not defined
+2026-01-17T11:33:27.210Z INFO: [DEV OTP] LOGIN | tomsebastian.ptf@gmail.com | OTP: 111111
+2026-01-17T11:55:14.421Z INFO: [DEV OTP] LOGIN | tomsebastian.ptf@gmail.com | OTP: 111111
+2026-01-17T12:11:42.726Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T12:22:41.124Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T12:33:18.507Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T12:47:55.014Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T12:53:09.426Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T12:54:10.040Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T12:56:48.498Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T13:07:47.760Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T13:18:49.775Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-17T13:21:08.149Z INFO: Site and area assigned to user a3898779-0f85-4d4b-bc10-e20386db9523
+2026-01-17T13:24:54.589Z INFO: Site and area assigned to user b49f4457-e125-405a-a751-91166301bdfe
+2026-01-17T13:26:18.994Z INFO: Site and area assigned to user 2e8b7827-656c-41b1-b59c-00b6ca5fc178
+2026-01-17T13:26:56.746Z INFO: [DEV OTP] LOGIN | xcxcxc@gmail.com | OTP: 111111

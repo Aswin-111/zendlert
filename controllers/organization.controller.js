@@ -12,6 +12,7 @@ import logger from "../utils/logger.js";
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_KEY);
 import jwt from "jsonwebtoken";
+import { generateTokens, sendRefreshTokenCookie } from "../utils/token.js";
 const OTP_EXPIRY_SECONDS = 600;
 const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -151,7 +152,10 @@ const OrganizationController = {
         });
       }
 
-      const otp = generateOtp();
+      //const otp = generateOtp();
+      //for testing purpose,remove in roduction
+      const isDev = process.env.NODE_ENV !== "production";
+      const otp = isDev ? process.env.DUMMY_OTP || "111111" : generateOtp();
 
       // 🔐 LOG OTP ONLY IN DEVELOPMENT
       if (process.env.NODE_ENV !== "production") {
@@ -199,12 +203,23 @@ const OrganizationController = {
       }
       // ===================================================
 
-      await resend.emails.send({
-        from: process.env.FROM_EMAIL,
-        to: [email],
-        subject,
-        html,
-      });
+      //for testing purpose,comment in production
+      // await resend.emails.send({
+      //   from: process.env.FROM_EMAIL,
+      //   to: [email],
+      //   subject,
+      //   html,
+      // });
+
+      //remove these after testing
+      if (!isDev) {
+        await resend.emails.send({
+          from: process.env.FROM_EMAIL,
+          to: [email],
+          subject,
+          html,
+        });
+      }
 
       return res.status(200).json({
         success: true,
@@ -318,10 +333,22 @@ const OrganizationController = {
       const redisKey = `otp:${purpose}:${email}`;
       const storedOtp = await redisClient.get(redisKey);
 
-      if (!storedOtp || storedOtp !== otp) {
-        return res.status(401).json({
-          verified: false,
-          message: "Invalid or expired OTP.",
+      // if (!storedOtp || storedOtp !== otp) {
+      //   return res.status(401).json({
+      //     verified: false,
+      //     message: "Invalid or expired OTP.",
+      //   });
+      // }
+
+      //testing code remove below code and uncomment above in production
+      const isDev = process.env.NODE_ENV !== "production";
+      const dummyOtp = process.env.DUMMY_OTP || "111111";
+
+      if (isDev && otp === dummyOtp) {
+        // allow without Redis
+        return res.status(200).json({
+          verified: true,
+          message: "OTP verified successfully (DEV MODE).",
         });
       }
 
@@ -351,17 +378,37 @@ const OrganizationController = {
         });
       }
 
-      const redisKey = `otp:LOGIN:${email}`;
-      const storedOtp = await redisClient.get(redisKey);
+      // const redisKey = `otp:LOGIN:${email}`;
+      // const storedOtp = await redisClient.get(redisKey);
 
-      if (!storedOtp || storedOtp !== otp) {
-        return res.status(401).json({
-          message: "Invalid or expired OTP.",
-        });
+      // if (!storedOtp || storedOtp !== otp) {
+      //   return res.status(401).json({
+      //     message: "Invalid or expired OTP.",
+      //   });
+      // }
+
+      // // OTP valid → delete it
+      // await redisClient.del(redisKey);
+
+      //testing code remove below code and uncomment above in production
+
+      const isDev = process.env.NODE_ENV !== "production";
+      const dummyOtp = process.env.DUMMY_OTP || "111111";
+
+      if (isDev && otp === dummyOtp) {
+        // skip Redis check
+      } else {
+        const redisKey = `otp:LOGIN:${email}`;
+        const storedOtp = await redisClient.get(redisKey);
+
+        if (!storedOtp || storedOtp !== otp) {
+          return res.status(401).json({
+            message: "Invalid or expired OTP.",
+          });
+        }
+
+        await redisClient.del(redisKey);
       }
-
-      // OTP valid → delete it
-      await redisClient.del(redisKey);
 
       const user = await prisma.users.findUnique({
         where: { email: email.toLowerCase() },
@@ -379,22 +426,22 @@ const OrganizationController = {
         return res.status(404).json({ message: "User not found" });
       }
 
-      const token = jwt.sign(
-        {
-          user_id: user.user_id,
-          email: user.email,
-          role: user.role?.role_name,
-          organization_id: user.organization_id,
-          organization_name: user.organization?.name,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.TOKEN_EXPIRY }
-      );
+      const { accessToken, refreshToken } = generateTokens(user);
+
+      // Store Refresh Token in DB
+      await prisma.users.update({
+        where: { user_id: user.user_id },
+        data: { refresh_token: refreshToken },
+      });
+
+      // Set Cookie
+      sendRefreshTokenCookie(res, refreshToken);
 
       return res.status(200).json({
         success: true,
         message: "Login successful",
-        token,
+        accessToken,
+        refreshToken,
         user: {
           user_id: user.user_id,
           organization_id: user.organization_id,
@@ -479,21 +526,24 @@ const OrganizationController = {
         },
       });
 
-      const token = jwt.sign(
-        {
-          user_id: newUser.user_id,
-          email: newUser.email,
-          role: adminRole.role_name,
-          organization_id: newOrg.organization_id,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.TOKEN_EXPIRY }
-      );
+      const { accessToken, refreshToken } = generateTokens({
+        ...newUser,
+        organization: { name: newOrg.name },
+        role: adminRole, // Ensure this object has role_name
+      });
+
+      await prisma.users.update({
+        where: { user_id: newUser.user_id },
+        data: { refresh_token: refreshToken },
+      });
+
+      sendRefreshTokenCookie(res, refreshToken);
 
       return res.status(200).json({
         message: "Organization created successfully",
         organization: newOrg,
-        token,
+        accessToken,
+        refreshToken,
         user: {
           email: newUser.email,
           name: newUser.first_name,
@@ -932,9 +982,26 @@ const OrganizationController = {
         },
       });
 
+      const { accessToken, refreshToken } = generateTokens({
+        ...newUser,
+        role: { role_name: role.role_name },
+        organization: { name: existingOrg.name },
+      });
+
+      // Save Refresh Token to DB
+      await prisma.users.update({
+        where: { user_id: newUser.user_id },
+        data: { refresh_token: refreshToken },
+      });
+
+      // Send HttpOnly Cookie
+      sendRefreshTokenCookie(res, refreshToken);
+
       return res.status(201).json({
         message: `Employee joined under '${existingOrg.name}' successfully`,
         organization_id: organization_id,
+        accessToken,
+        refreshToken,
         user: {
           role: role.role_name,
           user_id: newUser.user_id,
