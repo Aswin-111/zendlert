@@ -1,33 +1,19 @@
 import express from "express";
-import SubscriptionsController from "../controllers/subscription.controller.js";
+import SubscriptionController from "../controllers/subscription.controller.js";
+import verifyJWT from "../middlewares/verifyJWT.js";
 
 const router = express.Router();
 
-// STEP 1 — Retrieve price for product
-router.get("/stripe/product-price", SubscriptionsController.getPriceForProduct);
-// STEP 2 — Create Stripe customer
-router.post("/stripe/create-customer", SubscriptionsController.createCustomer);
-// STEP 3 — Create payment method using token
+// 1. Create Subscription (Protected)
+router.post("/create", verifyJWT, SubscriptionController.createSubscription);
+router.post("/preview", verifyJWT, SubscriptionController.previewInvoice);
+// 2. Webhook (Public)
+// IMPORTANT: The raw body parsing must be handled in your server.js (app.js)
+// before this route is mounted, or via specific middleware here if your setup supports it.
 router.post(
-  "/stripe/payment-method",
-  SubscriptionsController.createPaymentMethod
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  SubscriptionController.handleWebhook,
 );
-// STEP 4 — Attach payment method to customer
-router.post(
-  "/stripe/attach-payment-method",
-  SubscriptionsController.attachPaymentMethodToCustomer
-);
-
-// STEP 5 — Create subscription
-router.post(
-  "/stripe/create-subscription",
-  SubscriptionsController.createSubscription
-);
-
-// // CREATE CHECKOUT SESSION (Stripe Hosted UI)
-// router.post(
-//   "/stripe/create-checkout-session",
-//   SubscriptionsController.createCheckoutSession
-// );
 
 export default router;

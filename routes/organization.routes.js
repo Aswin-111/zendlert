@@ -11,7 +11,18 @@ router.get("/check-business-name", OrganizationController.checkBusinessName);
 router.post("/check-email-domain", OrganizationController.checkEmailDomain);
 
 // --- AUTH ROUTES ---
-router.get("/refresh", AuthController.handleRefreshToken);
+router.post(
+  "/refresh",
+  (req, res, next) => {
+    console.log(
+      "Incoming request to /api/v1/organizations/refresh:",
+      req.method,
+      req.url,
+    );
+    next();
+  },
+  AuthController.handleRefreshToken,
+);
 router.post("/logout", AuthController.logout);
 
 //OTP routes
@@ -24,12 +35,12 @@ router.post("/create-organization", OrganizationController.createOrganization);
 router.get(
   "/organization-info",
   verifyJWT,
-  OrganizationController.getOrganizationName
+  OrganizationController.getOrganizationName,
 );
 router.put(
   "/update-organization",
   verifyJWT,
-  OrganizationController.updateOrganization
+  OrganizationController.updateOrganization,
 );
 
 //Sites routes
@@ -41,11 +52,11 @@ router.post("/create-area", verifyJWT, OrganizationController.createArea);
 router.get("/check-emaildomain", OrganizationController.checkEmailForEmployee);
 router.post(
   "/employee-get-otp",
-  OrganizationController.sendOtpForEmployeeSignup
+  OrganizationController.sendOtpForEmployeeSignup,
 );
 router.post(
   "/employee-verify-otp",
-  OrganizationController.verifyOtpForEmployeeSignup
+  OrganizationController.verifyOtpForEmployeeSignup,
 );
 router.post("/create-employee", OrganizationController.createEmployee);
 
@@ -53,12 +64,12 @@ router.post("/create-employee", OrganizationController.createEmployee);
 router.get(
   "/sites-areas",
   verifyJWT,
-  OrganizationController.getSitesAndAreasByOrganizationId
+  OrganizationController.getSitesAndAreasByOrganizationId,
 );
 router.put(
   "/assign-site-area",
   verifyJWT,
-  OrganizationController.assignSiteAndAreaToUser
+  OrganizationController.assignSiteAndAreaToUser,
 );
 
 export default router;

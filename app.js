@@ -8,11 +8,11 @@ import employeeRoutes from "./routes/employee.routes.js";
 import alertRoutes from "./routes/alert.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
+
 import subscriptionsRoutes from "./routes/subscription.routes.js";
+import plansRoutes from "./routes/plan.routes.js";
 import configRoutes from "./routes/config.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
-
-import SubscriptionsController from "./controllers/subscription.controller.js";
 
 const app = express();
 
@@ -25,7 +25,7 @@ app.use(
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
-  })
+  }),
 );
 
 // 2️⃣ Normal body parser AFTER webhook
@@ -37,15 +37,34 @@ app.use("/test", (req, res) => {
   res.send("qwert");
 });
 
+// Use raw parser ONLY for the webhook route
+app.use(
+  "/api/v1/subscriptions/webhook",
+  express.raw({ type: "application/json" }),
+);
+
 // Routes
 app.use("/api/v1/config", configRoutes);
-app.use("/api/v1/organizations", organizationRoutes);
+app.use(
+  "/api/v1/organizations",
+  (req, res, next) => {
+    console.log(
+      "Incoming request to /api/v1/organizations:",
+      req.method,
+      req.url,
+    );
+    next();
+  },
+  organizationRoutes,
+);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/alert", alertRoutes);
 app.use("/api/v1/employee", employeeRoutes);
 app.use("/api/v1/settings", settingsRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);
+
 app.use("/api/v1/subscriptions", subscriptionsRoutes);
+app.use("/api/v1/plans", plansRoutes);
 
 export default app;

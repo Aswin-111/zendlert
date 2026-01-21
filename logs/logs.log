@@ -741,3 +741,649 @@ Unique constraint failed on the fields: (`contact_phone`)
 2026-01-17T13:24:54.589Z INFO: Site and area assigned to user b49f4457-e125-405a-a751-91166301bdfe
 2026-01-17T13:26:18.994Z INFO: Site and area assigned to user 2e8b7827-656c-41b1-b59c-00b6ca5fc178
 2026-01-17T13:26:56.746Z INFO: [DEV OTP] LOGIN | xcxcxc@gmail.com | OTP: 111111
+2026-01-19T09:03:36.229Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-19T09:38:03.152Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-19T09:41:18.990Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-19T09:44:07.784Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-19T09:44:21.358Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-19T09:46:00.419Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-19T09:55:21.957Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@grgrg.com | OTP: 111111
+2026-01-19T09:56:15.585Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@grgeeerg.com | OTP: 111111
+2026-01-19T10:04:05.280Z INFO: [DEV OTP] ORG_VERIFY | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-19T10:04:15.271Z INFO: [DEV OTP] ORG_VERIFY | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-19T10:28:59.278Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-19T10:30:18.686Z INFO: [DEV OTP] ORG_VERIFY | dfdddgf@dfdd.com | OTP: 111111
+2026-01-19T10:30:38.621Z INFO: [DEV OTP] LOGIN | admin@summitprecisionmfg.com | OTP: 111111
+2026-01-19T10:31:33.968Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-19T11:23:37.510Z INFO: [DEV OTP] ORG_VERIFY | dfdddgf@dfderd.com | OTP: 111111
+2026-01-19T11:32:55.506Z INFO: [DEV OTP] ORG_VERIFY | dfdddgf@dfdetrtrrd.com | OTP: 111111
+2026-01-19T12:15:59.483Z INFO: [DEV OTP] ORG_VERIFY | kandathil123@kandathilgrp.com | OTP: 111111
+2026-01-19T12:23:14.422Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-19T12:35:49.909Z INFO: [DEV OTP] ORG_VERIFY | kandathil123@kandathillgrp.com | OTP: 111111
+2026-01-19T12:42:00.188Z INFO: [DEV OTP] ORG_VERIFY | kandathil123@kandathillgrp.com | OTP: 111111
+2026-01-19T12:46:57.071Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-19T12:52:02.649Z INFO: [DEV OTP] ORG_VERIFY | kandathil123@kandathiligrp.com | OTP: 111111
+2026-01-19T12:53:05.932Z INFO: [DEV OTP] ORG_VERIFY | kandathil123@kandathilgrp1.com | OTP: 111111
+2026-01-19T12:59:33.361Z INFO: [DEV OTP] ORG_VERIFY | dfdddgf@dfdetrtreerrrd.com | OTP: 111111
+2026-01-19T13:03:21.657Z INFO: [DEV OTP] LOGIN | kandathil123@kandathilgrp1.com | OTP: 111111
+2026-01-19T13:03:38.931Z INFO: [DEV OTP] LOGIN | kandathil123@kandathilgrp.com | OTP: 111111
+2026-01-19T13:06:55.909Z INFO: [DEV OTP] LOGIN | kandathil123@kandathilgrp.com | OTP: 111111
+2026-01-19T13:12:20.419Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-20T04:56:35.365Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T05:11:46.386Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmai.com | OTP: 111111
+2026-01-20T05:12:16.324Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmai.com | OTP: 111111
+2026-01-20T05:12:42.396Z INFO: [DEV OTP] LOGIN | tomsebastsfereer715@gmai.com | OTP: 111111
+2026-01-20T05:19:53.327Z INFO: [DEV OTP] LOGIN | dffdgdfgfdg@sdfsdf.com | OTP: 111111
+2026-01-20T05:20:05.901Z INFO: [DEV OTP] LOGIN | dffdgdfgfdg@sdfsdf.com | OTP: 111111
+2026-01-20T05:27:48.624Z INFO: [DEV OTP] LOGIN | dfsdfdfg@drrr.com | OTP: 111111
+2026-01-20T05:28:09.552Z INFO: [DEV OTP] LOGIN | dfsdfdfg@drrr.com | OTP: 111111
+2026-01-20T05:28:37.358Z INFO: [DEV OTP] LOGIN | dfsdfdfg@drdddrr.com | OTP: 111111
+2026-01-20T05:36:29.110Z INFO: [DEV OTP] LOGIN | grtyrytr@utty.com | OTP: 111111
+2026-01-20T05:36:48.586Z INFO: [DEV OTP] LOGIN | grtyrytr@utterey.com | OTP: 111111
+2026-01-20T05:40:46.167Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T05:41:22.880Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-20T05:59:55.373Z INFO: [DEV OTP] ORG_VERIFY | sdsdsad@sdfdsf.com | OTP: 111111
+2026-01-20T06:00:51.983Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T06:05:53.763Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T06:18:32.712Z INFO: [DEV OTP] LOGIN | wert@gmail.com | OTP: 111111
+2026-01-20T06:19:47.939Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T06:20:57.740Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T06:22:43.972Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T06:23:31.607Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T06:24:20.473Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:21.406Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:21.891Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:23.082Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:25.314Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:29.969Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:30.519Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:31.795Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:31.940Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:33.203Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:33.562Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:34.463Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:35.929Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:38.119Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:42.547Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:24:58.740Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:25:00.011Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:25:02.208Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:25:04.594Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:25:06.003Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:25:08.181Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:25:12.622Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:26:17.399Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:26:18.631Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:26:20.781Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:26:25.204Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:28:03.497Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:28:05.110Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:28:07.365Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:28:12.846Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:28:30.802Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:29:16.638Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:29:18.914Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:29:24.448Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:29:43.885Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:29:45.086Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:29:47.302Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:30:55.408Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T06:31:37.017Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:31:38.217Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:31:40.775Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:31:45.836Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:01.310Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:02.554Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:04.787Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:05.213Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:06.672Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:08.897Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:13.814Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:58.114Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:32:59.257Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:33:01.472Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:33:25.273Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:33:46.742Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:34:20.944Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:34:22.177Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:34:24.761Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:34:29.226Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:35:47.755Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:35:49.193Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:35:51.548Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:35:56.154Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:36:29.431Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:36:30.587Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:36:41.623Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:36:45.826Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:37:30.578Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:37:31.902Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:37:34.070Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:38:20.624Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:38:21.932Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:38:24.179Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:38:28.702Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:41:04.718Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:41:05.864Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:41:08.458Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:41:10.230Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-20T06:41:13.346Z ERROR: Invoice Preview Error: stripe.invoices.retrieveUpcoming is not a function
+2026-01-20T06:41:54.427Z INFO: [DEV OTP] LOGIN | wert@gmail.com | OTP: 111111
+2026-01-20T06:42:20.758Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T06:44:17.030Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T06:44:45.506Z INFO: [DEV OTP] LOGIN | wert@gmail.com | OTP: 111111
+2026-01-20T06:48:41.071Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T06:49:59.212Z ERROR: Invoice Preview Error: stripe.invoices.upcoming is not a function
+2026-01-20T06:50:00.415Z ERROR: Invoice Preview Error: stripe.invoices.upcoming is not a function
+2026-01-20T06:50:02.596Z ERROR: Invoice Preview Error: stripe.invoices.upcoming is not a function
+2026-01-20T06:50:07.234Z ERROR: Invoice Preview Error: stripe.invoices.upcoming is not a function
+2026-01-20T06:50:17.279Z INFO: Created new customer: cus_TpDBGJ6WaBac1Y
+2026-01-20T06:50:18.718Z ERROR: Create Subscription Error: No such price: 'prod_TSgsgPJZ8O1ILd'
+2026-01-20T06:53:22.642Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T06:54:23.256Z INFO: [DEV OTP] LOGIN | wert@gmail.com | OTP: 111111
+2026-01-20T06:54:28.161Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:54:30.857Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:54:35.429Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:55:36.804Z INFO: [DEV OTP] LOGIN | wert@gmail.com | OTP: 111111
+2026-01-20T06:56:09.001Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T06:56:51.648Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:56:53.087Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:56:55.430Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:56:59.849Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:58:23.822Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:58:25.570Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:58:28.061Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:58:32.811Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:59:52.534Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:59:54.425Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T06:59:56.679Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T07:00:11.416Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T07:03:03.824Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T07:03:04.964Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T07:03:07.688Z ERROR: Invoice Preview Error: stripe.i is not a function
+2026-01-20T07:21:43.619Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T07:21:59.670Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T12:12:59.196Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T12:32:29.725Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T17:56:11.290Z INFO: [DEV OTP] LOGIN | wert@gmail.com | OTP: 111111
+2026-01-20T17:56:14.113Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T17:56:16.792Z INFO: [DEV OTP] LOGIN | wert@gmail.com | OTP: 111111
+2026-01-20T17:57:08.954Z INFO: [DEV OTP] LOGIN | lkjh@gmail.com | OTP: 111111
+2026-01-20T17:59:41.318Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-20T18:02:33.756Z INFO: [DEV OTP] LOGIN | wert@gmail.com | OTP: 111111
+2026-01-20T18:25:11.517Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T18:38:11.637Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T18:41:05.115Z ERROR: createSeverityLevel error: 
+Invalid `prisma.severity_Levels.create()` invocation:
+
+
+Unique constraint failed on the fields: (`name`)
+2026-01-20T18:42:47.868Z INFO: [API] Job added to queue for active alert e1ad68e5-2f80-4c5d-aade-fe15558c080c
+2026-01-20T18:42:47.870Z INFO: [WORKER] Processing job 12 for alert e1ad68e5-2f80-4c5d-aade-fe15558c080c
+2026-01-20T18:42:47.873Z INFO: [WORKER] Alert e1ad68e5-2f80-4c5d-aade-fe15558c080c status updated to ACTIVE.
+2026-01-20T18:42:47.881Z ERROR: [WORKER] Job 12 failed for alert e1ad68e5-2f80-4c5d-aade-fe15558c080c:
+2026-01-20T18:42:47.884Z ERROR: Job 12 has failed with admin is not defined
+2026-01-20T18:42:48.949Z INFO: [WORKER] Processing job 12 for alert e1ad68e5-2f80-4c5d-aade-fe15558c080c
+2026-01-20T18:42:48.954Z INFO: [WORKER] Alert e1ad68e5-2f80-4c5d-aade-fe15558c080c status updated to ACTIVE.
+2026-01-20T18:42:48.956Z ERROR: [WORKER] Job 12 failed for alert e1ad68e5-2f80-4c5d-aade-fe15558c080c:
+2026-01-20T18:42:48.957Z ERROR: Job 12 has failed with admin is not defined
+2026-01-20T18:42:51.057Z INFO: [WORKER] Processing job 12 for alert e1ad68e5-2f80-4c5d-aade-fe15558c080c
+2026-01-20T18:42:51.062Z INFO: [WORKER] Alert e1ad68e5-2f80-4c5d-aade-fe15558c080c status updated to ACTIVE.
+2026-01-20T18:42:51.065Z ERROR: [WORKER] Job 12 failed for alert e1ad68e5-2f80-4c5d-aade-fe15558c080c:
+2026-01-20T18:42:51.111Z ERROR: Job 12 has failed with admin is not defined
+2026-01-20T18:47:37.033Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T19:26:53.200Z INFO: [DEV OTP] LOGIN | zxcv@gmail.com | OTP: 111111
+2026-01-20T19:39:32.046Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T19:43:51.248Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T19:48:12.396Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T19:50:20.020Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T19:54:55.661Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T19:59:54.579Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T20:02:53.536Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:54.548Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:54.782Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:55.173Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:55.433Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:55.673Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:55.921Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:56.165Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:56.435Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:56.752Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:57.071Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:57.337Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:57.564Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:57.814Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:58.223Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:58.464Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:58.719Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:58.958Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:59.226Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:59.458Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:02:59.786Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:00.028Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:01.431Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:01.678Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:01.942Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:02.183Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:02.470Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:02.660Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:02.873Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:03.171Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:03.413Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:03.653Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:03.895Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:04.305Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:04.653Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:04.962Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:05.210Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:05.460Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:05.720Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:05.899Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:06.242Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:06.445Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:06.722Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:07.033Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:07.266Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:07.540Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:07.781Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:08.007Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:08.253Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:08.506Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:08.762Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:09.000Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:09.329Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:09.571Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:09.905Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:10.148Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:10.399Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:10.640Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:10.969Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:11.326Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:11.639Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:11.877Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:12.208Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:12.392Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:12.614Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:12.980Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:13.273Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:13.519Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:13.798Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:14.036Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:14.353Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:14.590Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:14.774Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:15.009Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:15.253Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:15.495Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:15.744Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:15.994Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:16.316Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:16.588Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:16.892Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:17.138Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:17.420Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:17.714Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:18.131Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:18.408Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:18.671Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:19.362Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:19.782Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:20.101Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:21.258Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:21.498Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:21.744Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:22.195Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:22.497Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:22.896Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:23.290Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:23.560Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:23.883Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:24.213Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:24.662Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:24.953Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:25.282Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:25.535Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:26.039Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:26.433Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:26.824Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:27.182Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:27.428Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:27.673Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:27.914Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:28.092Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:28.332Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:28.573Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:28.834Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:29.066Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:29.343Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:29.592Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:29.891Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:30.140Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:30.387Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:30.642Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:30.883Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:31.122Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:31.312Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:31.534Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:31.784Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:32.027Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:32.471Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:32.769Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:32.954Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:33.179Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:33.377Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:33.606Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:33.930Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:34.171Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:34.418Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:34.663Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:34.906Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:35.243Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:35.422Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:35.654Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:35.976Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:36.323Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:36.636Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:36.888Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:37.129Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:37.429Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:37.622Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:37.893Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:38.204Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:38.483Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:38.856Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:39.115Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:39.349Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:39.603Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:39.866Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:40.062Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:40.289Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:40.508Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:40.856Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:41.169Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:41.440Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:41.832Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:42.072Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:42.323Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:42.574Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:42.779Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:42.981Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:43.217Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:43.562Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:43.888Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:44.297Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:44.535Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:44.717Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:44.943Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:45.222Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:45.605Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:45.930Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:46.176Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:46.429Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:46.692Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:46.923Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:47.184Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:47.412Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:47.591Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:47.998Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:48.318Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:48.567Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:49.237Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:49.555Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:49.732Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:49.961Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:50.213Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:50.460Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:50.708Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:51.035Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:51.283Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:51.523Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:51.717Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:52.024Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:52.208Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:52.434Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:52.686Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:52.928Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:53.168Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:53.421Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:53.744Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:54.000Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:54.385Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:54.671Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:54.984Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:55.313Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:55.642Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:55.883Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:56.135Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:56.398Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:56.711Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:56.960Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:57.206Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:57.470Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:57.701Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:57.940Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:58.216Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:58.517Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:58.801Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:59.042Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:03:59.277Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:29.205Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:29.528Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:29.780Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:30.056Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:30.273Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:30.527Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:30.775Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:31.008Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:31.255Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:31.584Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:31.840Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:32.160Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:32.423Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:32.669Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:32.989Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:33.247Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:33.650Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:33.976Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:34.305Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:34.797Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:35.027Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:35.309Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:35.620Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:35.802Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:36.132Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:36.444Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:36.690Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:37.021Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:37.267Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:37.513Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:37.704Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:37.949Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:38.165Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:38.417Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:38.658Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:38.905Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:39.239Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:39.482Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:39.727Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:39.982Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:40.224Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:40.410Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:40.638Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:40.825Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:41.131Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:41.372Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:41.636Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:41.967Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:42.195Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:42.457Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:42.771Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:43.020Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:43.289Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:43.628Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:43.840Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:44.093Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:44.422Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:44.755Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:44.992Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:45.244Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:45.426Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:45.653Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:45.986Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:46.307Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:46.561Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:46.801Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:47.059Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:54.045Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:54.284Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:54.868Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:56.049Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:56.267Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:56.517Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:56.802Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:57.109Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:57.422Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:57.665Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:57.994Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:58.340Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:58.586Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:58.810Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:59.058Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:59.249Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:59.561Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:04:59.887Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:00.133Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:01.376Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:01.614Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:02.027Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:02.274Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:02.518Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:02.842Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:03.088Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:03.343Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:03.589Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:03.912Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:04.163Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:04.411Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:04.658Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:04.921Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:05.233Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:05.487Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:05.803Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:06.056Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:06.315Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:06.763Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:06.963Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:07.202Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:07.393Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:07.621Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:07.821Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:08.108Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:08.442Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:08.687Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:09.016Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:05:09.368Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:09:27.169Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:13:45.545Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T20:16:11.317Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T20:28:24.905Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T20:32:10.587Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:32:12.071Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:32:15.145Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:32:19.503Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:32:37.654Z INFO: Created new customer: cus_TpQSxJwFUV19Nz
+2026-01-20T20:32:39.229Z ERROR: Create Subscription Error: No such price: 'prod_TSgsgPJZ8O1ILd'
+2026-01-20T20:34:27.934Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:34:30.922Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:34:33.301Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:34:37.659Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:35:47.605Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:35:48.732Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:35:50.889Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:35:55.569Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:37:19.496Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:37:20.586Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:37:23.860Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:37:28.410Z ERROR: Invoice Preview Error: stripe.invoices.incoming is not a function
+2026-01-20T20:43:26.689Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:43:31.294Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:43:35.575Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:43:36.411Z INFO: Created new customer: cus_TpQd2XqLbFwngn
+2026-01-20T20:43:38.938Z ERROR: Create Subscription Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:43:40.911Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:44:44.450Z INFO: Created new customer: cus_TpQeE6TC2j6syM
+2026-01-20T20:44:46.108Z ERROR: Create Subscription Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:48:20.763Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:48:23.480Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:48:26.940Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:48:31.716Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:48:58.027Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:48:59.758Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:49:02.387Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:49:07.411Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:50:13.462Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:50:15.354Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:50:18.228Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:52:38.397Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:52:42.107Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:52:44.807Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:52:54.548Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:53:00.538Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:53:56.865Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:53:58.264Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:54:00.409Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:55:34.506Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:55:40.350Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:55:47.440Z INFO: Created new customer: cus_TpQp329SmS38NU
+2026-01-20T20:55:52.470Z ERROR: Create Subscription Error: 
+Invalid `prisma.subscriptions.create()` invocation:
+
+{
+  data: {
+    organization_id: "7bb9b772-46e4-4fc2-a68b-70cd1f71a5d5",
+    subscription_plan_id: "4be15c43-7390-4f37-b1ba-e1c97eeb0913",
+    stripe_customer_id: "cus_TpQp329SmS38NU",
+    stripe_subscription_id: "sub_1SrlxpAZY0CusegXZXkvCLqe",
+    stripe_price_id: "price_1SVPf3AZY0CusegXzDOgPJyg",
+    status: "active",
+    payment_method: "card",
+    payment_status: "paid",
+    current_period_start: new Date("Invalid Date"),
+                          ~~~~~~~~~~~~~~~~~~~~~~~~
+    current_period_end: new Date("Invalid Date")
+  }
+}
+
+Invalid value for argument `current_period_start`: Provided Date object is invalid. Expected Date.
+2026-01-20T20:56:11.634Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:56:13.668Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:56:16.893Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:56:21.860Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:57:42.471Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:57:44.722Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:57:47.985Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T20:58:18.289Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:02:11.385Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T21:02:12.057Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
+2026-01-20T21:02:29.549Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
+2026-01-20T21:03:58.048Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:03:58.841Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:03:59.421Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:04:01.720Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:04:01.882Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:04:04.434Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:04:07.439Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:04:12.658Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:04:59.446Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:05:01.603Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:05:05.226Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:05:10.248Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:05:42.986Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:05:44.873Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:05:47.750Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-20T21:05:50.652Z INFO: Created new customer: cus_TpQzIFL74audmz
+2026-01-20T21:05:52.938Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-21T04:29:18.418Z INFO: [DEV OTP] ORG_VERIFY | fffff@ffff.com | OTP: 111111
+2026-01-21T05:26:32.270Z INFO: [DEV OTP] ORG_VERIFY | Pattukalam123@pattumail.com | OTP: 111111
+2026-01-21T05:30:07.485Z INFO: [DEV OTP] ORG_VERIFY | Pattukalam123@pattuhdhdhhdmail.com | OTP: 111111
+2026-01-21T05:31:04.711Z INFO: [DEV OTP] ORG_VERIFY | Pattukalam123@pattuythdhdhhdmail.com | OTP: 111111

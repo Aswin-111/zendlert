@@ -152,6 +152,18 @@ const OrganizationController = {
         });
       }
 
+     // 2. CHECK USER EXISTENCE (If Purpose is LOGIN)
+      if (purpose === "LOGIN") {
+        const user = await prisma.users.findUnique({
+          where: { email: email.toLowerCase() },
+        });
+
+        if (!user) {
+          // Stop here if user doesn't exist. Don't send OTP.
+          return res.status(404).json({ message: "User not found." });
+        }
+      }
+
       //const otp = generateOtp();
       //for testing purpose,remove in roduction
       const isDev = process.env.NODE_ENV !== "production";
@@ -167,7 +179,7 @@ const OrganizationController = {
       await redisClient.setEx(
         `otp:${purpose}:${email}`,
         OTP_EXPIRY_SECONDS,
-        otp
+        otp,
       );
 
       let subject = "";
@@ -333,24 +345,24 @@ const OrganizationController = {
       const redisKey = `otp:${purpose}:${email}`;
       const storedOtp = await redisClient.get(redisKey);
 
-      // if (!storedOtp || storedOtp !== otp) {
-      //   return res.status(401).json({
-      //     verified: false,
-      //     message: "Invalid or expired OTP.",
-      //   });
-      // }
-
-      //testing code remove below code and uncomment above in production
-      const isDev = process.env.NODE_ENV !== "production";
-      const dummyOtp = process.env.DUMMY_OTP || "111111";
-
-      if (isDev && otp === dummyOtp) {
-        // allow without Redis
-        return res.status(200).json({
-          verified: true,
-          message: "OTP verified successfully (DEV MODE).",
+      if (!storedOtp || storedOtp !== otp) {
+        return res.status(401).json({
+          verified: false,
+          message: "Invalid or expired OTP.",
         });
       }
+
+      //testing code remove below code and uncomment above in production
+      // const isDev = process.env.NODE_ENV !== "production";
+      // const dummyOtp = process.env.DUMMY_OTP || "111111";
+
+      // if (isDev && otp === dummyOtp) {
+      //   // allow without Redis
+      //   return res.status(200).json({
+      //     verified: true,
+      //     message: "OTP verified successfully (DEV MODE).",
+      //   });
+      // }
 
       // OTP valid → delete
       await redisClient.del(redisKey);
@@ -378,38 +390,6 @@ const OrganizationController = {
         });
       }
 
-      // const redisKey = `otp:LOGIN:${email}`;
-      // const storedOtp = await redisClient.get(redisKey);
-
-      // if (!storedOtp || storedOtp !== otp) {
-      //   return res.status(401).json({
-      //     message: "Invalid or expired OTP.",
-      //   });
-      // }
-
-      // // OTP valid → delete it
-      // await redisClient.del(redisKey);
-
-      //testing code remove below code and uncomment above in production
-
-      const isDev = process.env.NODE_ENV !== "production";
-      const dummyOtp = process.env.DUMMY_OTP || "111111";
-
-      if (isDev && otp === dummyOtp) {
-        // skip Redis check
-      } else {
-        const redisKey = `otp:LOGIN:${email}`;
-        const storedOtp = await redisClient.get(redisKey);
-
-        if (!storedOtp || storedOtp !== otp) {
-          return res.status(401).json({
-            message: "Invalid or expired OTP.",
-          });
-        }
-
-        await redisClient.del(redisKey);
-      }
-
       const user = await prisma.users.findUnique({
         where: { email: email.toLowerCase() },
         include: {
@@ -423,8 +403,41 @@ const OrganizationController = {
       });
 
       if (!user) {
+        // Fail fast if email is not registered
         return res.status(404).json({ message: "User not found" });
       }
+
+      const redisKey = `otp:LOGIN:${email}`;
+      const storedOtp = await redisClient.get(redisKey);
+
+      if (!storedOtp || storedOtp !== otp) {
+        return res.status(401).json({
+          message: "Invalid or expired OTP.",
+        });
+      }
+
+      // OTP valid → delete it
+      await redisClient.del(redisKey);
+
+      //testing code remove below code and uncomment above in production
+
+      // const isDev = process.env.NODE_ENV !== "production";
+      // const dummyOtp = process.env.DUMMY_OTP || "111111";
+
+      // if (isDev && otp === dummyOtp) {
+      //   // skip Redis check
+      // } else {
+      //   const redisKey = `otp:LOGIN:${email}`;
+      //   const storedOtp = await redisClient.get(redisKey);
+
+      //   if (!storedOtp || storedOtp !== otp) {
+      //     return res.status(401).json({
+      //       message: "Invalid or expired OTP.",
+      //     });
+      //   }
+
+      //   await redisClient.del(redisKey);
+      // }
 
       const { accessToken, refreshToken } = generateTokens(user);
 
@@ -1138,10 +1151,10 @@ const OrganizationController = {
       ];
 
       const recentAlerts = allAlerts.filter(
-        (a) => a.start_time && new Date(a.start_time) < new Date()
+        (a) => a.start_time && new Date(a.start_time) < new Date(),
       );
       const upcomingAlerts = allAlerts.filter(
-        (a) => a.scheduled_time && new Date(a.scheduled_time) > new Date()
+        (a) => a.scheduled_time && new Date(a.scheduled_time) > new Date(),
       );
       const scheduledAlerts = allAlerts.filter((a) => a.status === "scheduled");
 

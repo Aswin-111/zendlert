@@ -13,13 +13,13 @@ export const generateTokens = (user) => {
   const accessToken = jwt.sign(
     payload,
     process.env.ACCESS_TOKEN_SECRET, // Use distinct secrets!
-    { expiresIn: "15m" } // Short life
+    { expiresIn: "15m" }, // Short life
   );
 
   const refreshToken = jwt.sign(
     { user_id: user.user_id },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: "7d" } // Long life
+    { expiresIn: "7d" }, // Long life
   );
 
   return { accessToken, refreshToken };

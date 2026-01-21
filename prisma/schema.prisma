@@ -632,7 +632,7 @@ model Subscriptions {
 
   stripe_customer_id     String @unique
   stripe_subscription_id String @unique
-  stripe_price_id        String @unique
+  stripe_price_id        String 
 
   status         String  @default("inactive") @db.VarChar(50)
   payment_method String? @db.VarChar(50)
