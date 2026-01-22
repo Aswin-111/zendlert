@@ -7,6 +7,9 @@ const router = express.Router();
 // 1. Create Subscription (Protected)
 router.post("/create", verifyJWT, SubscriptionController.createSubscription);
 router.post("/preview", verifyJWT, SubscriptionController.previewInvoice);
+
+// Get details for Success Page
+router.get("/status", verifyJWT, SubscriptionController.getSubscriptionStatus);
 // 2. Webhook (Public)
 // IMPORTANT: The raw body parsing must be handled in your server.js (app.js)
 // before this route is mounted, or via specific middleware here if your setup supports it.

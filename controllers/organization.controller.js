@@ -13,6 +13,10 @@ const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_KEY);
 import jwt from "jsonwebtoken";
 import { generateTokens, sendRefreshTokenCookie } from "../utils/token.js";
+import updateUserProfileSchema from "../validators/organization/update-user.validator.js";
+import updateSiteSchema from "../validators/organization/update-site.validator.js";
+import updateAreaSchema from "../validators/organization/update-area.validator.js";
+
 const OTP_EXPIRY_SECONDS = 600;
 const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -152,7 +156,7 @@ const OrganizationController = {
         });
       }
 
-     // 2. CHECK USER EXISTENCE (If Purpose is LOGIN)
+      // 2. CHECK USER EXISTENCE (If Purpose is LOGIN)
       if (purpose === "LOGIN") {
         const user = await prisma.users.findUnique({
           where: { email: email.toLowerCase() },
@@ -662,6 +666,131 @@ const OrganizationController = {
       });
     }
   },
+  updateUserProfile: async (req, res) => {
+    try {
+      const { user_id } = req.user; // From verifyJWT middleware
+
+      const parsed = updateUserProfileSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid input",
+          errors: parsed.error.errors.map((e) => e.message),
+        });
+      }
+
+      const { first_name, last_name, phone_number, email } = parsed.data;
+
+      // 1. Check email uniqueness if it is being changed
+      if (email) {
+        const existingUser = await prisma.users.findUnique({
+          where: { email: email.toLowerCase() },
+        });
+
+        // If email exists AND it belongs to someone else
+        if (existingUser && existingUser.user_id !== user_id) {
+          return res
+            .status(409)
+            .json({ message: "Email is already in use by another account." });
+        }
+      }
+
+      // 2. Perform Update
+      const updatedUser = await prisma.users.update({
+        where: { user_id },
+        data: {
+          first_name,
+          last_name,
+          phone_number,
+          // Only update email if provided
+          email: email ? email.toLowerCase() : undefined,
+        },
+        select: {
+          user_id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          phone_number: true,
+          role: { select: { role_name: true } },
+        },
+      });
+
+      return res.status(200).json({
+        message: "Profile updated successfully",
+        user: updatedUser,
+      });
+    } catch (error) {
+      logger.error("updateUserProfile error:", error);
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
+    }
+  },
+  updateSite: async (req, res) => {
+    try {
+      const parsed = updateSiteSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid input",
+          errors: parsed.error.errors.map((e) => e.message),
+        });
+      }
+
+      const {
+        site_id,
+        name,
+        address_line_1,
+        address_line_2,
+        city,
+        state,
+        zip_code,
+        contact_name,
+        contact_email,
+        contact_phone,
+      } = parsed.data;
+
+      const { organization_id } = req.user; // Security: User can only edit own org's sites
+
+      // 1. Security Check: Does this site belong to the user's organization?
+      const existingSite = await prisma.sites.findFirst({
+        where: {
+          id: site_id,
+          organization_id: organization_id,
+        },
+      });
+
+      if (!existingSite) {
+        return res
+          .status(404)
+          .json({ message: "Site not found or access denied." });
+      }
+
+      // 2. Perform Update
+      const updatedSite = await prisma.sites.update({
+        where: { id: site_id },
+        data: {
+          name,
+          address_line_1,
+          address_line_2,
+          city,
+          state,
+          zip_code,
+          contact_name,
+          contact_email,
+          contact_phone,
+        },
+      });
+
+      return res.status(200).json({
+        message: "Site details updated successfully",
+        site: updatedSite,
+      });
+    } catch (error) {
+      logger.error("updateSite error:", error);
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
+    }
+  },
   createSite: async (req, res) => {
     try {
       const parsed = createSiteSchema.safeParse(req.body);
@@ -714,6 +843,56 @@ const OrganizationController = {
       });
     } catch (error) {
       logger.error("createSite error:", error);
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
+    }
+  },
+  updateArea: async (req, res) => {
+    try {
+      const parsed = updateAreaSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid input",
+          errors: parsed.error.errors.map((e) => e.message),
+        });
+      }
+
+      const { area_id, name, description } = parsed.data;
+      const { organization_id } = req.user;
+
+      // 1. Security Check:
+      // Ensure the Area belongs to a Site that belongs to the User's Organization
+      const existingArea = await prisma.areas.findFirst({
+        where: {
+          id: area_id,
+          site: {
+            organization_id: organization_id, // Nested relation check
+          },
+        },
+      });
+
+      if (!existingArea) {
+        return res
+          .status(404)
+          .json({ message: "Area not found or access denied." });
+      }
+
+      // 2. Perform Update
+      const updatedArea = await prisma.areas.update({
+        where: { id: area_id },
+        data: {
+          name,
+          description,
+        },
+      });
+
+      return res.status(200).json({
+        message: "Area details updated successfully",
+        area: updatedArea,
+      });
+    } catch (error) {
+      logger.error("updateArea error:", error);
       return res
         .status(500)
         .json({ message: "Server error", error: error.message });

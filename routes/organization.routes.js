@@ -1,6 +1,7 @@
 import express from "express";
 import OrganizationController from "../controllers/organization.controller.js";
 import verifyJWT from "../middlewares/verifyJWT.js";
+import { verifyAdmin } from "../middlewares/verifyRoles.js";
 import AuthController from "../controllers/auth.controller.js";
 
 const router = express.Router();
@@ -11,18 +12,7 @@ router.get("/check-business-name", OrganizationController.checkBusinessName);
 router.post("/check-email-domain", OrganizationController.checkEmailDomain);
 
 // --- AUTH ROUTES ---
-router.post(
-  "/refresh",
-  (req, res, next) => {
-    console.log(
-      "Incoming request to /api/v1/organizations/refresh:",
-      req.method,
-      req.url,
-    );
-    next();
-  },
-  AuthController.handleRefreshToken,
-);
+router.post("/refresh", AuthController.handleRefreshToken);
 router.post("/logout", AuthController.logout);
 
 //OTP routes
@@ -40,13 +30,46 @@ router.get(
 router.put(
   "/update-organization",
   verifyJWT,
+  verifyAdmin,
   OrganizationController.updateOrganization,
 );
 
+//update
+// User Profile
+router.put(
+  "/profile/update",
+  verifyJWT,
+  OrganizationController.updateUserProfile,
+);
+
+// Site Management
+router.put(
+  "/site/update",
+  verifyJWT,
+  verifyAdmin,
+  OrganizationController.updateSite,
+);
+router.put(
+  "/area/update",
+  verifyJWT,
+  verifyAdmin,
+  OrganizationController.updateArea,
+);
+
 //Sites routes
-router.post("/create-site", verifyJWT, OrganizationController.createSite);
+router.post(
+  "/create-site",
+  verifyAdmin,
+  verifyJWT,
+  OrganizationController.createSite,
+);
 router.get("/sites", verifyJWT, OrganizationController.getAllSites);
-router.post("/create-area", verifyJWT, OrganizationController.createArea);
+router.post(
+  "/create-area",
+  verifyJWT,
+  verifyAdmin,
+  OrganizationController.createArea,
+);
 
 // Employee routes
 router.get("/check-emaildomain", OrganizationController.checkEmailForEmployee);
@@ -69,6 +92,7 @@ router.get(
 router.put(
   "/assign-site-area",
   verifyJWT,
+  verifyAdmin,
   OrganizationController.assignSiteAndAreaToUser,
 );
 

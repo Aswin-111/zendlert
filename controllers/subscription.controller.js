@@ -103,15 +103,17 @@ const SubscriptionController = {
       // We determine status based on Stripe response
       const status = subscription.status; // 'active', 'incomplete', etc.
 
-      const periodStart = subscription.current_period_start
-        ? new Date(subscription.current_period_start * 1000)
-        : new Date();
+      // Stripe returns timestamps in seconds. If null, we default to Date.now()
+      const startTs = subscription.current_period_start;
+      const endTs = subscription.current_period_end;
 
-      const periodEnd = subscription.current_period_end
-        ? new Date(subscription.current_period_end * 1000)
-        : new Date();
+      const periodStart = startTs ? new Date(startTs * 1000) : new Date();
+      // If end date is missing (rare), default to 30 days from now
+      const periodEnd = endTs
+        ? new Date(endTs * 1000)
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-      await prisma.subscriptions.create({
+      const newDbSubscription = await prisma.subscriptions.create({
         data: {
           organization_id,
           subscription_plan_id: plan_id,
@@ -130,7 +132,8 @@ const SubscriptionController = {
       if (status === "active") {
         return res.status(200).json({
           message: "Subscription created successfully",
-          subscriptionId: subscription.id,
+          subscriptionId: newDbSubscription.id,
+          stripeId: subscription.id,
           status: "active",
         });
       } else if (status === "incomplete") {
@@ -140,7 +143,8 @@ const SubscriptionController = {
         return res.status(200).json({
           message: "Payment confirmation required",
           status: "incomplete",
-          subscriptionId: subscription.id,
+          subscriptionId: newDbSubscription.id,
+          stripeId: subscription.id,
           clientSecret: clientSecret, // Frontend needs this for confirmCardPayment
         });
       }
@@ -150,6 +154,56 @@ const SubscriptionController = {
         .json({ message: "Subscription created but status is " + status });
     } catch (error) {
       logger.error("Create Subscription Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  },
+  /**
+   * @description Fetches subscription details for the "Payment Confirmed" page.
+   * @route GET /api/v1/subscriptions/status
+   */
+  getSubscriptionStatus: async (req, res) => {
+    try {
+      const { organization_id } = req.user;
+
+      // 1. Get the Active Subscription + Plan Details
+      const sub = await prisma.subscriptions.findFirst({
+        where: {
+          organization_id,
+          // You might want to filter by status: 'active' if you keep history
+          status: "active",
+        },
+        include: {
+          // Assuming your relation name is 'plan' or 'Subscription_Plan' based on your schema
+          // Adjust this key to match your Prisma Schema relation name!
+          // Common default: subscription_plan
+          // If you named the relation in schema:  plan Subscription_Plans @relation(...)
+          plan: true,
+        },
+        orderBy: { created_at: "desc" }, // Get the most recent one
+      });
+
+      if (!sub) {
+        return res
+          .status(404)
+          .json({ message: "No active subscription found." });
+      }
+
+      // 2. Format Data for the UI (Matching your screenshot)
+      const data = {
+        plan_name: sub.plan?.plan_name || "Unknown Plan",
+        amount_charged: parseFloat(sub.plan?.monthly_price || 0).toFixed(2),
+        billing_cycle: "Monthly", // or derive from price/interval
+        payment_date: sub.current_period_start, // "December 4, 2025"
+        payment_status: "Successful",
+
+        // Next Payment Section
+        next_billing_date: sub.current_period_end, // "January 3, 2026"
+        next_amount: parseFloat(sub.plan?.monthly_price || 0).toFixed(2),
+      };
+
+      return res.status(200).json({ success: true, data });
+    } catch (error) {
+      logger.error("Get Subscription Status Error:", error);
       return res.status(500).json({ error: error.message });
     }
   },
