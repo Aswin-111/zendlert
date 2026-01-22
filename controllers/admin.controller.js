@@ -106,13 +106,21 @@ const AdminController = {
                 return res.status(400).json({ message: "building_name is required" });
             }
 
-            // Fetch area by name
+            // 1️⃣ Fetch area + organization
             const area = await prisma.areas.findFirst({
                 where: { name: building_name },
                 include: {
                     site: {
                         include: {
-                            organization: true,
+                            organization: {
+                                select: {
+                                    organization_id: true,
+                                    name: true,
+                                    main_contact_name: true,
+                                    main_contact_email: true,
+                                    main_contact_phone: true,
+                                },
+                            },
                         },
                     },
                 },
@@ -122,10 +130,12 @@ const AdminController = {
                 return res.status(404).json({ message: "Building (area) not found" });
             }
 
-            // Fetch related alerts
+            const organizationId = area.site.organization.organization_id;
+
+            // 2️⃣ Fetch alerts for this area
             const alerts = await prisma.alerts.findMany({
                 where: {
-                    organization_id: area.site.organization_id,
+                    organization_id: organizationId,
                     Alert_Areas: {
                         some: {
                             area_id: area.id,
@@ -147,35 +157,40 @@ const AdminController = {
                 (a) => a.scheduled_time && a.scheduled_time > now
             );
 
-            const scheduledAlerts = alerts.filter((a) => a.scheduled_time !== null);
+            const scheduledAlerts = alerts.filter(
+                (a) => a.scheduled_time !== null
+            );
 
-            // Emergency contacts for this area
-            const emergencyContacts = await prisma.users.findMany({
-                where: {
-                    area_id: area.id,
-                    is_active: true,
-                },
-                select: {
-                    first_name: true,
-                    last_name: true,
-                    email: true,
-                    phone_number: true,
-                },
-            });
+            // 3️⃣ SINGLE emergency contact (from organization)
+            const emergencyContact =
+                area.site.organization.main_contact_name
+                    ? {
+                        name: area.site.organization.main_contact_name,
+                        email: area.site.organization.main_contact_email,
+                        phone: area.site.organization.main_contact_phone,
+                    }
+                    : null;
 
+            // 4️⃣ Response
             return res.status(200).json({
                 building: area.name,
                 organization: area.site.organization.name,
+
                 recent_alerts: recentAlerts,
                 upcoming_alerts: upcomingAlerts,
                 scheduled_alerts: scheduledAlerts,
-                emergency_contacts: emergencyContacts,
+
+                emergency_contact: emergencyContact, // ✅ SINGLE OBJECT
             });
         } catch (error) {
             console.error("getBuildingAlerts error:", error);
-            return res.status(500).json({ message: "Server error", error: error.message });
+            return res.status(500).json({
+                message: "Server error",
+                error: error.message,
+            });
         }
     },
+
     getAllAreasByOrganizationId: async (req, res) => {
         const { organization_id } = req.query;
 
@@ -1089,44 +1104,58 @@ const AdminController = {
                 return res.status(400).json({ message: "organization_id is required" });
             }
 
-            const [total_employees, contractors, pending_verifications] = await Promise.all([
-                // Total EMPLOYEE users in the organization
+            const [
+                permanent_employees,
+                contractors,
+                pending_verifications,
+            ] = await Promise.all([
+                // ✅ Permanent employees (NOT contractors)
                 prisma.users.count({
                     where: {
                         organization_id,
-                        user_type: 'employee',
+                        user_type: "employee",
+                        is_active: true,
                     },
                 }),
 
-                // Total CONTRACTOR users linked to this organization's companies
+                // ✅ Contractors (separate table)
                 prisma.contractors.count({
                     where: {
                         contracting_company: {
                             organization_id,
                         },
+                        // (optional) if you have active flag in contractors table:
+                        // is_active: true,
                     },
                 }),
 
-                // Total users with unverified phone in the organization
+                // ✅ Pending verifications (all active users in org with phone not verified)
                 prisma.users.count({
                     where: {
                         organization_id,
                         phone_verified: false,
+                        is_active: true,
                     },
                 }),
             ]);
 
+            const total_employees = permanent_employees + contractors;
+
             return res.status(200).json({
-                total_employees,
-                contractors,
+                total_employees,        // ✅ permanent + contractors
+                permanent_employees,    // ✅ employees only
+                contractors,            // ✅ contractors only
                 pending_verifications,
             });
         } catch (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Something went wrong", error: err.message });
+            console.error("getOrganizationOverview error:", err);
+            return res.status(500).json({
+                message: "Something went wrong",
+                error: err.message,
+            });
         }
-    }
-    ,
+    },
+
 
     getFilterValues: async (req, res) => {
         try {
@@ -2412,20 +2441,31 @@ const AdminController = {
         try {
             const { organization_id } = req.query;
             const page = Number(req.query.page || 1);
-            const take = 10;
+            const take = Number(req.query.per_page || 10);
             const skip = (page - 1) * take;
 
             if (!organization_id) {
                 return res.status(400).json({ message: "organization_id is required" });
             }
 
+            // ✅ Only resolved alerts for history
+            const whereResolved = {
+                organization_id: String(organization_id),
+                AND: [
+                    { status: "resolved" },         // enum AlertStatus.resolved
+                    { resolved_at: { not: null } }, // safety
+                ],
+                // Optional: ensure it truly ended
+                // end_time: { not: null },
+            };
+
             const total = await prisma.alerts.count({
-                where: { organization_id },
+                where: whereResolved,
             });
 
             const alerts = await prisma.alerts.findMany({
-                where: { organization_id },
-                orderBy: [{ start_time: "desc" }, { created_at: "desc" }],
+                where: whereResolved,
+                orderBy: [{ resolved_at: "desc" }, { end_time: "desc" }, { created_at: "desc" }],
                 skip,
                 take,
                 select: {
@@ -2434,6 +2474,14 @@ const AdminController = {
                     severity: true,
                     start_time: true,
                     end_time: true,
+                    resolved_at: true,
+                    resolution_notes: true,
+                    resolution_reason: {
+                        select: {
+                            reason_code: true,
+                            reason_description: true,
+                        },
+                    },
                     emergency_type: { select: { name: true } },
                     Notification_Recipients: { select: { response: true } },
                 },
@@ -2451,26 +2499,37 @@ const AdminController = {
                             safe++;
                             break;
                         case "seeking_shelter":
+                        case "need_help":
                             needHelp++;
                             break;
                         case "not_safe":
                         case "evacuated":
+                        case "emergency_help_needed":
                             emergency++;
                             break;
                         default:
-                            // null or undefined -> not responded
-                            break;
+                            break; // null/undefined = not responded
                     }
                 }
 
-                const notResponded = recipients.length - (safe + needHelp + emergency);
+                const notResponded = Math.max(0, recipients.length - (safe + needHelp + emergency));
 
                 return {
-                    emergency_type: a.emergency_type ? a.emergency_type.name : null,
+                    id: a.id,
+                    emergency_type: a.emergency_type?.name ?? null,
                     message: a.message,
                     severity: a.severity,
                     start_time: a.start_time,
                     end_time: a.end_time,
+                    resolved_at: a.resolved_at,
+                    resolution_reason: a.resolution_reason
+                        ? {
+                            code: a.resolution_reason.reason_code,
+                            description: a.resolution_reason.reason_description,
+                        }
+                        : null,
+                    resolution_notes: a.resolution_notes ?? null,
+
                     safe_responded_count: safe,
                     need_help_count: needHelp,
                     emergency_count: emergency,
@@ -2491,8 +2550,8 @@ const AdminController = {
             console.error("getAlertHistory error:", error);
             return res.status(500).json({ message: "Server error", error: error.message });
         }
-        // ✅ Get all scheduled alerts for an organization
     },
+
 
     getScheduledAlerts: async (req, res) => {
         try {
@@ -2802,7 +2861,7 @@ const AdminController = {
             // Optional: sort by count desc for nicer charts
             distribution.sort((a, b) => b.count - a.count);
 
-           
+
 
             return res.status(200).json({
                 organization_id,
@@ -2927,6 +2986,280 @@ const AdminController = {
                 .json({ message: "Server error", error: error.message });
         }
     },
+    /**
+   * GET /admin/general-settings
+   * Returns:
+   * company name,
+   * industry type name,
+   * primary contact name,
+   * contact phone,
+   * contact email,
+   * time zone,
+   * organization address object
+   */
+    getGeneralSettings: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id || req.query.organization_id;
+
+            if (!organization_id) {
+                return res.status(400).json({ success: false, message: "organization_id is required" });
+            }
+
+            const org = await prisma.organizations.findUnique({
+                where: { organization_id },
+                select: {
+                    name: true,
+                    time_zone: true,
+                    main_contact_name: true,
+                    main_contact_email: true,
+                    main_contact_phone: true,
+                    industry_type: { select: { name: true } },
+                },
+            });
+
+            if (!org) {
+                return res.status(404).json({ success: false, message: "Organization not found" });
+            }
+
+            // Pick a primary site as org address (oldest created)
+            const primarySite = await prisma.sites.findFirst({
+                where: { organization_id },
+                orderBy: { created_at: "asc" },
+                select: {
+                    address_line_1: true,
+                    address_line_2: true,
+                    city: true,
+                    state: true,
+                    zip_code: true,
+                },
+            });
+
+            const street = primarySite
+                ? [primarySite.address_line_1, primarySite.address_line_2].filter(Boolean).join(", ")
+                : "";
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    company_name: org.name,
+                    industry_type_name: org.industry_type?.name ?? "",
+                    primary_contact_name: org.main_contact_name ?? "",
+                    contact_email: org.main_contact_email ?? "",
+                    contact_phone: org.main_contact_phone ?? "",
+                    time_zone: org.time_zone,
+                    organization_address: {
+                        street_address: street,
+                        state: primarySite?.state ?? "",
+                        city: primarySite?.city ?? "",
+                        zip: primarySite?.zip_code ?? "",
+                        country: "", // not in schema
+                    },
+                },
+            });
+        } catch (error) {
+            console.error("getGeneralSettings error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+
+    /**
+   * PUT /admin/general-settings
+   * Body:
+   * {
+   *   company_name,
+   *   industry_type_name,
+   *   primary_contact_name,
+   *   contact_phone,
+   *   contact_email,
+   *   time_zone,
+   *   organization_address: { street_address, state, city, zip, country }
+   * }
+   */
+    updateGeneralSettings: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id || req.body.organization_id;
+
+            if (!organization_id) {
+                return res.status(400).json({ success: false, message: "organization_id is required" });
+            }
+
+            const {
+                company_name,
+                time_zone,
+                primary_contact_name,
+                contact_email,
+                contact_phone,
+                industry_type_id,
+                organization_address,
+            } = req.body;
+
+            // 1) Update Organizations table
+            await prisma.organizations.update({
+                where: { organization_id },
+                data: {
+                    ...(company_name !== undefined ? { name: company_name } : {}),
+                    ...(time_zone !== undefined ? { time_zone } : {}),
+                    ...(primary_contact_name !== undefined ? { main_contact_name: primary_contact_name } : {}),
+                    ...(contact_email !== undefined ? { main_contact_email: contact_email } : {}),
+                    ...(contact_phone !== undefined ? { main_contact_phone: contact_phone } : {}),
+                    ...(industry_type_id !== undefined ? { industry_type_id } : {}),
+                },
+            });
+
+            // 2) Update primary site's address (oldest created site)
+            if (organization_address && typeof organization_address === "object") {
+                const primarySite = await prisma.sites.findFirst({
+                    where: { organization_id },
+                    orderBy: { created_at: "asc" },
+                    select: { id: true },
+                });
+
+                if (primarySite) {
+                    await prisma.sites.update({
+                        where: { id: primarySite.id },
+                        data: {
+                            ...(organization_address.street_address_line_1 !== undefined
+                                ? { address_line_1: organization_address.street_address_line_1 }
+                                : {}),
+                            ...(organization_address.street_address_line_2 !== undefined
+                                ? { address_line_2: organization_address.street_address_line_2 }
+                                : {}),
+                            ...(organization_address.city !== undefined ? { city: organization_address.city } : {}),
+                            ...(organization_address.state !== undefined ? { state: organization_address.state } : {}),
+                            ...(organization_address.zip !== undefined ? { zip_code: organization_address.zip } : {}),
+                        },
+                    });
+                }
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "General settings updated successfully",
+            });
+        } catch (error) {
+            console.error("updateGeneralSettings error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+    /**
+     * GET /admin/billing-history
+     * Source: subscriptions table
+     *
+     * Output (per row):
+     * plan_name
+     * amount
+     * currency
+     * billing_cycle
+     * status
+     * start_date
+     * end_date
+     * invoice_id
+     * payment_method
+     * created_at
+     */
+    getBillingHistory: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id || req.query.organization_id;
+
+            if (!organization_id) {
+                return res.status(400).json({
+                    success: false,
+                    message: "organization_id is required",
+                });
+            }
+
+            const rows = await prisma.subscriptions.findMany({
+                where: { organization_id },
+                orderBy: { created_at: "desc" },
+                select: {
+                    id: true,
+                    status: true,
+                    payment_status: true,
+                    payment_method: true,
+                    current_period_start: true,
+                    current_period_end: true,
+                    auto_renew: true,
+                    created_at: true,
+
+                    stripe_customer_id: true,
+                    stripe_subscription_id: true,
+                    stripe_price_id: true,
+
+                    plan: {
+                        select: {
+                            id: true,
+                            plan_name: true,
+                            monthly_price: true,
+                            annual_price: true,
+                            stripe_price_id: true,
+                        },
+                    },
+                },
+            });
+
+            // derive billing_cycle + amount from plan + period length
+            const data = rows.map((s) => {
+                const start = s.current_period_start ? new Date(s.current_period_start) : null;
+                const end = s.current_period_end ? new Date(s.current_period_end) : null;
+
+                let billing_cycle = "";
+                if (start && end) {
+                    const days = Math.round((end - start) / (1000 * 60 * 60 * 24));
+                    // rough heuristic
+                    billing_cycle = days >= 330 ? "yearly" : "monthly";
+                }
+
+                const amount =
+                    billing_cycle === "yearly"
+                        ? (s.plan?.annual_price ?? null)
+                        : (s.plan?.monthly_price ?? null);
+
+                return {
+                    subscription_id: s.id,
+                    plan_id: s.plan?.id ?? null,
+                    plan_name: s.plan?.plan_name ?? "",
+                    billing_cycle,
+                    amount, // Decimal (Prisma Decimal) – return as-is or stringify if needed
+                    status: s.status,
+                    payment_status: s.payment_status,
+                    payment_method: s.payment_method ?? "",
+                    period_start: s.current_period_start,
+                    period_end: s.current_period_end,
+                    auto_renew: s.auto_renew,
+                    billed_at: s.created_at,
+                    stripe: {
+                        stripe_customer_id: s.stripe_customer_id,
+                        stripe_subscription_id: s.stripe_subscription_id,
+                        stripe_price_id: s.stripe_price_id,
+                    },
+                };
+            });
+
+            return res.status(200).json({
+                success: true,
+                data,
+            });
+        } catch (error) {
+            console.error("getBillingHistory error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+
 };
 
 

@@ -1,6 +1,6 @@
 import express from "express";
 import AdminController from "../controllers/admin.controller.js";
-
+import verifyJWT from "../middlewares/verifyJWT.js"
 const router = express.Router();
 
 
@@ -116,8 +116,6 @@ router.get('/sites/popup-areas', AdminController.sitePopupAreas);
 
 
 
-// sound gallery english , tribal app translation, world map
-
 
 
 
@@ -159,6 +157,17 @@ router.get("/get-response-time-trend", AdminController.getResponseTimeTrend);
 router.get("/alert-history", AdminController.getAlertHistory);
 // ✅ Route: GET /admin/scheduled-alerts?organization_id=UUID
 router.get("/scheduled-alerts", AdminController.getScheduledAlerts);
+
+
+router.get("/general-settings", verifyJWT, AdminController.getGeneralSettings);
+router.put("/general-settings", verifyJWT, AdminController.updateGeneralSettings);
+
+// Billing history (Admin Settings)
+router.get(
+  "/billing-history",
+  verifyJWT,
+  AdminController.getBillingHistory
+);
 export default router;
 
 // Total alerts , response rate , respoinse time , alert success ,active users , weather, builiding

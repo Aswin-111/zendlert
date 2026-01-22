@@ -242,8 +242,12 @@ const AlertController = {
       });
 
       const alertHistoryCount = await prisma.alerts.count({
-        where: { organization_id },
+        where: {
+          organization_id,
+          status: "resolved",
+        },
       });
+
 
       const scheduledAlertCount = await prisma.alerts.count({
         where: { organization_id, scheduled_time: { gt: new Date() } },
@@ -310,9 +314,15 @@ const AlertController = {
       const safeCount = await prisma.notification_Recipients.count({
         where: { alert: { organization_id }, response: "safe" },
       });
+
       const needHelpCount = await prisma.notification_Recipients.count({
-        where: { alert: { organization_id }, response: "not_safe" },
+        where: { alert: { organization_id }, response: "need_help" },
       });
+
+      const emergencyHelpNeededCount = await prisma.notification_Recipients.count({
+        where: { alert: { organization_id }, response: "emergency_help_needed" },
+      });
+
       const notRespondedCount = await prisma.notification_Recipients.count({
         where: { alert: { organization_id }, response: null },
       });
@@ -337,8 +347,10 @@ const AlertController = {
         employee_status: {
           safe: safeCount,
           need_help: needHelpCount,
+          emergency_help_needed: emergencyHelpNeededCount,
           not_responded: notRespondedCount,
         },
+
         delivery_status: deliveryStatusCounts,
         total_employees: totalEmployees,
         pagination: {
@@ -779,67 +791,67 @@ const AlertController = {
     try {
       const { organization_id, alert_id, message } = req.body;
 
-      // 1. Basic Input Validation
+      // auth middleware should inject this
+      const resolvedByUserId = req.user?.user_id;
+
       if (!organization_id || !alert_id || !message) {
         return res.status(400).json({
           message:
-            "organization_id, alert_id, and a resolution message are required in the request body.",
+            "organization_id, alert_id, and resolution message are required.",
         });
       }
 
-      // 2. Find the alert to validate its existence and ownership.
       const alert = await prisma.alerts.findUnique({
         where: { id: alert_id },
       });
 
-      // 3. Perform Validation Checks
       if (!alert) {
         return res.status(404).json({ message: "Alert not found." });
       }
 
-      // SECURITY CHECK: Ensure the alert belongs to the requesting organization.
       if (alert.organization_id !== organization_id) {
-        return res
-          .status(403)
-          .json({
-            message:
-              "Forbidden: You do not have permission to resolve this alert.",
-          });
-      }
-
-      // STATE CHECK: Ensure the alert is currently active.
-      if (alert.status !== "active") {
-        // Using direct string comparison for clarity
-        return res.status(409).json({
-          // 409 Conflict is appropriate for incorrect state
-          message: `Cannot resolve an alert with status '${alert.status}'. Only active alerts can be resolved.`,
+        return res.status(403).json({
+          message: "Forbidden: You cannot resolve this alert.",
         });
       }
 
-      // 4. Update the Alert in the database
+      if (alert.status !== "active") {
+        return res.status(409).json({
+          message: `Cannot resolve alert with status '${alert.status}'.`,
+        });
+      }
+
+      const now = new Date();
+
       await prisma.alerts.update({
         where: { id: alert_id },
         data: {
-          status: "resolved", // Set status to resolved
-          end_time: new Date(), // Mark the time of resolution
-          // Append the resolution message to the original message for a clear audit trail
-          message: alert.message + `\n\n--- RESOLUTION ---\n${message}`,
+          status: "resolved",
+          end_time: now,
+          resolved_at: now,                    // ✅ REQUIRED
+          resolved_by: resolvedByUserId ?? null,
+          resolution_notes: message,           // ✅ REQUIRED
+
+          // optional audit trail (safe)
+          message: alert.message
+            ? `${alert.message}\n\n--- RESOLUTION ---\n${message}`
+            : `--- RESOLUTION ---\n${message}`,
         },
       });
 
-      // 5. Send successful response
-      return res
-        .status(200)
-        .json({ message: "Alert has been successfully resolved." });
+      return res.status(200).json({
+        success: true,
+        message: "Alert resolved successfully.",
+      });
     } catch (error) {
-      // Assuming you have a logger utility available in this scope
       console.error("resolveAlert error:", error);
-      // logger.error("resolveAlert error:", { error });
-      return res
-        .status(500)
-        .json({ message: "Server error", error: error.message });
+      return res.status(500).json({
+        message: "Server error",
+        error: error.message,
+      });
     }
   },
+
   getEmergencyTypePercentages: async (req, res) => {
     try {
       const { organization_id } = req.query;

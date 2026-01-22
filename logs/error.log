@@ -1035,3 +1035,164 @@ Invalid value for argument `current_period_start`: Provided Date object is inval
 2026-01-20T21:05:44.873Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
 2026-01-20T21:05:47.750Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
 2026-01-20T21:05:52.938Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-21T10:52:38.277Z ERROR: [WORKER] Job 23 failed for alert eb6ff616-2169-43e2-a667-8da078955e81:
+2026-01-21T10:52:38.329Z ERROR: Job 23 has failed with admin is not defined
+2026-01-21T10:52:39.356Z ERROR: [WORKER] Job 23 failed for alert eb6ff616-2169-43e2-a667-8da078955e81:
+2026-01-21T10:52:39.361Z ERROR: Job 23 has failed with admin is not defined
+2026-01-21T10:52:41.481Z ERROR: [WORKER] Job 23 failed for alert eb6ff616-2169-43e2-a667-8da078955e81:
+2026-01-21T10:52:41.489Z ERROR: Job 23 has failed with admin is not defined
+2026-01-22T06:28:14.860Z ERROR: [WORKER] Job 24 failed for alert 6f664285-5509-49ec-9cf1-72e83946f72e:
+2026-01-22T06:28:14.890Z ERROR: Job 24 has failed with admin is not defined
+2026-01-22T06:28:16.002Z ERROR: [WORKER] Job 24 failed for alert 6f664285-5509-49ec-9cf1-72e83946f72e:
+2026-01-22T06:28:16.007Z ERROR: Job 24 has failed with admin is not defined
+2026-01-22T06:28:18.117Z ERROR: [WORKER] Job 24 failed for alert 6f664285-5509-49ec-9cf1-72e83946f72e:
+2026-01-22T06:28:18.174Z ERROR: Job 24 has failed with admin is not defined
+2026-01-22T06:32:36.705Z ERROR: [WORKER] Job 25 failed for alert 901fc188-e429-4757-a778-361b3ec3d6d6:
+2026-01-22T06:32:36.714Z ERROR: Job 25 has failed with admin is not defined
+2026-01-22T06:32:37.769Z ERROR: [WORKER] Job 25 failed for alert 901fc188-e429-4757-a778-361b3ec3d6d6:
+2026-01-22T06:32:37.780Z ERROR: Job 25 has failed with admin is not defined
+2026-01-22T06:32:39.866Z ERROR: [WORKER] Job 25 failed for alert 901fc188-e429-4757-a778-361b3ec3d6d6:
+2026-01-22T06:32:39.874Z ERROR: Job 25 has failed with admin is not defined
+2026-01-22T06:56:27.504Z ERROR: [WORKER] Job 26 failed for alert eac7a0fb-4aab-4846-8798-6040a717addc:
+2026-01-22T06:56:27.517Z ERROR: Job 26 has failed with admin is not defined
+2026-01-22T06:56:28.551Z ERROR: [WORKER] Job 26 failed for alert eac7a0fb-4aab-4846-8798-6040a717addc:
+2026-01-22T06:56:28.555Z ERROR: Job 26 has failed with admin is not defined
+2026-01-22T06:56:30.580Z ERROR: [WORKER] Job 26 failed for alert eac7a0fb-4aab-4846-8798-6040a717addc:
+2026-01-22T06:56:30.586Z ERROR: Job 26 has failed with admin is not defined
+2026-01-22T08:48:00.158Z ERROR: getProfile error: 
+Invalid `prisma.employees.findFirst()` invocation:
+
+{
+  where: {
+    user_id: "b15db842-5744-4005-8690-7c8cb020db43",
+    organization_id: "75364192-49c5-4000-b1ac-327d6391ec73",
+    ~~~~~~~~~~~~~~~
+?   AND?: EmployeesWhereInput | EmployeesWhereInput[],
+?   OR?: EmployeesWhereInput[],
+?   NOT?: EmployeesWhereInput | EmployeesWhereInput[],
+?   user?: UsersScalarRelationFilter | UsersWhereInput
+  },
+  include: {
+    user: {
+      select: {
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true
+      }
+    },
+    site: {
+      select: {
+        name: true
+      }
+    },
+    area: {
+      select: {
+        name: true
+      }
+    }
+  }
+}
+
+Unknown argument `organization_id`. Available options are marked with ?.
+2026-01-22T08:48:23.928Z ERROR: getProfile error: 
+Invalid `prisma.employees.findFirst()` invocation:
+
+{
+  where: {
+    user_id: "b15db842-5744-4005-8690-7c8cb020db43",
+    organization_id: "75364192-49c5-4000-b1ac-327d6391ec73",
+    ~~~~~~~~~~~~~~~
+?   AND?: EmployeesWhereInput | EmployeesWhereInput[],
+?   OR?: EmployeesWhereInput[],
+?   NOT?: EmployeesWhereInput | EmployeesWhereInput[],
+?   user?: UsersScalarRelationFilter | UsersWhereInput
+  },
+  include: {
+    user: {
+      select: {
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true
+      }
+    },
+    site: {
+      select: {
+        name: true
+      }
+    },
+    area: {
+      select: {
+        name: true
+      }
+    }
+  }
+}
+
+Unknown argument `organization_id`. Available options are marked with ?.
+2026-01-22T08:49:36.923Z ERROR: getProfile error: 
+Invalid `prisma.employees.findFirst()` invocation:
+
+{
+  where: {
+    user_id: "b15db842-5744-4005-8690-7c8cb020db43",
+    organization_id: "75364192-49c5-4000-b1ac-327d6391ec73",
+    ~~~~~~~~~~~~~~~
+?   AND?: EmployeesWhereInput | EmployeesWhereInput[],
+?   OR?: EmployeesWhereInput[],
+?   NOT?: EmployeesWhereInput | EmployeesWhereInput[],
+?   user?: UsersScalarRelationFilter | UsersWhereInput
+  },
+  include: {
+    user: {
+      select: {
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true
+      }
+    },
+    site: {
+      select: {
+        name: true
+      }
+    },
+    area: {
+      select: {
+        name: true
+      }
+    }
+  }
+}
+
+Unknown argument `organization_id`. Available options are marked with ?.
+2026-01-22T09:24:52.922Z ERROR: [WORKER] Job 27 failed for alert 4bc66412-3f2c-4ad6-a302-587865615264:
+2026-01-22T09:24:52.934Z ERROR: Job 27 has failed with admin is not defined
+2026-01-22T09:24:53.939Z ERROR: [WORKER] Job 27 failed for alert 4bc66412-3f2c-4ad6-a302-587865615264:
+2026-01-22T09:24:53.941Z ERROR: Job 27 has failed with admin is not defined
+2026-01-22T09:24:55.981Z ERROR: [WORKER] Job 27 failed for alert 4bc66412-3f2c-4ad6-a302-587865615264:
+2026-01-22T09:24:56.038Z ERROR: Job 27 has failed with admin is not defined
+2026-01-22T09:36:15.696Z ERROR: [WORKER] Job 28 failed for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00:
+2026-01-22T09:36:15.708Z ERROR: Job 28 has failed with admin is not defined
+2026-01-22T09:36:16.807Z ERROR: [WORKER] Job 28 failed for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00:
+2026-01-22T09:36:16.813Z ERROR: Job 28 has failed with admin is not defined
+2026-01-22T09:36:18.924Z ERROR: [WORKER] Job 28 failed for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00:
+2026-01-22T09:36:18.975Z ERROR: Job 28 has failed with admin is not defined
+2026-01-22T09:37:27.539Z ERROR: [WORKER] Job 29 failed for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce:
+2026-01-22T09:37:27.545Z ERROR: Job 29 has failed with admin is not defined
+2026-01-22T09:37:28.619Z ERROR: [WORKER] Job 29 failed for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce:
+2026-01-22T09:37:28.623Z ERROR: Job 29 has failed with admin is not defined
+2026-01-22T09:37:30.742Z ERROR: [WORKER] Job 29 failed for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce:
+2026-01-22T09:37:30.748Z ERROR: Job 29 has failed with admin is not defined
+2026-01-22T09:46:08.360Z ERROR: [WORKER] Job 30 failed for alert 836c5750-98da-44ca-8cc9-6e556528e17a:
+2026-01-22T09:46:08.370Z ERROR: Job 30 has failed with admin is not defined
+2026-01-22T09:46:09.436Z ERROR: [WORKER] Job 30 failed for alert 836c5750-98da-44ca-8cc9-6e556528e17a:
+2026-01-22T09:46:09.443Z ERROR: Job 30 has failed with admin is not defined
+2026-01-22T09:46:11.561Z ERROR: [WORKER] Job 30 failed for alert 836c5750-98da-44ca-8cc9-6e556528e17a:
+2026-01-22T09:46:11.614Z ERROR: Job 30 has failed with admin is not defined
+2026-01-22T10:48:00.873Z ERROR: deleteAlertType error: 
+Invalid `prisma.emergency_Types.delete()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Alerts_emergency_type_id_fkey`

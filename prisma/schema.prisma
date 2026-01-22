@@ -70,11 +70,17 @@ enum DeliveryStatus {
   failed
 }
 
+// enum UserResponse {
+//   safe
+//   not_safe
+//   evacuated
+//   seeking_shelter
+// }
+
 enum UserResponse {
   safe
-  not_safe
-  evacuated
-  seeking_shelter
+  need_help
+  emergency_help_needed
 }
 
 enum IncidentSeverity {
@@ -95,19 +101,21 @@ enum IncidentType {
   equipment_failure
   other
 }
+
 enum NotificationChannel {
   sms
   push
   in_app
 }
+
 // ----------------------
 // Core org models
 // ----------------------
 
 model Organizations {
-  organization_id String @id @default(uuid()) // PK
-  name            String @unique // org name
-  email_domain    String @unique @db.VarChar(255)
+  organization_id    String  @id @default(uuid()) // PK
+  name               String  @unique // org name
+  email_domain       String  @unique @db.VarChar(255)
   stripe_customer_id String? @unique
 
   main_contact_name  String? @unique @db.VarChar(255)
@@ -209,7 +217,7 @@ model Users {
   must_reset_password Boolean? @default(false)
   fcm_token           String?
   e2ee_public_key     String?  @db.Text
-  refresh_token   String?   @db.Text
+  refresh_token       String?  @db.Text
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
@@ -533,17 +541,17 @@ model Visitor_Status {
 // ----------------------
 
 model Notification_Recipients {
-  id                  String         @id @default(uuid())
+  id                  String              @id @default(uuid())
   alert_id            String
   user_id             String
-  delivery_status     DeliveryStatus @default(pending)
+  delivery_status     DeliveryStatus      @default(pending)
   delivered_at        DateTime?
   acknowledged_at     DateTime?
   response            UserResponse?
   response_updated_at DateTime?
   response_history    Json?
-  created_at          DateTime       @default(now())
-  updated_at          DateTime       @updatedAt
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
   channel             NotificationChannel @default(in_app)
 
   alert Alerts @relation(fields: [alert_id], references: [id])
@@ -624,35 +632,7 @@ model Incident_Reports {
 // Subscriptions / Plans
 // ----------------------
 
-model Subscriptions {
-  id String @id @default(uuid())
-
-  organization_id      String
-  subscription_plan_id String
-
-  stripe_customer_id     String @unique
-  stripe_subscription_id String @unique
-  stripe_price_id        String 
-
-  status         String  @default("inactive") @db.VarChar(50)
-  payment_method String? @db.VarChar(50)
-  payment_status String  @default("unpaid") @db.VarChar(50)
-
-  // billing cycle dates
-  current_period_start DateTime @db.Date
-  current_period_end   DateTime @db.Date
-
-  auto_renew Boolean   @default(false)
-  created_at DateTime  @default(now())
-  updated_at DateTime? @updatedAt
-
-  // Relations
-  organization Organizations      @relation(fields: [organization_id], references: [organization_id])
-  plan         Subscription_Plans @relation(fields: [subscription_plan_id], references: [id])
-
-  @@index([organization_id])
-  @@index([subscription_plan_id])
-}
+ 
 
 model Subscription_Plans {
   id String @id @default(uuid())

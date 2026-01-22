@@ -9,10 +9,15 @@ service AlertService {
 
   // Streams the full list of active alerts for an org, refreshed periodically.
   rpc StreamActiveAlerts (StreamActiveAlertsRequest) returns (stream ActiveAlertsResponse);
+
+  // NEW: Unary fetch for active alerts (optional but useful)
+  rpc GetActiveAlerts (GetActiveAlertsRequest) returns (ActiveAlertsResponse);
+
+  // NEW: Employee response update (for gRPC clients)
+  rpc UpdateEmployeeResponse (UpdateEmployeeResponseRequest) returns (UpdateEmployeeResponseResponse);
 }
 
 // === Messages for GetAlertData ===
-
 message AlertDataRequest {
   string alert_id = 1;
 }
@@ -38,30 +43,56 @@ message AlertDataResponse {
 }
 
 // === Messages for the Stream ===
-
 message StreamActiveAlertsRequest {
   string organization_id = 1;
 }
 
 // Extend ActiveAlert with count fields (backward compatible in proto3)
 message ActiveAlert {
-  string alert_id                    = 1;
-  string emergency_type              = 2;
-  string message                     = 3;
-  string severity                    = 4;
+  string alert_id                      = 1;
+  string emergency_type                = 2;
+  string message                       = 3;
+  string severity                      = 4;
   google.protobuf.Timestamp start_time = 5;
 
-  // NEW FIELDS
+  // counts (keep old field numbers)
   int32 safe_count             = 6;
-  int32 need_help_count        = 7;  // maps to 'not_safe'
-  int32 evacuated_count        = 8;
-  int32 seeking_shelter_count  = 9;
+  int32 need_help_count        = 7;
+  int32 evacuated_count        = 8; // legacy
+  int32 seeking_shelter_count  = 9; // legacy
   int32 not_responded_count    = 10;
   int32 total_recipients       = 11;
+
+  // NEW fields (safe for older clients)
+  repeated string locations                 = 12;
+  string status                             = 13;
+  string report                             = 14;
+  google.protobuf.Timestamp last_response_updated_at = 15;
 }
 
 message ActiveAlertsResponse {
   repeated ActiveAlert active_alerts = 1;
 }
 
- 
+message GetActiveAlertsRequest {
+  string organization_id = 1;
+}
+
+enum EmployeeResponseStatus {
+  EMPLOYEE_RESPONSE_UNKNOWN = 0;
+  SAFE = 1;
+  NEED_HELP = 2;
+  EMERGENCY_HELP_NEEDED = 3;
+}
+
+message UpdateEmployeeResponseRequest {
+  string alert_id = 1;
+  string user_id  = 2;
+  EmployeeResponseStatus response = 3;
+}
+
+message UpdateEmployeeResponseResponse {
+  bool ok = 1;
+  string message = 2;
+  google.protobuf.Timestamp response_updated_at = 3;
+}

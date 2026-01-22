@@ -1387,3 +1387,265 @@ Invalid value for argument `current_period_start`: Provided Date object is inval
 2026-01-21T05:26:32.270Z INFO: [DEV OTP] ORG_VERIFY | Pattukalam123@pattumail.com | OTP: 111111
 2026-01-21T05:30:07.485Z INFO: [DEV OTP] ORG_VERIFY | Pattukalam123@pattuhdhdhhdmail.com | OTP: 111111
 2026-01-21T05:31:04.711Z INFO: [DEV OTP] ORG_VERIFY | Pattukalam123@pattuythdhdhhdmail.com | OTP: 111111
+2026-01-21T09:59:05.416Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@www.com | OTP: 111111
+2026-01-21T10:01:10.456Z INFO: [DEV OTP] LOGIN | erty@gmail.com | OTP: 111111
+2026-01-21T10:01:40.652Z INFO: [DEV OTP] LOGIN | tomsebastian715@www.com | OTP: 111111
+2026-01-21T10:13:42.925Z INFO: [DEV OTP] ORG_VERIFY | tomsebastian715@gmail.com | OTP: 111111
+2026-01-21T10:17:11.744Z INFO: [API] Job added to queue for active alert ec9037e2-3bf8-40a8-8f59-3a4abf4fedab
+2026-01-21T10:17:11.750Z INFO: [WORKER] Processing job 20 for alert ec9037e2-3bf8-40a8-8f59-3a4abf4fedab
+2026-01-21T10:17:11.766Z INFO: [WORKER] Alert ec9037e2-3bf8-40a8-8f59-3a4abf4fedab status updated to ACTIVE.
+2026-01-21T10:17:11.772Z INFO: [WORKER] No recipients for alert ec9037e2-3bf8-40a8-8f59-3a4abf4fedab. Job complete.
+2026-01-21T10:17:57.557Z INFO: [API] Job added to queue for active alert 149e013d-b192-4db4-a6ef-07776dbfc3b1
+2026-01-21T10:17:57.559Z INFO: [WORKER] Processing job 21 for alert 149e013d-b192-4db4-a6ef-07776dbfc3b1
+2026-01-21T10:17:57.564Z INFO: [WORKER] Alert 149e013d-b192-4db4-a6ef-07776dbfc3b1 status updated to ACTIVE.
+2026-01-21T10:17:57.566Z INFO: [WORKER] No recipients for alert 149e013d-b192-4db4-a6ef-07776dbfc3b1. Job complete.
+2026-01-21T10:18:24.208Z INFO: [API] Job scheduled in queue for alert 4128fec3-fb26-4e46-9e4e-b1693435f278 with a delay of 182496s
+2026-01-21T10:21:44.016Z INFO: [DEV OTP] LOGIN | asd@gmail.com | OTP: 111111
+2026-01-21T10:51:59.773Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-21T10:52:38.246Z INFO: [API] Job added to queue for active alert eb6ff616-2169-43e2-a667-8da078955e81
+2026-01-21T10:52:38.249Z INFO: [WORKER] Processing job 23 for alert eb6ff616-2169-43e2-a667-8da078955e81
+2026-01-21T10:52:38.261Z INFO: [WORKER] Alert eb6ff616-2169-43e2-a667-8da078955e81 status updated to ACTIVE.
+2026-01-21T10:52:38.277Z ERROR: [WORKER] Job 23 failed for alert eb6ff616-2169-43e2-a667-8da078955e81:
+2026-01-21T10:52:38.329Z ERROR: Job 23 has failed with admin is not defined
+2026-01-21T10:52:39.333Z INFO: [WORKER] Processing job 23 for alert eb6ff616-2169-43e2-a667-8da078955e81
+2026-01-21T10:52:39.345Z INFO: [WORKER] Alert eb6ff616-2169-43e2-a667-8da078955e81 status updated to ACTIVE.
+2026-01-21T10:52:39.356Z ERROR: [WORKER] Job 23 failed for alert eb6ff616-2169-43e2-a667-8da078955e81:
+2026-01-21T10:52:39.361Z ERROR: Job 23 has failed with admin is not defined
+2026-01-21T10:52:41.455Z INFO: [WORKER] Processing job 23 for alert eb6ff616-2169-43e2-a667-8da078955e81
+2026-01-21T10:52:41.472Z INFO: [WORKER] Alert eb6ff616-2169-43e2-a667-8da078955e81 status updated to ACTIVE.
+2026-01-21T10:52:41.481Z ERROR: [WORKER] Job 23 failed for alert eb6ff616-2169-43e2-a667-8da078955e81:
+2026-01-21T10:52:41.489Z ERROR: Job 23 has failed with admin is not defined
+2026-01-21T12:11:16.980Z INFO: [DEV OTP] LOGIN | asd@gmail.com | OTP: 111111
+2026-01-21T12:19:57.396Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-21T12:20:53.969Z INFO: [DEV OTP] LOGIN | zxcxz@gmail.com | OTP: 111111
+2026-01-21T12:22:00.529Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-21T12:22:32.963Z INFO: [DEV OTP] LOGIN | zxcxz@gmail.com | OTP: 111111
+2026-01-22T06:11:12.921Z INFO: [DEV OTP] LOGIN | asd@gmail.com | OTP: 111111
+2026-01-22T06:20:31.995Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-22T06:28:14.815Z INFO: [API] Job added to queue for active alert 6f664285-5509-49ec-9cf1-72e83946f72e
+2026-01-22T06:28:14.823Z INFO: [WORKER] Processing job 24 for alert 6f664285-5509-49ec-9cf1-72e83946f72e
+2026-01-22T06:28:14.840Z INFO: [WORKER] Alert 6f664285-5509-49ec-9cf1-72e83946f72e status updated to ACTIVE.
+2026-01-22T06:28:14.860Z ERROR: [WORKER] Job 24 failed for alert 6f664285-5509-49ec-9cf1-72e83946f72e:
+2026-01-22T06:28:14.890Z ERROR: Job 24 has failed with admin is not defined
+2026-01-22T06:28:15.976Z INFO: [WORKER] Processing job 24 for alert 6f664285-5509-49ec-9cf1-72e83946f72e
+2026-01-22T06:28:15.992Z INFO: [WORKER] Alert 6f664285-5509-49ec-9cf1-72e83946f72e status updated to ACTIVE.
+2026-01-22T06:28:16.002Z ERROR: [WORKER] Job 24 failed for alert 6f664285-5509-49ec-9cf1-72e83946f72e:
+2026-01-22T06:28:16.007Z ERROR: Job 24 has failed with admin is not defined
+2026-01-22T06:28:18.099Z INFO: [WORKER] Processing job 24 for alert 6f664285-5509-49ec-9cf1-72e83946f72e
+2026-01-22T06:28:18.107Z INFO: [WORKER] Alert 6f664285-5509-49ec-9cf1-72e83946f72e status updated to ACTIVE.
+2026-01-22T06:28:18.117Z ERROR: [WORKER] Job 24 failed for alert 6f664285-5509-49ec-9cf1-72e83946f72e:
+2026-01-22T06:28:18.174Z ERROR: Job 24 has failed with admin is not defined
+2026-01-22T06:32:36.666Z INFO: [API] Job added to queue for active alert 901fc188-e429-4757-a778-361b3ec3d6d6
+2026-01-22T06:32:36.677Z INFO: [WORKER] Processing job 25 for alert 901fc188-e429-4757-a778-361b3ec3d6d6
+2026-01-22T06:32:36.691Z INFO: [WORKER] Alert 901fc188-e429-4757-a778-361b3ec3d6d6 status updated to ACTIVE.
+2026-01-22T06:32:36.705Z ERROR: [WORKER] Job 25 failed for alert 901fc188-e429-4757-a778-361b3ec3d6d6:
+2026-01-22T06:32:36.714Z ERROR: Job 25 has failed with admin is not defined
+2026-01-22T06:32:37.731Z INFO: [WORKER] Processing job 25 for alert 901fc188-e429-4757-a778-361b3ec3d6d6
+2026-01-22T06:32:37.746Z INFO: [WORKER] Alert 901fc188-e429-4757-a778-361b3ec3d6d6 status updated to ACTIVE.
+2026-01-22T06:32:37.769Z ERROR: [WORKER] Job 25 failed for alert 901fc188-e429-4757-a778-361b3ec3d6d6:
+2026-01-22T06:32:37.780Z ERROR: Job 25 has failed with admin is not defined
+2026-01-22T06:32:39.846Z INFO: [WORKER] Processing job 25 for alert 901fc188-e429-4757-a778-361b3ec3d6d6
+2026-01-22T06:32:39.859Z INFO: [WORKER] Alert 901fc188-e429-4757-a778-361b3ec3d6d6 status updated to ACTIVE.
+2026-01-22T06:32:39.866Z ERROR: [WORKER] Job 25 failed for alert 901fc188-e429-4757-a778-361b3ec3d6d6:
+2026-01-22T06:32:39.874Z ERROR: Job 25 has failed with admin is not defined
+2026-01-22T06:49:03.418Z INFO: [DEV OTP] LOGIN | asd@gmail.com | OTP: 111111
+2026-01-22T06:51:22.596Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-22T06:56:27.467Z INFO: [API] Job added to queue for active alert eac7a0fb-4aab-4846-8798-6040a717addc
+2026-01-22T06:56:27.470Z INFO: [WORKER] Processing job 26 for alert eac7a0fb-4aab-4846-8798-6040a717addc
+2026-01-22T06:56:27.487Z INFO: [WORKER] Alert eac7a0fb-4aab-4846-8798-6040a717addc status updated to ACTIVE.
+2026-01-22T06:56:27.504Z ERROR: [WORKER] Job 26 failed for alert eac7a0fb-4aab-4846-8798-6040a717addc:
+2026-01-22T06:56:27.517Z ERROR: Job 26 has failed with admin is not defined
+2026-01-22T06:56:28.536Z INFO: [WORKER] Processing job 26 for alert eac7a0fb-4aab-4846-8798-6040a717addc
+2026-01-22T06:56:28.546Z INFO: [WORKER] Alert eac7a0fb-4aab-4846-8798-6040a717addc status updated to ACTIVE.
+2026-01-22T06:56:28.551Z ERROR: [WORKER] Job 26 failed for alert eac7a0fb-4aab-4846-8798-6040a717addc:
+2026-01-22T06:56:28.555Z ERROR: Job 26 has failed with admin is not defined
+2026-01-22T06:56:30.567Z INFO: [WORKER] Processing job 26 for alert eac7a0fb-4aab-4846-8798-6040a717addc
+2026-01-22T06:56:30.573Z INFO: [WORKER] Alert eac7a0fb-4aab-4846-8798-6040a717addc status updated to ACTIVE.
+2026-01-22T06:56:30.580Z ERROR: [WORKER] Job 26 failed for alert eac7a0fb-4aab-4846-8798-6040a717addc:
+2026-01-22T06:56:30.586Z ERROR: Job 26 has failed with admin is not defined
+2026-01-22T07:13:25.630Z INFO: [DEV OTP] LOGIN | asd@gmail.com | OTP: 111111
+2026-01-22T07:48:41.512Z WARN: Reuse detection triggered for user b15db842-5744-4005-8690-7c8cb020db43
+2026-01-22T07:48:41.661Z WARN: Reuse detection triggered for user b15db842-5744-4005-8690-7c8cb020db43
+2026-01-22T07:48:41.672Z WARN: Reuse detection triggered for user b15db842-5744-4005-8690-7c8cb020db43
+2026-01-22T07:48:54.802Z INFO: [DEV OTP] LOGIN | asd@gmail.com | OTP: 111111
+2026-01-22T08:45:46.355Z WARN: Reuse detection triggered for user b15db842-5744-4005-8690-7c8cb020db43
+2026-01-22T08:45:46.365Z WARN: Reuse detection triggered for user b15db842-5744-4005-8690-7c8cb020db43
+2026-01-22T08:47:48.601Z INFO: [DEV OTP] LOGIN | asd@gmail.com | OTP: 111111
+2026-01-22T08:48:00.158Z ERROR: getProfile error: 
+Invalid `prisma.employees.findFirst()` invocation:
+
+{
+  where: {
+    user_id: "b15db842-5744-4005-8690-7c8cb020db43",
+    organization_id: "75364192-49c5-4000-b1ac-327d6391ec73",
+    ~~~~~~~~~~~~~~~
+?   AND?: EmployeesWhereInput | EmployeesWhereInput[],
+?   OR?: EmployeesWhereInput[],
+?   NOT?: EmployeesWhereInput | EmployeesWhereInput[],
+?   user?: UsersScalarRelationFilter | UsersWhereInput
+  },
+  include: {
+    user: {
+      select: {
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true
+      }
+    },
+    site: {
+      select: {
+        name: true
+      }
+    },
+    area: {
+      select: {
+        name: true
+      }
+    }
+  }
+}
+
+Unknown argument `organization_id`. Available options are marked with ?.
+2026-01-22T08:48:23.928Z ERROR: getProfile error: 
+Invalid `prisma.employees.findFirst()` invocation:
+
+{
+  where: {
+    user_id: "b15db842-5744-4005-8690-7c8cb020db43",
+    organization_id: "75364192-49c5-4000-b1ac-327d6391ec73",
+    ~~~~~~~~~~~~~~~
+?   AND?: EmployeesWhereInput | EmployeesWhereInput[],
+?   OR?: EmployeesWhereInput[],
+?   NOT?: EmployeesWhereInput | EmployeesWhereInput[],
+?   user?: UsersScalarRelationFilter | UsersWhereInput
+  },
+  include: {
+    user: {
+      select: {
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true
+      }
+    },
+    site: {
+      select: {
+        name: true
+      }
+    },
+    area: {
+      select: {
+        name: true
+      }
+    }
+  }
+}
+
+Unknown argument `organization_id`. Available options are marked with ?.
+2026-01-22T08:49:36.923Z ERROR: getProfile error: 
+Invalid `prisma.employees.findFirst()` invocation:
+
+{
+  where: {
+    user_id: "b15db842-5744-4005-8690-7c8cb020db43",
+    organization_id: "75364192-49c5-4000-b1ac-327d6391ec73",
+    ~~~~~~~~~~~~~~~
+?   AND?: EmployeesWhereInput | EmployeesWhereInput[],
+?   OR?: EmployeesWhereInput[],
+?   NOT?: EmployeesWhereInput | EmployeesWhereInput[],
+?   user?: UsersScalarRelationFilter | UsersWhereInput
+  },
+  include: {
+    user: {
+      select: {
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true
+      }
+    },
+    site: {
+      select: {
+        name: true
+      }
+    },
+    area: {
+      select: {
+        name: true
+      }
+    }
+  }
+}
+
+Unknown argument `organization_id`. Available options are marked with ?.
+2026-01-22T09:04:01.960Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-22T09:24:52.876Z INFO: [API] Job added to queue for active alert 4bc66412-3f2c-4ad6-a302-587865615264
+2026-01-22T09:24:52.895Z INFO: [WORKER] Processing job 27 for alert 4bc66412-3f2c-4ad6-a302-587865615264
+2026-01-22T09:24:52.909Z INFO: [WORKER] Alert 4bc66412-3f2c-4ad6-a302-587865615264 status updated to ACTIVE.
+2026-01-22T09:24:52.922Z ERROR: [WORKER] Job 27 failed for alert 4bc66412-3f2c-4ad6-a302-587865615264:
+2026-01-22T09:24:52.934Z ERROR: Job 27 has failed with admin is not defined
+2026-01-22T09:24:53.932Z INFO: [WORKER] Processing job 27 for alert 4bc66412-3f2c-4ad6-a302-587865615264
+2026-01-22T09:24:53.935Z INFO: [WORKER] Alert 4bc66412-3f2c-4ad6-a302-587865615264 status updated to ACTIVE.
+2026-01-22T09:24:53.939Z ERROR: [WORKER] Job 27 failed for alert 4bc66412-3f2c-4ad6-a302-587865615264:
+2026-01-22T09:24:53.941Z ERROR: Job 27 has failed with admin is not defined
+2026-01-22T09:24:55.954Z INFO: [WORKER] Processing job 27 for alert 4bc66412-3f2c-4ad6-a302-587865615264
+2026-01-22T09:24:55.971Z INFO: [WORKER] Alert 4bc66412-3f2c-4ad6-a302-587865615264 status updated to ACTIVE.
+2026-01-22T09:24:55.981Z ERROR: [WORKER] Job 27 failed for alert 4bc66412-3f2c-4ad6-a302-587865615264:
+2026-01-22T09:24:56.038Z ERROR: Job 27 has failed with admin is not defined
+2026-01-22T09:36:15.645Z INFO: [API] Job added to queue for active alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00
+2026-01-22T09:36:15.656Z INFO: [WORKER] Processing job 28 for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00
+2026-01-22T09:36:15.673Z INFO: [WORKER] Alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00 status updated to ACTIVE.
+2026-01-22T09:36:15.696Z ERROR: [WORKER] Job 28 failed for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00:
+2026-01-22T09:36:15.708Z ERROR: Job 28 has failed with admin is not defined
+2026-01-22T09:36:16.776Z INFO: [WORKER] Processing job 28 for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00
+2026-01-22T09:36:16.794Z INFO: [WORKER] Alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00 status updated to ACTIVE.
+2026-01-22T09:36:16.807Z ERROR: [WORKER] Job 28 failed for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00:
+2026-01-22T09:36:16.813Z ERROR: Job 28 has failed with admin is not defined
+2026-01-22T09:36:18.895Z INFO: [WORKER] Processing job 28 for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00
+2026-01-22T09:36:18.914Z INFO: [WORKER] Alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00 status updated to ACTIVE.
+2026-01-22T09:36:18.924Z ERROR: [WORKER] Job 28 failed for alert 80c1fec6-889f-4d74-a5ed-cf07512c6b00:
+2026-01-22T09:36:18.975Z ERROR: Job 28 has failed with admin is not defined
+2026-01-22T09:37:27.506Z INFO: [API] Job added to queue for active alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce
+2026-01-22T09:37:27.510Z INFO: [WORKER] Processing job 29 for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce
+2026-01-22T09:37:27.525Z INFO: [WORKER] Alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce status updated to ACTIVE.
+2026-01-22T09:37:27.539Z ERROR: [WORKER] Job 29 failed for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce:
+2026-01-22T09:37:27.545Z ERROR: Job 29 has failed with admin is not defined
+2026-01-22T09:37:28.590Z INFO: [WORKER] Processing job 29 for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce
+2026-01-22T09:37:28.607Z INFO: [WORKER] Alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce status updated to ACTIVE.
+2026-01-22T09:37:28.619Z ERROR: [WORKER] Job 29 failed for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce:
+2026-01-22T09:37:28.623Z ERROR: Job 29 has failed with admin is not defined
+2026-01-22T09:37:30.713Z INFO: [WORKER] Processing job 29 for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce
+2026-01-22T09:37:30.731Z INFO: [WORKER] Alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce status updated to ACTIVE.
+2026-01-22T09:37:30.742Z ERROR: [WORKER] Job 29 failed for alert 1e1195d4-8778-4eb2-a0b7-a4389d52a2ce:
+2026-01-22T09:37:30.748Z ERROR: Job 29 has failed with admin is not defined
+2026-01-22T09:46:08.305Z INFO: [API] Job added to queue for active alert 836c5750-98da-44ca-8cc9-6e556528e17a
+2026-01-22T09:46:08.320Z INFO: [WORKER] Processing job 30 for alert 836c5750-98da-44ca-8cc9-6e556528e17a
+2026-01-22T09:46:08.341Z INFO: [WORKER] Alert 836c5750-98da-44ca-8cc9-6e556528e17a status updated to ACTIVE.
+2026-01-22T09:46:08.360Z ERROR: [WORKER] Job 30 failed for alert 836c5750-98da-44ca-8cc9-6e556528e17a:
+2026-01-22T09:46:08.370Z ERROR: Job 30 has failed with admin is not defined
+2026-01-22T09:46:09.412Z INFO: [WORKER] Processing job 30 for alert 836c5750-98da-44ca-8cc9-6e556528e17a
+2026-01-22T09:46:09.425Z INFO: [WORKER] Alert 836c5750-98da-44ca-8cc9-6e556528e17a status updated to ACTIVE.
+2026-01-22T09:46:09.436Z ERROR: [WORKER] Job 30 failed for alert 836c5750-98da-44ca-8cc9-6e556528e17a:
+2026-01-22T09:46:09.443Z ERROR: Job 30 has failed with admin is not defined
+2026-01-22T09:46:11.534Z INFO: [WORKER] Processing job 30 for alert 836c5750-98da-44ca-8cc9-6e556528e17a
+2026-01-22T09:46:11.551Z INFO: [WORKER] Alert 836c5750-98da-44ca-8cc9-6e556528e17a status updated to ACTIVE.
+2026-01-22T09:46:11.561Z ERROR: [WORKER] Job 30 failed for alert 836c5750-98da-44ca-8cc9-6e556528e17a:
+2026-01-22T09:46:11.614Z ERROR: Job 30 has failed with admin is not defined
+2026-01-22T09:48:53.303Z WARN: Reuse detection triggered for user e878a2e2-e523-4b47-8178-31c5e3dbe3be
+2026-01-22T09:48:53.353Z WARN: Reuse detection triggered for user e878a2e2-e523-4b47-8178-31c5e3dbe3be
+2026-01-22T09:50:47.057Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-22T10:06:01.743Z WARN: Reuse detection triggered for user e878a2e2-e523-4b47-8178-31c5e3dbe3be
+2026-01-22T10:06:25.072Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-22T10:21:58.673Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-22T10:24:40.447Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-22T10:47:35.756Z WARN: Reuse detection triggered for user e878a2e2-e523-4b47-8178-31c5e3dbe3be
+2026-01-22T10:47:47.900Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-22T10:48:00.873Z ERROR: deleteAlertType error: 
+Invalid `prisma.emergency_Types.delete()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Alerts_emergency_type_id_fkey`
+2026-01-22T11:48:15.290Z WARN: Reuse detection triggered for user e878a2e2-e523-4b47-8178-31c5e3dbe3be
+2026-01-22T11:49:53.185Z INFO: Site and area assigned to user fad67c0f-2dc0-4888-b6d9-9c055ad9cf8d
+2026-01-22T11:53:30.748Z INFO: Site and area assigned to user 69e6418e-0b30-477b-a025-bc94e4aac116
