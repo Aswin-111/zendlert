@@ -1196,3 +1196,4 @@ Invalid `prisma.emergency_Types.delete()` invocation:
 
 
 Foreign key constraint violated on the constraint: `Alerts_emergency_type_id_fkey`
+2026-01-22T15:50:42.778Z ERROR: verifyAdmin middleware used without verifyJWT

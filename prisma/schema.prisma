@@ -632,7 +632,34 @@ model Incident_Reports {
 // Subscriptions / Plans
 // ----------------------
 
- 
+model Subscriptions {
+  id String @id @default(uuid())
+
+  organization_id      String
+  subscription_plan_id String
+
+  stripe_customer_id     String @unique @db.Text
+  stripe_subscription_id String @unique @db.Text
+  stripe_price_id        String @unique @db.Text
+
+  status         String  @default("inactive") @db.VarChar(50)
+  payment_method String? @db.VarChar(50)
+  payment_status String  @default("unpaid") @db.VarChar(50)
+
+  current_period_start DateTime @db.Date
+  current_period_end   DateTime @db.Date
+
+  auto_renew Boolean @default(false)
+
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @db.Timestamp(6)
+
+  organization Organizations      @relation(fields: [organization_id], references: [organization_id])
+  plan         Subscription_Plans @relation(fields: [subscription_plan_id], references: [id])
+
+  @@index([organization_id])
+  @@index([subscription_plan_id])
+}
 
 model Subscription_Plans {
   id String @id @default(uuid())

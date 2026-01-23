@@ -1,35 +1,21 @@
-# Docker Compose V2 syntax
-
 services:
-  # Node.js Application Service
   backend:
     build: .
     image: zendlert:latest
+    env_file:
+      - backend.env
     ports:
       - "7000:7000"
       - "5050:5050"
       - "5051:5051"
-    environment:
-      DATABASE_URL: "postgresql://zendlertuser:pass@123@zendlert_db:5432/zendlert_db?schema=public"
-      # --- NEW: Environment variables to connect to the Redis service ---
-      PORT: 7000
-      SALT_ROUNDS: 10
-      REDIS_URL: "redis://zendlert_redis:6379"  
-      JWT_SECRET: "supersecretpassword"
-      TOKEN_EXPIRY: "7d"
-      RESEND_KEY: "re_FSoWcaX2_PsiRtyMoaYkGGFwGpfjC4oJi"
-      RESEND_EMAIL_BASE_URL: "https://api.resend.com/emails"
-      FROM_EMAIL: "apps@apttiv.com"
     depends_on:
       zendlert_db:
         condition: service_healthy
-      # --- NEW: Make backend wait for Redis to be ready ---
       zendlert_redis:
         condition: service_healthy
     networks:
       - zendlert-network
 
-  # PostgreSQL Database Service
   zendlert_db:
     image: postgres:16-alpine
     restart: always
@@ -49,12 +35,10 @@ services:
     networks:
       - zendlert-network
 
-  # --- NEW: Redis Service for the Zendlert stack ---
   zendlert_redis:
     image: redis:7-alpine
     restart: always
     ports:
-      # NOTE: Host port is 6380 because your other compose file uses 6379
       - "6380:6379"
     volumes:
       - redis_data:/data
@@ -66,13 +50,10 @@ services:
     networks:
       - zendlert-network
 
-# Volumes definition for persistent data
 volumes:
   postgres_data:
-  # --- NEW: Named volume for Redis data persistence ---
   redis_data:
 
-# Network definition
 networks:
   zendlert-network:
     driver: bridge

@@ -8,3 +8,4 @@ generated/prisma/
 generated/prisma/*.node
 generated/prisma/*.dll
 generated/prisma/*.wasm
+backend.env

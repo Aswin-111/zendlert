@@ -1684,3 +1684,6 @@ Foreign key constraint violated on the constraint: `Alerts_emergency_type_id_fke
 2026-01-22T10:36:11.481Z WARN: Reuse detection triggered for user e81859bb-729a-49bf-a415-22e186d1238d
 2026-01-22T10:36:24.944Z INFO: [DEV OTP] LOGIN | admin@atlasdatasolutions.com | OTP: 111111
 >>>>>>> Stashed changes
+2026-01-22T15:49:58.140Z INFO: [DEV OTP] ORG_VERIFY | tom@mail.com | OTP: 111111
+2026-01-22T15:50:42.778Z ERROR: verifyAdmin middleware used without verifyJWT
+2026-01-22T15:53:03.531Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
