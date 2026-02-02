@@ -1,8 +1,15 @@
-import express from "express"
+ import express from "express"
 import AlertController from "../controllers/alert.controller.js"
 const router = express.Router()
 
 
+/**
+ * @route   GET /api/v1/alert/get_alertdashboard
+ * @desc    Get alert dashboard statistics.
+ * @access  Private
+ * @query   organization_id={uuid}
+ */
+router.get("/get-alertdashboard", AlertController.getAlertDashboard);
 /**
  * @route   GET /api/alerts/get_dashboard
  * @desc    Get dashboard statistics including active, history, scheduled counts, and delivery rate.

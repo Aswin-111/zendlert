@@ -158,6 +158,121 @@ const SubscriptionController = {
     }
   },
   /**
+   * @description Creates a FREE Subscription (No Payment Method required).
+   * @route POST /api/v1/subscriptions/create-free
+   */
+  createFreeSubscription: async (req, res) => {
+    try {
+      const { plan_id, organization_id, customer_name, address } = req.body;
+      const { user_id, email: userEmail } = req.user;
+      const billingEmail = userEmail;
+
+      // 1. Validate Input
+      if (!plan_id || !organization_id) {
+        return res.status(400).json({
+          message: "Plan ID and Organization ID are required.",
+        });
+      }
+
+      // ============================================================
+      // 🛑 PREVENT DOUBLE BOOKING (Same logic as paid)
+      // ============================================================
+      const existingActiveSub = await prisma.subscriptions.findFirst({
+        where: {
+          organization_id: organization_id,
+          status: "active",
+        },
+      });
+
+      if (existingActiveSub) {
+        return res.status(409).json({
+          message: "Organization already has an active subscription.",
+        });
+      }
+
+      // 2. Retrieve Plan & Verify it is FREE
+      const plan = await prisma.subscription_Plans.findUnique({
+        where: { id: plan_id },
+      });
+
+      if (!plan) {
+        return res.status(404).json({ message: "Plan not found." });
+      }
+
+      // CHECK: Ensure the plan price is actually 0
+      // Adjust 'monthly_price' field name if your DB calls it something else like 'price'
+      if (parseFloat(plan.monthly_price) > 0) {
+        return res.status(400).json({
+          message:
+            "This is a paid plan. Please use the /create endpoint with payment details.",
+        });
+      }
+
+      // 3. Find or Create Stripe Customer
+      // (We still create a Stripe customer so we can easily upgrade them later)
+      let customerId;
+      const existingSubRecord = await prisma.subscriptions.findFirst({
+        where: { organization_id },
+        select: { stripe_customer_id: true },
+      });
+
+      if (existingSubRecord?.stripe_customer_id) {
+        customerId = existingSubRecord.stripe_customer_id;
+      } else {
+        const customer = await stripe.customers.create({
+          email: billingEmail,
+          name: customer_name || `Org: ${organization_id}`,
+          metadata: { organization_id, user_id },
+          address: address || undefined,
+        });
+        customerId = customer.id;
+      }
+
+      // 4. Create Stripe Subscription (No Payment Method needed)
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: plan.stripe_price_id }],
+        // No default_payment_method here!
+        metadata: {
+          organization_id,
+          plan_id,
+          user_id,
+          type: "free_tier",
+        },
+      });
+
+      // 5. Save to Database
+      const status = subscription.status; // Should be 'active' immediately for free plans
+      const periodEnd = subscription.current_period_end
+        ? new Date(subscription.current_period_end * 1000)
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      const newDbSubscription = await prisma.subscriptions.create({
+        data: {
+          organization_id,
+          subscription_plan_id: plan_id,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscription.id,
+          stripe_price_id: plan.stripe_price_id,
+          status: status,
+          payment_method: "free_tier", // Mark as free
+          payment_status: "paid", // Free is technically "paid" (settled)
+          current_period_start: new Date(),
+          current_period_end: periodEnd,
+        },
+      });
+
+      return res.status(200).json({
+        message: "Free subscription activated successfully",
+        subscriptionId: newDbSubscription.id,
+        status: "active",
+      });
+    } catch (error) {
+      logger.error("Create Free Subscription Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  },
+  /**
    * @description Fetches subscription details for the "Payment Confirmed" page.
    * @route GET /api/v1/subscriptions/status
    */
@@ -204,6 +319,40 @@ const SubscriptionController = {
       return res.status(200).json({ success: true, data });
     } catch (error) {
       logger.error("Get Subscription Status Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  },
+
+  /**
+   * @description Checks if the user is eligible for the Free Tier/Trial.
+   * Returns false if they have EVER subscribed to a free plan before.
+   * @route GET /api/v1/subscriptions/check-eligibility
+   */
+  checkFreeEligibility: async (req, res) => {
+    try {
+      const { organization_id } = req.user;
+
+      // Check history: Has this org EVER had a subscription marked as 'free_tier'?
+      const previousFreeUsage = await prisma.subscriptions.findFirst({
+        where: {
+          organization_id: organization_id,
+          // This matches the string we set in createFreeSubscription
+          payment_method: "free_tier", 
+        },
+      });
+
+      // If record exists, they are NOT eligible.
+      const isEligible = !previousFreeUsage;
+
+      return res.status(200).json({
+        eligible: isEligible,
+        message: isEligible 
+          ? "User can claim free trial" 
+          : "User has already used free trial"
+      });
+
+    } catch (error) {
+      logger.error("Check Eligibility Error:", error);
       return res.status(500).json({ error: error.message });
     }
   },

@@ -638,9 +638,9 @@ model Subscriptions {
   organization_id      String
   subscription_plan_id String
 
-  stripe_customer_id     String @unique @db.Text
+  stripe_customer_id     String @db.Text
   stripe_subscription_id String @unique @db.Text
-  stripe_price_id        String @unique @db.Text
+  stripe_price_id        String @db.Text
 
   status         String  @default("inactive") @db.VarChar(50)
   payment_method String? @db.VarChar(50)

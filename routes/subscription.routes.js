@@ -6,6 +6,20 @@ const router = express.Router();
 
 // 1. Create Subscription (Protected)
 router.post("/create", verifyJWT, SubscriptionController.createSubscription);
+
+router.post(
+  "/create-free",
+  verifyJWT,
+  SubscriptionController.createFreeSubscription,
+);
+
+// ... existing routes
+router.get(
+  "/check-eligibility",
+  verifyJWT,
+  SubscriptionController.checkFreeEligibility,
+);
+
 router.post("/preview", verifyJWT, SubscriptionController.previewInvoice);
 
 // Get details for Success Page

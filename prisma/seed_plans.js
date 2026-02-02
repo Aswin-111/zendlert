@@ -54,38 +54,51 @@ async function main() {
   // 2. DEFINE PLANS
   // ==========================================
   const plansData = [
+    // --- 🆕 FREE TRIAL PLAN ---
+    // {
+    //   plan_name: "Free Trial",
+    //   description: "Explore the platform free for 14 days.",
+    //   stripe_price_id: "price",
+    //   monthly_price: 0.0,
+    //   annual_price: 0.0,
+
+    //   // Very Strict Limits
+    //   user_limit: 1,
+    //   site_limit: 1,
+    //   area_limit: 1,
+    //   alert_limit: 10,
+
+    //   // Features: Basic access only
+    //   featuresToLink: ["MOBILE_ACCESS"],
+    // },
     {
-      // --- STARTER (Your Actual Data) ---
+      // --- STARTER ---
       plan_name: "Starter Daily",
       description: "Daily billing plan for small teams.",
       stripe_price_id: "price_1SVPf3AZY0CusegXzDOgPJyg",
       monthly_price: 30.0,
       annual_price: 300.0,
 
-      // Hard Limits
       user_limit: 5,
       site_limit: 1,
       area_limit: 5,
       alert_limit: 100,
 
-      // Features to Link (Codes from above)
       featuresToLink: ["MOBILE_ACCESS", "EMAIL_SUPPORT"],
     },
     {
-      // --- PRO (Mid-Tier) ---
+      // --- PRO ---
       plan_name: "Professional Plan",
       description: "Perfect for growing businesses.",
-      stripe_price_id: "price_1SVPgmAZY0CusegXolBApOMg", // <--- REPLACE
+      stripe_price_id: "price_1SVPgmAZY0CusegXolBApOMg",
       monthly_price: 599.0,
       annual_price: 990.0,
 
-      // Hard Limits (Higher)
       user_limit: 20,
       site_limit: 5,
       area_limit: 20,
       alert_limit: 1000,
 
-      // Features: Starter + Priority + Analytics
       featuresToLink: [
         "MOBILE_ACCESS",
         "EMAIL_SUPPORT",
@@ -94,20 +107,18 @@ async function main() {
       ],
     },
     {
-      // --- Growth plan (Top-Tier) ---
+      // --- GROWTH ---
       plan_name: "Growth plan",
       description: "Full control for large organizations.",
-      stripe_price_id: "price_1SVPfwAZY0CusegXJufRLjgW", // <--- REPLACE
+      stripe_price_id: "price_1SVPfwAZY0CusegXJufRLjgW",
       monthly_price: 299.99,
       annual_price: 4990.0,
 
-      // Hard Limits (Use 9999 for "Unlimited" logic in Controller)
       user_limit: 9999,
       site_limit: 9999,
       area_limit: 9999,
       alert_limit: 9999,
 
-      // Features: All
       featuresToLink: [
         "MOBILE_ACCESS",
         "EMAIL_SUPPORT",
@@ -152,43 +163,26 @@ async function main() {
 
     // 2. Link Features
     for (const code of p.featuresToLink) {
-      // Find feature ID
       const feature = await prisma.features.findUnique({ where: { code } });
 
       if (feature) {
-        // Link them
-        await prisma.plan_Features
-          .upsert({
-            where: {
-              // Composite ID check isn't standard in prisma functions,
-              // so we use findFirst -> create logic or a workaround.
-              // Since we don't have a @@unique on (plan_id, feature_id),
-              // we use findFirst logic inside the loop or just createMany with skipDuplicates if supported.
-              // But for seeding, simpler is better:
-              id: "temp_skip", // This line is just to satisfy syntax, see real logic below
-            },
-            update: {}, // Do nothing if exists
-            create: {
+        // Robust "Find or Create" for the many-to-many table
+        const existingLink = await prisma.plan_Features.findFirst({
+          where: {
+            plan_id: plan.id,
+            feature_id: feature.id,
+          },
+        });
+
+        if (!existingLink) {
+          await prisma.plan_Features.create({
+            data: {
               plan_id: plan.id,
               feature_id: feature.id,
               is_enabled: true,
             },
-          })
-          .catch(async (e) => {
-            // Fallback if upsert fails on ID or logic: Manual Find & Create
-            const exists = await prisma.plan_Features.findFirst({
-              where: { plan_id: plan.id, feature_id: feature.id },
-            });
-            if (!exists) {
-              await prisma.plan_Features.create({
-                data: {
-                  plan_id: plan.id,
-                  feature_id: feature.id,
-                  is_enabled: true,
-                },
-              });
-            }
           });
+        }
       }
     }
   }

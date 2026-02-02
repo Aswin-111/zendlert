@@ -666,6 +666,86 @@ const OrganizationController = {
       });
     }
   },
+  getProfile: async (req, res) => {
+    try {
+      const { user_id } = req.user; // Extracted from verifyJWT
+
+      const user = await prisma.users.findUnique({
+        where: { user_id },
+        select: {
+          user_id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          phone_number: true,
+          profile_pic: true,
+          role: {
+            select: {
+              role_name: true,
+            },
+          },
+          organization: {
+            select: {
+              name: true,
+              organization_id: true,
+              address_line_1: true,
+              address_line_2: true,
+              city: true,
+              state: true,
+              zip_code: true,
+              country: true,
+              Subscriptions: {
+                where: { status: "active" }, // Only get active ones
+                take: 1, // Only need one
+                include: {
+                  plan: true, // Fetch plan name/details
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      // Extract subscription (if exists)
+      const activeSub = user.organization?.Subscriptions?.[0] || null;
+
+      const subscriptionInfo = activeSub
+        ? {
+            id: activeSub.id,
+            plan_id: activeSub.plan?.id,
+            plan_name: activeSub.plan?.plan_name || "Unknown Plan",
+            status: activeSub.status,
+            renews_at: activeSub.current_period_end,
+            is_free_tier: activeSub.payment_method === "free_tier",
+          }
+        : null;
+
+      return res.status(200).json({
+        success: true,
+        user: {
+          ...user,
+          role: user.role?.role_name,
+          organization_address: {
+            line1: user.rganization?.address || "",
+            city: user.organization?.city || "",
+            state: user.organization?.state || "",
+            zip: user.organization?.zip_code || "",
+            country: user.organization?.country || "",
+          },
+          organization_name: user.organization?.name,
+          subscription: subscriptionInfo,
+        },
+      });
+    } catch (error) {
+      logger.error("getProfile error:", error);
+      return res
+        .status(500)
+        .json({ message: "Server error", error: error.message });
+    }
+  },
   updateUserProfile: async (req, res) => {
     try {
       const { user_id } = req.user; // From verifyJWT middleware

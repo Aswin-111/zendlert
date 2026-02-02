@@ -30,10 +30,11 @@ router.get(
 router.put(
   "/update-organization",
   verifyJWT,
-  verifyAdmin,
+
   OrganizationController.updateOrganization,
 );
 
+router.get("/profile", verifyJWT, OrganizationController.getProfile);
 //update
 // User Profile
 router.put(
@@ -46,30 +47,20 @@ router.put(
 router.put(
   "/site/update",
   verifyJWT,
-  verifyAdmin,
+
   OrganizationController.updateSite,
 );
 router.put(
   "/area/update",
   verifyJWT,
-  verifyAdmin,
+
   OrganizationController.updateArea,
 );
 
 //Sites routes
-router.post(
-  "/create-site",
-  verifyAdmin,
-  verifyJWT,
-  OrganizationController.createSite,
-);
+router.post("/create-site", verifyJWT, OrganizationController.createSite);
 router.get("/sites", verifyJWT, OrganizationController.getAllSites);
-router.post(
-  "/create-area",
-  verifyJWT,
-  verifyAdmin,
-  OrganizationController.createArea,
-);
+router.post("/create-area", verifyJWT, OrganizationController.createArea);
 
 // Employee routes
 router.get("/check-emaildomain", OrganizationController.checkEmailForEmployee);
@@ -92,7 +83,6 @@ router.get(
 router.put(
   "/assign-site-area",
   verifyJWT,
-  verifyAdmin,
   OrganizationController.assignSiteAndAreaToUser,
 );
 

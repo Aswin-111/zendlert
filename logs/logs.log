@@ -1687,3 +1687,1358 @@ Foreign key constraint violated on the constraint: `Alerts_emergency_type_id_fke
 2026-01-22T15:49:58.140Z INFO: [DEV OTP] ORG_VERIFY | tom@mail.com | OTP: 111111
 2026-01-22T15:50:42.778Z ERROR: verifyAdmin middleware used without verifyJWT
 2026-01-22T15:53:03.531Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-23T11:39:12.696Z INFO: [DEV OTP] ORG_VERIFY | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-23T11:45:54.003Z ERROR: verifyAdmin middleware used without verifyJWT
+2026-01-23T11:45:56.646Z ERROR: verifyAdmin middleware used without verifyJWT
+2026-01-23T11:51:06.161Z ERROR: verifyAdmin middleware used without verifyJWT
+2026-01-23T11:51:07.573Z WARN: Reuse detection triggered for user 0c957917-a752-4f07-8292-058242e8590a
+2026-01-23T11:59:56.239Z INFO: [DEV OTP] ORG_VERIFY | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-23T12:06:24.991Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:06:26.615Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:06:29.438Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:06:34.933Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:09:51.175Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:09:52.922Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:09:56.583Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:10:03.551Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:23:26.278Z WARN: Reuse detection triggered for user 6c274859-437d-41e6-8846-06b47fa6cf62
+2026-01-23T12:23:27.368Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:24:23.219Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-23T12:26:26.001Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:26:27.815Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:26:30.644Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:26:36.038Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:26:46.097Z INFO: Created new customer: cus_TqQIFbbkRMV2rS
+2026-01-23T12:29:48.005Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:29:50.408Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:29:53.760Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:29:57.192Z INFO: Using existing customer: cus_TqQIFbbkRMV2rS
+2026-01-23T12:29:59.504Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:30:02.534Z ERROR: Create Subscription Error: 
+Invalid `prisma.subscriptions.create()` invocation:
+
+
+Unique constraint failed on the fields: (`stripe_customer_id`)
+2026-01-23T12:31:15.485Z INFO: [DEV OTP] ORG_VERIFY | admin@evergreenhealthsys.com | OTP: 111111
+2026-01-23T12:35:35.126Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:35:36.781Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:35:40.038Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:35:44.761Z ERROR: Invoice Preview Error: You must have a valid head office address to enable automatic tax calculation in test mode. Visit https://dashboard.stripe.com/test/settings/tax to update it.
+2026-01-23T12:35:47.843Z INFO: Created new customer: cus_TqQRgrCuSaakTf
+2026-01-27T06:36:46.507Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T09:05:50.890Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T09:37:46.216Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T09:38:03.425Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T09:39:16.659Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T10:09:43.827Z WARN: Reuse detection triggered for user 6c274859-437d-41e6-8846-06b47fa6cf62
+2026-01-27T10:09:48.822Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T10:51:23.783Z WARN: Reuse detection triggered for user 6c274859-437d-41e6-8846-06b47fa6cf62
+2026-01-27T10:51:31.040Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T11:37:11.129Z WARN: Reuse detection triggered for user 6c274859-437d-41e6-8846-06b47fa6cf62
+2026-01-27T11:37:48.999Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T11:57:38.821Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T12:28:03.171Z WARN: Reuse detection triggered for user 6c274859-437d-41e6-8846-06b47fa6cf62
+2026-01-27T12:29:04.997Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-27T12:49:31.352Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-28T11:59:20.374Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-28T12:05:53.508Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-28T12:32:59.649Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:33:01.350Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:33:04.010Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:33:08.216Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:33:20.653Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:33:21.903Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:33:24.191Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:33:29.155Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:34:38.313Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:34:39.513Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:34:41.717Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:34:44.389Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:34:45.607Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:35:04.217Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-28T12:35:20.892Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:35:22.189Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:35:25.054Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:35:29.308Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:35:44.469Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:35:45.678Z ERROR: Error fetching plans: Cannot destructure property 'user_id' of 'req.user' as it is undefined.
+2026-01-28T12:50:38.762Z WARN: Reuse detection triggered for user 6c274859-437d-41e6-8846-06b47fa6cf62
+2026-01-29T06:17:39.386Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T06:51:00.037Z INFO: [DEV OTP] ORG_VERIFY | admin@summitridgeuniv.edu | OTP: 111111
+2026-01-29T06:56:41.519Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T07:01:26.005Z INFO: [DEV OTP] LOGIN | admin@summitridgeuniv.edu | OTP: 111111
+2026-01-29T07:35:44.928Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T07:44:00.034Z INFO: [WORKER] Processing job 13 for alert 05413375-7fd9-4048-bf59-e83e33d00b79
+2026-01-29T07:44:00.090Z ERROR: [WORKER] Job 13 failed for alert 05413375-7fd9-4048-bf59-e83e33d00b79:
+2026-01-29T07:44:00.094Z ERROR: Job 13 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-01-29T07:44:01.136Z INFO: [WORKER] Processing job 13 for alert 05413375-7fd9-4048-bf59-e83e33d00b79
+2026-01-29T07:44:01.140Z ERROR: [WORKER] Job 13 failed for alert 05413375-7fd9-4048-bf59-e83e33d00b79:
+2026-01-29T07:44:01.142Z ERROR: Job 13 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-01-29T07:44:03.244Z INFO: [WORKER] Processing job 13 for alert 05413375-7fd9-4048-bf59-e83e33d00b79
+2026-01-29T07:44:03.248Z ERROR: [WORKER] Job 13 failed for alert 05413375-7fd9-4048-bf59-e83e33d00b79:
+2026-01-29T07:44:03.296Z ERROR: Job 13 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-01-29T07:49:08.379Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T08:43:27.342Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T08:51:30.301Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T08:53:43.065Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T08:56:08.822Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T08:56:36.512Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T08:58:51.821Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T09:09:15.636Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T09:17:56.543Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T09:23:43.720Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T09:32:20.677Z INFO: [DEV OTP] LOGIN | admin@pioneerlogisticsusa.com | OTP: 111111
+2026-01-29T09:32:30.721Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:32:34.913Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:32:37.616Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:32:42.756Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:38:01.131Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:38:04.345Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:38:08.400Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:38:12.915Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:41:39.068Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:41:41.963Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:41:44.641Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:41:50.630Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:41:59.560Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:42:15.698Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:42:18.078Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:42:23.337Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:55:28.875Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-01-29T09:55:31.782Z ERROR: getProfile error: 
+Invalid `prisma.users.findUnique()` invocation:
+
+{
+  where: {
+    user_id: "6c274859-437d-41e6-8846-06b47fa6cf62"
+  },
+  select: {
+    user_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    profile_pic: true,
+    role: {
+      select: {
+        role_name: true
+      }
+    },
+    organization: {
+      select: {
+        name: true,
+        organization_id: true,
+        address_line_1: true,
+        ~~~~~~~~~~~~~~
+        address_line_2: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+        Subscriptions: {
+          where: {
+            status: "active"
+          },
+          take: 1,
+          include: {
+            plan: true
+          }
+        },
+?       email_domain?: true,
+?       stripe_customer_id?: true,
+?       main_contact_name?: true,
+?       main_contact_email?: true,
+?       main_contact_phone?: true,
+?       is_active?: true,
+?       industry_type_id?: true,
+?       status_id?: true,
+?       time_zone?: true,
+?       created_at?: true,
+?       updated_at?: true,
+?       last_activity_at?: true,
+?       industry_type?: true,
+?       status?: true,
+?       Sites?: true,
+?       Users?: true,
+?       Alerts?: true,
+?       Invitations?: true,
+?       Chat_Messages?: true,
+?       Emergency_Types?: true,
+?       Severity_Levels?: true,
+?       Contracting_Companies?: true,
+?       Incident_Reports?: true,
+?       _count?: true
+      }
+    }
+  }
+}
+
+Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
