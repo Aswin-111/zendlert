@@ -156,6 +156,9 @@ router.get("/get-response-time-trend", AdminController.getResponseTimeTrend);
 // alerts get alert history 
 router.get("/alert-history", AdminController.getAlertHistory);
 // ✅ Route: GET /admin/scheduled-alerts?organization_id=UUID
+
+//GET /api/v1/alert/get-individual-alert?alert_id=<ALERT_ID>&organization_id=<ORG_ID></ORG_ID>
+router.get("/get-individual-alert", AdminController.getIndividualAlertDetails);
 router.get("/scheduled-alerts", AdminController.getScheduledAlerts);
 
 

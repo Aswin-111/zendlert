@@ -3042,3 +3042,13 @@ Invalid `prisma.users.findUnique()` invocation:
 }
 
 Unknown field `address_line_1` for select statement on model `Organizations`. Available options are marked with ?.
+2026-02-24T10:25:46.652Z INFO: [DEV OTP] ORG_VERIFY | aaa@gmail.com | OTP: 111111
+2026-02-24T11:34:05.133Z INFO: [DEV OTP] LOGIN | aaa@gmail.com | OTP: 111111
+2026-02-24T11:56:15.381Z INFO: [DEV OTP] ORG_VERIFY | aaa@gmail.com | OTP: 111111
+2026-02-24T11:59:44.535Z INFO: [API] Job added to queue for active alert 064fbd79-db9e-4947-8ca8-35019aaccc8f
+2026-02-24T11:59:44.537Z INFO: [WORKER] Processing job 14 for alert 064fbd79-db9e-4947-8ca8-35019aaccc8f
+2026-02-24T11:59:44.540Z INFO: [WORKER] Alert 064fbd79-db9e-4947-8ca8-35019aaccc8f status updated to ACTIVE.
+2026-02-24T11:59:44.542Z INFO: [WORKER] No recipients for alert 064fbd79-db9e-4947-8ca8-35019aaccc8f. Job complete.
+2026-02-24T12:01:12.169Z INFO: [DEV OTP] LOGIN | sss@gmail.com | OTP: 111111
+2026-02-24T12:01:53.027Z INFO: [DEV OTP] LOGIN | ddd@gmail.com | OTP: 111111
+2026-02-24T12:02:19.839Z INFO: [DEV OTP] LOGIN | aaa@gmail.com | OTP: 111111
