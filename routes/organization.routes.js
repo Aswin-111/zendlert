@@ -1,99 +1,25 @@
 import express from "express";
 import OrganizationController from "../controllers/organization.controller.js";
-import verifyJWT from "../middlewares/verifyJWT.js";
-import { verifyAdmin } from "../middlewares/verifyRoles.js";
-import AuthController from "../controllers/auth.controller.js";
+import verifyAdminAccess from "../middlewares/verifyAdminAccess.js";
 
 const router = express.Router();
-router.get("/test", (req, res) => {
-  res.json({ message: "Hello World" });
-});
-router.get("/check-business-name", OrganizationController.checkBusinessName);
-router.post("/check-email-domain", OrganizationController.checkEmailDomain);
 
-// --- AUTH ROUTES ---
-router.post("/refresh", AuthController.handleRefreshToken);
-router.post("/logout", AuthController.logout);
+router.use(verifyAdminAccess);
 
-//OTP routes
-router.post("/send-otp", OrganizationController.sendOtp);
-router.post("/verify-otp", OrganizationController.verifyOtp);
-router.post("/login-otp", OrganizationController.loginWithOtp);
+router.get("/details", OrganizationController.getOrganizationName);
 
-//Organization routes
-router.post("/create-organization", OrganizationController.createOrganization);
-router.get(
-  "/organization-info",
-  verifyJWT,
-  OrganizationController.getOrganizationName,
-);
-router.put(
-  "/update-organization",
-  verifyJWT,
-  verifyAdmin,
-  OrganizationController.updateOrganization,
-);
+router.put("/details", OrganizationController.updateOrganization);
 
-//update
-// User Profile
-router.put(
-  "/profile/update",
-  verifyJWT,
-  OrganizationController.updateUserProfile,
-);
+router.put("/users/profile", OrganizationController.updateUserProfile);
 
-// Site Management
-router.put(
-  "/site/update",
-  verifyJWT,
-  verifyAdmin,
-  OrganizationController.updateSite,
-);
-router.put(
-  "/area/update",
-  verifyJWT,
-  verifyAdmin,
-  OrganizationController.updateArea,
-);
+router.post("/sites", OrganizationController.createSite);
+router.get("/sites", OrganizationController.getAllSites);
+router.put("/sites/:siteId", OrganizationController.updateSite);
 
-//Sites routes
-router.post(
-  "/create-site",
-  verifyAdmin,
-  verifyJWT,
-  OrganizationController.createSite,
-);
-router.get("/sites", verifyJWT, OrganizationController.getAllSites);
-router.post(
-  "/create-area",
-  verifyJWT,
-  verifyAdmin,
-  OrganizationController.createArea,
-);
+router.post("/areas", OrganizationController.createArea);
+router.put("/areas/:areaId", OrganizationController.updateArea);
 
-// Employee routes
-router.get("/check-emaildomain", OrganizationController.checkEmailForEmployee);
-router.post(
-  "/employee-get-otp",
-  OrganizationController.sendOtpForEmployeeSignup,
-);
-router.post(
-  "/employee-verify-otp",
-  OrganizationController.verifyOtpForEmployeeSignup,
-);
-router.post("/create-employee", OrganizationController.createEmployee);
-
-// Assign site and area to user
-router.get(
-  "/sites-areas",
-  verifyJWT,
-  OrganizationController.getSitesAndAreasByOrganizationId,
-);
-router.put(
-  "/assign-site-area",
-  verifyJWT,
-  verifyAdmin,
-  OrganizationController.assignSiteAndAreaToUser,
-);
+router.get("/sites/areas", OrganizationController.getSitesAndAreasByOrganizationId);
+router.put("/users/:userId/site-area", OrganizationController.assignSiteAndAreaToUser);
 
 export default router;

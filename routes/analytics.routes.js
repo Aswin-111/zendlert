@@ -1,28 +1,14 @@
 import express from "express";
-import OverviewController from "../controllers/overview.controller.js";
-import PerformanceController from "../controllers/performance.controller.js";
-import DetailedController from "../controllers/detailed.controller.js";
+import AnalyticsController from "../controllers/analytics.controller.js";
+import verifyAdminAccess from "../middlewares/verifyAdminAccess.js";
 
 const router = express.Router();
 
-// GET /api/v1/analytics/overview/get_reports
-router.get(
-  "/overview/get-reports",
-  // authMiddleware, // TODO: Protect this route with authentication
-  OverviewController.getReports
-);
+router.use(verifyAdminAccess);
 
-// GET /api/v1/analytics/overview/emergency-type-percentages
-router.get(
-  "/overview/emergency-type-percentages",
-  // authMiddleware, // TODO: Protect this route with authentication
-  OverviewController.getEmergencyTypePercentages
-);
-
-// GET /api/v1/analytics/channel-performance
-router.get("/channel-performance", PerformanceController.getPerformanceReport);
-
-// GET /api/v1/analytics/detailed
-router.get("/detailed", DetailedController.getDetailedStats);
+router.get("/reports", AnalyticsController.getReports);
+router.get("/emergency-types/percentages", AnalyticsController.getEmergencyTypePercentages);
+router.get("/channels/performance", AnalyticsController.getPerformanceReport);
+router.get("/details", AnalyticsController.getDetailedStats);
 
 export default router;

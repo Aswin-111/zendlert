@@ -1,7 +1,6 @@
-import { PrismaClient, UserTypes } from "@prisma/client";
+import { UserTypes } from "@prisma/client";
 import { Resend } from "resend";
 import bcrypt from "bcrypt";
-import z from "zod";
 import createOrganizationSchema from "../validators/organization/create-org.validator.js";
 import createSiteSchema from "../validators/organization/create-site.validator.js";
 import createAreaSchema from "../validators/organization/create-area.validator.js";
@@ -9,33 +8,51 @@ import createEmployeeSchema from "../validators/organization/create-employee.val
 
 import redisClient from "../utils/redis.client.js"; // Redis
 import logger from "../utils/logger.js";
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
 const resend = new Resend(process.env.RESEND_KEY);
 import jwt from "jsonwebtoken";
 import { generateTokens, sendRefreshTokenCookie } from "../utils/token.js";
 import updateUserProfileSchema from "../validators/organization/update-user.validator.js";
 import updateSiteSchema from "../validators/organization/update-site.validator.js";
 import updateAreaSchema from "../validators/organization/update-area.validator.js";
+import assignSiteAndAreaSchema from "../validators/organization/assign-site-area.validator.js";
+import checkEmployeeEmailDomainSchema from "../validators/organization/check-employee-email-domain.validator.js";
+import { generateSixDigitOtp } from "../helpers/otp.helper.js";
+import {
+  otpEmailSchema,
+  otpPurposeSchema,
+  verifyEmployeeOtpRequiredSchema,
+  verifyOtpRequiredSchema,
+} from "../validators/organization/otp.validator.js";
+import {
+  getEmployeeVerificationOtpEmailTemplate,
+  getOtpEmailTemplateByPurpose,
+  splitFullName,
+} from "../helpers/organization.helper.js";
+import {
+  findAreaByOrganization,
+  findSiteByOrganization,
+} from "../helpers/ownership.helper.js";
+import {
+  checkBusinessNameQuerySchema,
+  getAllSitesQuerySchema,
+  getOrganizationNameQuerySchema,
+  updateOrganizationBodySchema,
+} from "../validators/organization/organization-meta.validator.js";
+import { parseCheckEmailDomainInput } from "../validators/organization/check-email-domain.validator.js";
+import loginOtpSchema from "../validators/organization/login-otp.validator.js";
 
 const OTP_EXPIRY_SECONDS = 600;
-const generateOtp = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-};
-const assignSchema = z.object({
-  user_id: z.string({ required_error: "User ID is required" }),
-  site_id: z.string({ required_error: "Site ID is required" }),
-  area_id: z.string({ required_error: "Area ID is required" }),
-});
 const OrganizationController = {
   checkBusinessName: async (req, res) => {
     try {
-      const { business_name } = req.query;
-      // console.log(business_name)
-      if (!business_name || typeof business_name !== "string") {
+      const parsed = checkBusinessNameQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
         return res
           .status(400)
           .json({ success: false, message: "Invalid business_name" });
       }
+      const { business_name } = parsed.data;
 
       const existing = await prisma.organizations.findFirst({
         where: { name: business_name },
@@ -54,33 +71,14 @@ const OrganizationController = {
   },
   checkEmailDomain: async (req, res) => {
     try {
-      const { email } = req.body;
-
-      // -------------------------
-      // 1. Basic email validation
-      // -------------------------
-      if (!email || typeof email !== "string") {
+      const validated = parseCheckEmailDomainInput(req.body);
+      if (!validated.success) {
         return res.status(400).json({
           success: false,
-          message: "Email is required.",
+          message: validated.message,
         });
       }
-
-      if (!email.includes("@")) {
-        return res.status(400).json({
-          success: false,
-          message: "Email must contain '@'.",
-        });
-      }
-
-      const domain = email.split("@")[1]?.trim().toLowerCase();
-
-      if (!domain || domain.length < 3) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid email domain.",
-        });
-      }
+      const { domain } = validated;
 
       // -------------------------
       // 2. Block public email providers
@@ -139,95 +137,44 @@ const OrganizationController = {
     try {
       const { email, purpose } = req.body;
 
-      if (
-        !email ||
-        typeof email !== "string" ||
-        !email.includes("@") ||
-        email.split("@")[1].trim().length < 3
-      ) {
+      const parsedEmail = otpEmailSchema.safeParse({ email });
+      if (!parsedEmail.success) {
         return res
           .status(400)
           .json({ message: "Invalid or missing email address." });
       }
 
-      if (!purpose || !["ORG_VERIFY", "LOGIN"].includes(purpose)) {
+      const parsedPurpose = otpPurposeSchema.safeParse({ purpose });
+      if (!parsedPurpose.success) {
         return res.status(400).json({
           message: "Invalid or missing OTP purpose",
         });
       }
 
-      // 2. CHECK USER EXISTENCE (If Purpose is LOGIN)
       if (purpose === "LOGIN") {
         const user = await prisma.users.findUnique({
           where: { email: email.toLowerCase() },
         });
 
         if (!user) {
-          // Stop here if user doesn't exist. Don't send OTP.
           return res.status(404).json({ message: "User not found." });
         }
       }
 
-      //const otp = generateOtp();
-      //for testing purpose,remove in roduction
       const isDev = process.env.NODE_ENV !== "production";
-      const otp = isDev ? process.env.DUMMY_OTP || "111111" : generateOtp();
+      const otp = isDev ? process.env.DUMMY_OTP || "111111" : generateSixDigitOtp();
+      const { subject, html } = getOtpEmailTemplateByPurpose(purpose, otp);
 
-      // 🔐 LOG OTP ONLY IN DEVELOPMENT
       if (process.env.NODE_ENV !== "production") {
-        logger.info(`[DEV OTP] ${purpose} | ${email} | OTP: ${otp}`);
-        console.log(`[DEV OTP] ${purpose} | ${email} | OTP: ${otp}`);
+        logger.info(`[DEV OTP] ${purpose} | ${email} | OTP generated`);
       }
 
-      // Store OTP in Redis (key includes purpose)
       await redisClient.setEx(
         `otp:${purpose}:${email}`,
         OTP_EXPIRY_SECONDS,
         otp,
       );
 
-      let subject = "";
-      let html = "";
-
-      // ================= TEMPLATE SWITCH =================
-      if (purpose === "ORG_VERIFY") {
-        subject = "OTP for Organization Verification";
-        html = `
-<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc;">
-  <div style="max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 8px;">
-    <h2 style="color:#2c3e50;">🚀 Welcome to Emertify!</h2>
-    <p>Use the OTP below to verify your organization:</p>
-    <h1 style="letter-spacing:4px;">${otp}</h1>
-    <p>This OTP is valid for <strong>10 minutes</strong>.</p>
-  </div>
-</div>
-`;
-      }
-
-      if (purpose === "LOGIN") {
-        subject = "Your Login OTP";
-        html = `
-<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc;">
-  <div style="max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 8px;">
-    <h2 style="color:#2c3e50;">🔐 Login to Emertify</h2>
-    <p>Use the OTP below to login:</p>
-    <h1 style="letter-spacing:4px;">${otp}</h1>
-    <p>If you did not request this login, ignore this email.</p>
-  </div>
-</div>
-`;
-      }
-      // ===================================================
-
-      //for testing purpose,comment in production
-      // await resend.emails.send({
-      //   from: process.env.FROM_EMAIL,
-      //   to: [email],
-      //   subject,
-      //   html,
-      // });
-
-      //remove these after testing
       if (!isDev) {
         await resend.emails.send({
           from: process.env.FROM_EMAIL,
@@ -243,7 +190,7 @@ const OrganizationController = {
           purpose === "LOGIN"
             ? "Login OTP sent successfully."
             : "Organization verification OTP sent.",
-        dev_otp: otp,
+        dev_otp: isDev ? otp : null,
       });
     } catch (err) {
       logger.error("sendOtp error:", err);
@@ -253,94 +200,23 @@ const OrganizationController = {
       });
     }
   },
-
-  //   sendOtp: async (req, res) => {
-  //     try {
-  //       const { email } = req.body;
-
-  //       if (
-  //         !email ||
-  //         typeof email !== "string" ||
-  //         !email.includes("@") ||
-  //         email.split("@")[1].trim().length < 3
-  //       ) {
-  //         return res
-  //           .status(400)
-  //           .json({ message: "Invalid or missing email address." });
-  //       }
-
-  //       const domain = email.split("@")[1].toLowerCase();
-  //       // const org = await prisma.organizations.findUnique({
-  //       //   where: { email_domain: domain },
-  //       // });
-
-  //       // if (!org) {
-  //       //   return res.status(404).json({
-  //       //     message: "Organization not found for provided email domain.",
-  //       //   });
-  //       // }
-
-  //       const otp = generateOtp();
-  //       // 🔐 LOG OTP ONLY IN DEVELOPMENT
-  //       if (process.env.NODE_ENV !== "production") {
-  //         logger.info(`[DEV OTP] Email: ${email} | OTP: ${otp}`);
-  //         console.log(`[DEV OTP] Email: ${email} | OTP: ${otp}`);
-  //       }
-
-  //       // Store OTP in Redis with expiry
-  //       await redisClient.setEx(`otp:${email}`, OTP_EXPIRY_SECONDS, otp);
-
-  //       await resend.emails.send({
-  //         from: process.env.FROM_EMAIL,
-  //         to: [email],
-  //         subject: "OTP for Organization Verification",
-  //         html: `
-  //   <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333;">
-  //     <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 30px;">
-  //       <h2 style="color: #2c3e50;">🚀 Welcome to Emertify!</h2>
-
-  //       <p style="font-size: 16px;">
-  //         To complete your setup, please use the following OTP:
-  //       </p>
-  //       <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #2c3e50; background-color: #f0f0f0; padding: 10px 20px; display: inline-block; border-radius: 6px;">
-  //         ${otp}
-  //       </p>
-  //       <p style="font-size: 14px; color: #777; margin-top: 20px;">
-  //         This OTP is valid for <strong>10 minutes</strong>. Do not share it with anyone.
-  //       </p>
-  //       <hr style="margin: 30px 0;" />
-  //       <p style="font-size: 14px; color: #999;">
-  //         If you did not request this, please ignore this email.<br/>
-  //         Need help? Contact support at <a href="mailto:support@yourcompany.com" style="color: #3498db;">support@yourcompany.com</a>.
-  //       </p>
-  //     </div>
-  //   </div>
-  // `,
-  //       });
-
-  //       return res.status(200).json({
-  //         exists: true,
-  //         message: "OTP sent to admin email.",
-  //       });
-  //     } catch (err) {
-  //       logger.error("sendOtp error:", err);
-  //       return res.status(500).json({
-  //         message: "Server error",
-  //         error: err.message,
-  //       });
-  //     }
-  //   },
   verifyOtp: async (req, res) => {
     try {
       const { email, otp, purpose } = req.body;
 
-      if (!email || !otp || !purpose) {
+      const parsedRequired = verifyOtpRequiredSchema.safeParse({
+        email,
+        otp,
+        purpose,
+      });
+      if (!parsedRequired.success) {
         return res.status(400).json({
           message: "Email, OTP and purpose are required.",
         });
       }
 
-      if (!["ORG_VERIFY", "LOGIN"].includes(purpose)) {
+      const parsedPurpose = otpPurposeSchema.safeParse({ purpose });
+      if (!parsedPurpose.success) {
         return res.status(400).json({
           message: "Invalid OTP purpose.",
         });
@@ -356,19 +232,6 @@ const OrganizationController = {
         });
       }
 
-      //testing code remove below code and uncomment above in production
-      // const isDev = process.env.NODE_ENV !== "production";
-      // const dummyOtp = process.env.DUMMY_OTP || "111111";
-
-      // if (isDev && otp === dummyOtp) {
-      //   // allow without Redis
-      //   return res.status(200).json({
-      //     verified: true,
-      //     message: "OTP verified successfully (DEV MODE).",
-      //   });
-      // }
-
-      // OTP valid → delete
       await redisClient.del(redisKey);
 
       return res.status(200).json({
@@ -383,16 +246,15 @@ const OrganizationController = {
       });
     }
   },
-
   loginWithOtp: async (req, res) => {
     try {
-      const { email, otp } = req.body;
-
-      if (!email || !otp) {
+      const parsed = loginOtpSchema.safeParse(req.body ?? {});
+      if (!parsed.success) {
         return res.status(400).json({
           message: "Email and OTP are required.",
         });
       }
+      const { email, otp } = parsed.data;
 
       const user = await prisma.users.findUnique({
         where: { email: email.toLowerCase() },
@@ -420,29 +282,7 @@ const OrganizationController = {
         });
       }
 
-      // OTP valid → delete it
       await redisClient.del(redisKey);
-
-      //testing code remove below code and uncomment above in production
-
-      // const isDev = process.env.NODE_ENV !== "production";
-      // const dummyOtp = process.env.DUMMY_OTP || "111111";
-
-      // if (isDev && otp === dummyOtp) {
-      //   // skip Redis check
-      // } else {
-      //   const redisKey = `otp:LOGIN:${email}`;
-      //   const storedOtp = await redisClient.get(redisKey);
-
-      //   if (!storedOtp || storedOtp !== otp) {
-      //     return res.status(401).json({
-      //       message: "Invalid or expired OTP.",
-      //     });
-      //   }
-
-      //   await redisClient.del(redisKey);
-      // }
-
       const { accessToken, refreshToken } = generateTokens(user);
 
       // Store Refresh Token in DB
@@ -476,7 +316,6 @@ const OrganizationController = {
       });
     }
   },
-
   createOrganization: async (req, res) => {
     try {
       const parsed = createOrganizationSchema.safeParse(req.body);
@@ -492,8 +331,7 @@ const OrganizationController = {
       const email_domain = parsed.data.email.split("@")[1].toLowerCase();
 
       const { email, full_name, organization_name } = parsed.data;
-      const [firstName, ...rest] = full_name.trim().split(" ");
-      const lastName = rest.join(" ");
+      const { firstName, lastName } = splitFullName(full_name);
       // Check if org already exists
       const existingOrg = await prisma.organizations.findFirst({
         where: {
@@ -578,11 +416,15 @@ const OrganizationController = {
   },
   getOrganizationName: async (req, res) => {
     try {
-      const { user_id } = req.query;
-
-      if (!user_id) {
+      const queryInput = {
+        ...(req.query ?? {}),
+        user_id: req.user?.user_id ?? req.query?.user_id,
+      };
+      const parsed = getOrganizationNameQuerySchema.safeParse(queryInput);
+      if (!parsed.success) {
         return res.status(400).json({ message: "User ID is required." });
       }
+      const { user_id } = parsed.data;
 
       const userWithOrg = await prisma.users.findUnique({
         where: { user_id },
@@ -612,6 +454,17 @@ const OrganizationController = {
   },
   updateOrganization: async (req, res) => {
     try {
+      const bodyInput = {
+        ...(req.body ?? {}),
+        organization_id: req.user?.organization_id ?? req.body?.organization_id,
+      };
+      const parsed = updateOrganizationBodySchema.safeParse(bodyInput);
+      if (!parsed.success) {
+        return res
+          .status(400)
+          .json({ message: "Organization ID is required." });
+      }
+
       const {
         name,
         industry_type_id,
@@ -619,13 +472,7 @@ const OrganizationController = {
         main_contact_email,
         main_contact_phone,
         organization_id,
-      } = req.body;
-
-      if (!organization_id) {
-        return res
-          .status(400)
-          .json({ message: "Organization ID is required." });
-      }
+      } = parsed.data;
 
       // Build dynamic update payload
       const dataToUpdate = {};
@@ -668,7 +515,7 @@ const OrganizationController = {
   },
   updateUserProfile: async (req, res) => {
     try {
-      const { user_id } = req.user; // From verifyJWT middleware
+      const { user_id } = req.user; // From auth middleware
 
       const parsed = updateUserProfileSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -678,7 +525,8 @@ const OrganizationController = {
         });
       }
 
-      const { first_name, last_name, phone_number, email } = parsed.data;
+      const { first_name: firstName,
+          last_name: lastName, phone_number, email } = parsed.data;
 
       // 1. Check email uniqueness if it is being changed
       if (email) {
@@ -698,8 +546,8 @@ const OrganizationController = {
       const updatedUser = await prisma.users.update({
         where: { user_id },
         data: {
-          first_name,
-          last_name,
+          first_name: firstName,
+          last_name: lastName,
           phone_number,
           // Only update email if provided
           email: email ? email.toLowerCase() : undefined,
@@ -727,7 +575,11 @@ const OrganizationController = {
   },
   updateSite: async (req, res) => {
     try {
-      const parsed = updateSiteSchema.safeParse(req.body);
+      const bodyInput = {
+        ...(req.body ?? {}),
+        site_id: req.params?.siteId ?? req.body?.site_id,
+      };
+      const parsed = updateSiteSchema.safeParse(bodyInput);
       if (!parsed.success) {
         return res.status(400).json({
           message: "Invalid input",
@@ -748,15 +600,13 @@ const OrganizationController = {
         contact_phone,
       } = parsed.data;
 
-      const { organization_id } = req.user; // Security: User can only edit own org's sites
+      const { organization_id } = req.user;
 
-      // 1. Security Check: Does this site belong to the user's organization?
-      const existingSite = await prisma.sites.findFirst({
-        where: {
-          id: site_id,
-          organization_id: organization_id,
-        },
-      });
+      const existingSite = await findSiteByOrganization(
+        prisma,
+        site_id,
+        organization_id,
+      );
 
       if (!existingSite) {
         return res
@@ -793,11 +643,16 @@ const OrganizationController = {
   },
   createSite: async (req, res) => {
     try {
-      const parsed = createSiteSchema.safeParse(req.body);
-      console.log(req.body);
+      const bodyInput = {
+        ...(req.body ?? {}),
+        organization_id: req.user?.organization_id ?? req.body?.organization_id,
+      };
+      const parsed = createSiteSchema.safeParse(bodyInput);
       if (!parsed.success) {
         const errors = parsed.error.errors.map((err) => err.message);
-        console.log(req.body);
+        logger.warn("createSite validation failed", {
+          meta: { errors_count: errors.length },
+        });
         return res.status(400).json({ message: "Validation failed", errors });
       }
 
@@ -850,7 +705,11 @@ const OrganizationController = {
   },
   updateArea: async (req, res) => {
     try {
-      const parsed = updateAreaSchema.safeParse(req.body);
+      const bodyInput = {
+        ...(req.body ?? {}),
+        area_id: req.params?.areaId ?? req.body?.area_id,
+      };
+      const parsed = updateAreaSchema.safeParse(bodyInput);
       if (!parsed.success) {
         return res.status(400).json({
           message: "Invalid input",
@@ -861,16 +720,11 @@ const OrganizationController = {
       const { area_id, name, description } = parsed.data;
       const { organization_id } = req.user;
 
-      // 1. Security Check:
-      // Ensure the Area belongs to a Site that belongs to the User's Organization
-      const existingArea = await prisma.areas.findFirst({
-        where: {
-          id: area_id,
-          site: {
-            organization_id: organization_id, // Nested relation check
-          },
-        },
-      });
+      const existingArea = await findAreaByOrganization(
+        prisma,
+        area_id,
+        organization_id,
+      );
 
       if (!existingArea) {
         return res
@@ -900,24 +754,33 @@ const OrganizationController = {
   },
   getAllSites: async (req, res) => {
     try {
-      const { organization_id } = req.query;
-      const sites = await prisma.sites.findMany({
+      const queryInput = {
+        ...(req.query ?? {}),
+        organization_id: req.user?.organization_id ?? req.query?.organization_id,
+      };
+      const parsed = getAllSitesQuerySchema.safeParse(queryInput);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "organization_id is required." });
+      }
+
+      const { organization_id, page, limit } = parsed.data;
+      const query = {
         where: { organization_id },
-        orderBy: { created_at: "desc" }, // optional sorting
+        orderBy: { created_at: "desc" },
         select: {
           id: true,
           name: true,
         },
-        // include: {
-        //   organization: {
-        //     select: {
-        //       name: true,
-        //       organization_id: true,
-        //     },
-        //   },
-        // },
-      });
-      console.log(sites);
+      };
+
+      if (typeof limit === "number") {
+        query.take = limit;
+        if (typeof page === "number") {
+          query.skip = (page - 1) * limit;
+        }
+      }
+
+      const sites = await prisma.sites.findMany(query);
       return res
         .status(200)
         .json({ message: "Sites fetched successfully", data: sites });
@@ -954,7 +817,7 @@ const OrganizationController = {
 
       return res.status(200).json({ message: "Area created", area: newArea });
     } catch (error) {
-      console.error("createArea error:", error);
+      logger.error("createArea error:", error);
       return res
         .status(500)
         .json({ message: "Server error", error: error.message });
@@ -965,17 +828,7 @@ const OrganizationController = {
   checkEmailForEmployee: async (req, res) => {
     try {
       const { domain } = req.query;
-      console.log(domain);
-      const checkDomainSchema = z.object({
-        domain: z
-          .string()
-          .email()
-          .transform((val) => val.split("@")[1])
-          .refine((val) => !!val, {
-            message: "Invalid email format. Must include a domain.",
-          }),
-      });
-      const parsed = checkDomainSchema.safeParse({ domain });
+      const parsed = checkEmployeeEmailDomainSchema.safeParse({ domain });
       if (!parsed.success) {
         const errors = parsed.error.errors.map((e) => e.message);
         return res.status(400).json({ message: "Invalid input", errors });
@@ -998,7 +851,7 @@ const OrganizationController = {
         id: existingOrg.organization_id,
       });
     } catch (error) {
-      console.error("checkEmailDomain error:", error);
+      logger.error("checkEmailDomain error:", error);
       return res
         .status(500)
         .json({ message: "Server error", error: error.message });
@@ -1008,59 +861,23 @@ const OrganizationController = {
     try {
       const { email } = req.body;
 
-      if (
-        !email ||
-        typeof email !== "string" ||
-        !email.includes("@") ||
-        email.split("@")[1].trim().length < 3
-      ) {
+      const parsedEmail = otpEmailSchema.safeParse({ email });
+      if (!parsedEmail.success) {
         return res
           .status(400)
           .json({ message: "Invalid or missing email address." });
       }
 
-      const domain = email.split("@")[1].toLowerCase();
-      // const org = await prisma.organizations.findUnique({
-      //   where: { email_domain: domain },
-      // });
+      const otp = generateSixDigitOtp();
+      const { subject, html } = getEmployeeVerificationOtpEmailTemplate(otp);
 
-      // if (!org) {
-      //   return res.status(404).json({
-      //     message: "Organization not found for provided email domain.",
-      //   });
-      // }
-
-      const otp = generateOtp();
-
-      // Store OTP in Redis with expiry
       await redisClient.setEx(`otp:${email}`, OTP_EXPIRY_SECONDS, otp);
 
       await resend.emails.send({
         from: process.env.FROM_EMAIL,
         to: [email],
-        subject: "OTP for Employee Verification",
-        html: `
-  <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333;">
-    <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 30px;">
-      <h2 style="color: #2c3e50;">🚀 Welcome to Emertify!</h2>
-     
-      <p style="font-size: 16px;">
-        To complete your setup, please use the following OTP:
-      </p>
-      <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #2c3e50; background-color: #f0f0f0; padding: 10px 20px; display: inline-block; border-radius: 6px;">
-        ${otp}
-      </p>
-      <p style="font-size: 14px; color: #777; margin-top: 20px;">
-        This OTP is valid for <strong>10 minutes</strong>. Do not share it with anyone.
-      </p>
-      <hr style="margin: 30px 0;" />
-      <p style="font-size: 14px; color: #999;">
-        If you did not request this, please ignore this email.<br/>
-        Need help? Contact support at <a href="mailto:support@yourcompany.com" style="color: #3498db;">support@yourcompany.com</a>.
-      </p>
-    </div>
-  </div>
-`,
+        subject,
+        html,
       });
 
       return res.status(200).json({
@@ -1079,7 +896,11 @@ const OrganizationController = {
     try {
       const { email, otp } = req.body;
 
-      if (!email || !otp) {
+      const parsedRequired = verifyEmployeeOtpRequiredSchema.safeParse({
+        email,
+        otp,
+      });
+      if (!parsedRequired.success) {
         return res.status(400).json({ message: "Email and OTP are required." });
       }
 
@@ -1103,7 +924,6 @@ const OrganizationController = {
       });
     }
   },
-
   createEmployee: async (req, res) => {
     try {
       const parsed = createEmployeeSchema.safeParse(req.body);
@@ -1155,17 +975,15 @@ const OrganizationController = {
 
       // 5. Prepare user data
       const password_hash = await bcrypt.hash(password, 10);
-      const [first_name, ...rest] = full_name.trim().split(" ");
-      const last_name = rest.join(" ") || "";
-      console.log("Password : ", password, " Password hash : ", password_hash);
+      const { firstName, lastName } = splitFullName(full_name);
 
       // 6. Create the new user and associate them with the found organization
       const newUser = await prisma.users.create({
         data: {
           email: email.toLowerCase(),
           password_hash,
-          first_name,
-          last_name,
+          first_name: firstName,
+          last_name: lastName,
           phone_number: phone,
           is_active: true,
           user_type: "employee", // Note: user_type is an enum, so direct string is fine
@@ -1202,7 +1020,6 @@ const OrganizationController = {
         },
       });
     } catch (error) {
-      console.log(error);
       logger.error("createEmployee error:", error);
       return res
         .status(500)
@@ -1212,16 +1029,33 @@ const OrganizationController = {
   // employee login
 
   getSitesAndAreasByOrganizationId: async (req, res) => {
-    const { organization_id } = req.query;
+    const organization_id = req.user?.organization_id ?? req.query?.organization_id;
 
     try {
-      const sites = await prisma.sites.findMany({
+      const usePagination =
+        req.query?.page !== undefined || req.query?.limit !== undefined;
+      const pageNumber = Math.max(parseInt(req.query?.page, 10) || 1, 1);
+      const pageSize = Math.min(
+        Math.max(parseInt(req.query?.limit, 10) || 20, 1),
+        100
+      );
+
+      const queryOptions = {
         where: { organization_id: organization_id },
         include: {
           Areas: true, // Includes all related areas
         },
+      };
+
+      if (usePagination) {
+        queryOptions.skip = (pageNumber - 1) * pageSize;
+        queryOptions.take = pageSize;
+      }
+
+      const sites = await prisma.sites.findMany(queryOptions);
+      logger.info("getSitesAndAreasByOrganizationId fetched sites", {
+        meta: { organization_id, site_count: sites.length },
       });
-      console.log(`organization_id:${organization_id}`, sites);
       return res.status(200).json({ organization_id, sites });
     } catch (error) {
       logger?.error("getSitesAndAreasByOrganizationId error:", error);
@@ -1232,7 +1066,11 @@ const OrganizationController = {
   },
   assignSiteAndAreaToUser: async (req, res) => {
     try {
-      const parsed = assignSchema.safeParse(req.body);
+      const bodyInput = {
+        ...(req.body ?? {}),
+        user_id: req.params?.userId ?? req.body?.user_id,
+      };
+      const parsed = assignSiteAndAreaSchema.safeParse(bodyInput);
 
       if (!parsed.success) {
         const errors = parsed.error.errors.map((err) => err.message);
@@ -1283,7 +1121,6 @@ const OrganizationController = {
         .json({ message: "Server error", error: error.message });
     }
   },
-
   getBuildingAlerts: async (req, res) => {
     try {
       const { building_name } = req.body;
@@ -1372,3 +1209,15 @@ const OrganizationController = {
 };
 
 export default OrganizationController;
+
+
+
+
+
+
+
+
+
+
+
+

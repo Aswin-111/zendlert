@@ -1687,3 +1687,315 @@ Foreign key constraint violated on the constraint: `Alerts_emergency_type_id_fke
 2026-01-22T15:49:58.140Z INFO: [DEV OTP] ORG_VERIFY | tom@mail.com | OTP: 111111
 2026-01-22T15:50:42.778Z ERROR: verifyAdmin middleware used without verifyJWT
 2026-01-22T15:53:03.531Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-23T11:52:42.135Z INFO: [DEV OTP] ORG_VERIFY | vvvvv@mmmm.com | OTP: 111111
+2026-01-23T11:53:37.564Z ERROR: verifyAdmin middleware used without verifyJWT
+2026-01-23T11:55:53.251Z INFO: [DEV OTP] ORG_VERIFY | vvvvv@mmtmm.com | OTP: 111111
+2026-01-29T07:09:33.290Z INFO: [WORKER] Processing job 22 for alert 4128fec3-fb26-4e46-9e4e-b1693435f278
+2026-01-29T07:09:33.531Z ERROR: [WORKER] Job 22 failed for alert 4128fec3-fb26-4e46-9e4e-b1693435f278:
+2026-01-29T07:09:33.535Z ERROR: Job 22 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-01-29T07:09:34.546Z INFO: [WORKER] Processing job 22 for alert 4128fec3-fb26-4e46-9e4e-b1693435f278
+2026-01-29T07:09:34.549Z ERROR: [WORKER] Job 22 failed for alert 4128fec3-fb26-4e46-9e4e-b1693435f278:
+2026-01-29T07:09:34.552Z ERROR: Job 22 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-01-29T07:09:36.562Z INFO: [WORKER] Processing job 22 for alert 4128fec3-fb26-4e46-9e4e-b1693435f278
+2026-01-29T07:09:36.565Z ERROR: [WORKER] Job 22 failed for alert 4128fec3-fb26-4e46-9e4e-b1693435f278:
+2026-01-29T07:09:36.619Z ERROR: Job 22 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-01-29T07:16:08.176Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-29T07:29:16.525Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-01-29T07:49:29.651Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-01-29T07:51:14.459Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-29T07:52:39.535Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-01-29T07:54:09.498Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-29T07:54:54.877Z INFO: [DEV OTP] LOGIN | zxcxz@gmail.com | OTP: 111111
+2026-01-29T07:56:11.891Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-29T07:58:18.448Z INFO: [DEV OTP] LOGIN | zxcxz@gmail.com | OTP: 111111
+2026-01-29T09:18:02.415Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-29T14:55:48.310Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-01-29T15:07:45.910Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-29T15:21:19.451Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-01-29T15:28:15.695Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-29T15:44:34.067Z WARN: Reuse detection triggered for user e878a2e2-e523-4b47-8178-31c5e3dbe3be
+2026-01-29T15:48:09.470Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-30T12:24:54.661Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-01-30T12:26:45.427Z INFO: [DEV OTP] LOGIN | Adminchat@gmail.com | OTP: 111111
+2026-01-30T12:28:13.209Z INFO: [DEV OTP] LOGIN | empone@gmail.com | OTP: 111111
+2026-01-30T12:49:21.708Z INFO: [DEV OTP] LOGIN | AdminChat@gmail.com | OTP: 111111
+2026-01-30T12:50:00.664Z INFO: [DEV OTP] LOGIN | empone@gmail.com | OTP: 111111
+2026-02-02T06:28:42.023Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T13:34:49.709Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T13:35:46.046Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T13:36:08.704Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T13:36:53.089Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T13:38:34.334Z INFO: [API] Job added to queue for active alert 90062241-e0e5-4809-bc19-ccd878f1faed
+2026-02-06T13:38:34.338Z INFO: [WORKER] Processing job 33 for alert 90062241-e0e5-4809-bc19-ccd878f1faed
+2026-02-06T13:38:34.346Z INFO: [WORKER] Alert 90062241-e0e5-4809-bc19-ccd878f1faed status updated to ACTIVE.
+2026-02-06T13:38:34.357Z ERROR: [WORKER] Job 33 failed for alert 90062241-e0e5-4809-bc19-ccd878f1faed:
+2026-02-06T13:38:34.365Z ERROR: Job 33 has failed with admin is not defined
+2026-02-06T13:38:35.405Z INFO: [WORKER] Processing job 33 for alert 90062241-e0e5-4809-bc19-ccd878f1faed
+2026-02-06T13:38:35.422Z INFO: [WORKER] Alert 90062241-e0e5-4809-bc19-ccd878f1faed status updated to ACTIVE.
+2026-02-06T13:38:35.436Z ERROR: [WORKER] Job 33 failed for alert 90062241-e0e5-4809-bc19-ccd878f1faed:
+2026-02-06T13:38:35.441Z ERROR: Job 33 has failed with admin is not defined
+2026-02-06T13:38:37.529Z INFO: [WORKER] Processing job 33 for alert 90062241-e0e5-4809-bc19-ccd878f1faed
+2026-02-06T13:38:37.549Z INFO: [WORKER] Alert 90062241-e0e5-4809-bc19-ccd878f1faed status updated to ACTIVE.
+2026-02-06T13:38:37.568Z ERROR: [WORKER] Job 33 failed for alert 90062241-e0e5-4809-bc19-ccd878f1faed:
+2026-02-06T13:38:37.641Z ERROR: Job 33 has failed with admin is not defined
+2026-02-06T13:39:32.348Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T13:41:06.876Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:03:43.337Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:04:38.591Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:06:01.417Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T14:06:32.619Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:09:13.286Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:13:25.891Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T14:13:54.365Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:17:11.501Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T14:17:42.094Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:18:49.809Z INFO: [DEV OTP] LOGIN | hari@gmail.com | OTP: 111111
+2026-02-06T14:19:14.570Z INFO: [DEV OTP] LOGIN | vcvc@gmail.com | OTP: 111111
+2026-02-06T14:19:39.620Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:33:21.187Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T14:33:33.245Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:33:58.331Z INFO: [API] Job added to queue for active alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4
+2026-02-06T14:33:58.357Z INFO: [WORKER] Processing job 34 for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4
+2026-02-06T14:33:58.384Z INFO: [WORKER] Alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4 status updated to ACTIVE.
+2026-02-06T14:33:58.421Z ERROR: [WORKER] Job 34 failed for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4:
+2026-02-06T14:33:58.473Z ERROR: Job 34 has failed with admin is not defined
+2026-02-06T14:33:59.560Z INFO: [WORKER] Processing job 34 for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4
+2026-02-06T14:33:59.574Z INFO: [WORKER] Alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4 status updated to ACTIVE.
+2026-02-06T14:33:59.586Z ERROR: [WORKER] Job 34 failed for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4:
+2026-02-06T14:33:59.593Z ERROR: Job 34 has failed with admin is not defined
+2026-02-06T14:34:01.664Z INFO: [WORKER] Processing job 34 for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4
+2026-02-06T14:34:01.676Z INFO: [WORKER] Alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4 status updated to ACTIVE.
+2026-02-06T14:34:01.688Z ERROR: [WORKER] Job 34 failed for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4:
+2026-02-06T14:34:01.751Z ERROR: Job 34 has failed with admin is not defined
+2026-02-06T14:34:33.567Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T14:34:51.979Z INFO: [DEV OTP] LOGIN | vcvc@gmail.com | OTP: 111111
+2026-02-06T14:35:16.863Z INFO: [DEV OTP] LOGIN | hari@gmail.com | OTP: 111111
+2026-02-06T14:35:33.611Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:47:14.013Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:48:45.331Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:49:23.394Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T14:49:49.205Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T14:57:19.383Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T14:57:37.772Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T15:05:07.588Z INFO: [API] Job added to queue for active alert 6b960312-d3c7-444f-ae55-d3969afc7a43
+2026-02-06T15:05:07.603Z INFO: [WORKER] Processing job 35 for alert 6b960312-d3c7-444f-ae55-d3969afc7a43
+2026-02-06T15:05:07.628Z INFO: [WORKER] Alert 6b960312-d3c7-444f-ae55-d3969afc7a43 status updated to ACTIVE.
+2026-02-06T15:05:07.677Z ERROR: [WORKER] Job 35 failed for alert 6b960312-d3c7-444f-ae55-d3969afc7a43:
+2026-02-06T15:05:07.795Z ERROR: Job 35 has failed with admin is not defined
+2026-02-06T15:05:08.789Z INFO: [WORKER] Processing job 35 for alert 6b960312-d3c7-444f-ae55-d3969afc7a43
+2026-02-06T15:05:08.797Z INFO: [WORKER] Alert 6b960312-d3c7-444f-ae55-d3969afc7a43 status updated to ACTIVE.
+2026-02-06T15:05:08.809Z ERROR: [WORKER] Job 35 failed for alert 6b960312-d3c7-444f-ae55-d3969afc7a43:
+2026-02-06T15:05:08.815Z ERROR: Job 35 has failed with admin is not defined
+2026-02-06T15:05:10.912Z INFO: [WORKER] Processing job 35 for alert 6b960312-d3c7-444f-ae55-d3969afc7a43
+2026-02-06T15:05:10.920Z INFO: [WORKER] Alert 6b960312-d3c7-444f-ae55-d3969afc7a43 status updated to ACTIVE.
+2026-02-06T15:05:10.930Z ERROR: [WORKER] Job 35 failed for alert 6b960312-d3c7-444f-ae55-d3969afc7a43:
+2026-02-06T15:05:10.985Z ERROR: Job 35 has failed with admin is not defined
+2026-02-06T15:06:20.949Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-06T15:06:48.345Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-06T15:07:23.112Z INFO: [DEV OTP] LOGIN | vcvc@gmail.com | OTP: 111111
+2026-02-06T15:07:47.210Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T09:09:37.317Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T09:11:09.274Z INFO: [API] Job added to queue for active alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837
+2026-02-11T09:11:09.277Z INFO: [WORKER] Processing job 36 for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837
+2026-02-11T09:11:09.284Z INFO: [WORKER] Alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837 status updated to ACTIVE.
+2026-02-11T09:11:09.296Z ERROR: [WORKER] Job 36 failed for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837:
+2026-02-11T09:11:09.302Z ERROR: Job 36 has failed with admin is not defined
+2026-02-11T09:11:10.385Z INFO: [WORKER] Processing job 36 for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837
+2026-02-11T09:11:10.401Z INFO: [WORKER] Alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837 status updated to ACTIVE.
+2026-02-11T09:11:10.413Z ERROR: [WORKER] Job 36 failed for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837:
+2026-02-11T09:11:10.417Z ERROR: Job 36 has failed with admin is not defined
+2026-02-11T09:11:12.506Z INFO: [WORKER] Processing job 36 for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837
+2026-02-11T09:11:12.523Z INFO: [WORKER] Alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837 status updated to ACTIVE.
+2026-02-11T09:11:12.537Z ERROR: [WORKER] Job 36 failed for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837:
+2026-02-11T09:11:12.591Z ERROR: Job 36 has failed with admin is not defined
+2026-02-11T09:12:28.170Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-11T09:15:43.204Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T09:24:11.035Z INFO: [DEV OTP] LOGIN | siva@gmail.com | OTP: 111111
+2026-02-11T09:41:16.439Z WARN: Reuse detection triggered for user c8015a22-d71f-4783-a3b8-3cb50c9ea885
+2026-02-11T09:41:16.450Z WARN: Reuse detection triggered for user c8015a22-d71f-4783-a3b8-3cb50c9ea885
+2026-02-11T09:46:39.615Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T09:47:46.147Z INFO: [DEV OTP] LOGIN | qaa@gmail.com | OTP: 111111
+2026-02-11T09:53:35.004Z INFO: [DEV OTP] LOGIN | qaa@gmail.com | OTP: 111111
+2026-02-11T09:56:32.995Z INFO: [DEV OTP] LOGIN | rrrr@gmail.com | OTP: 111111
+2026-02-11T09:56:52.507Z INFO: [DEV OTP] LOGIN | eeee@gmail.com | OTP: 111111
+2026-02-11T10:14:51.482Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T10:20:06.936Z WARN: Reuse detection triggered for user cb8bd5d6-1006-4999-aa40-b40d8d737f78
+2026-02-11T10:41:29.800Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T10:42:25.795Z INFO: [API] Job added to queue for active alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e
+2026-02-11T10:42:25.803Z INFO: [WORKER] Processing job 37 for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e
+2026-02-11T10:42:25.815Z INFO: [WORKER] Alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e status updated to ACTIVE.
+2026-02-11T10:42:25.855Z ERROR: [WORKER] Job 37 failed for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e:
+2026-02-11T10:42:25.884Z ERROR: Job 37 has failed with admin is not defined
+2026-02-11T10:42:26.960Z INFO: [WORKER] Processing job 37 for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e
+2026-02-11T10:42:26.970Z INFO: [WORKER] Alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e status updated to ACTIVE.
+2026-02-11T10:42:26.981Z ERROR: [WORKER] Job 37 failed for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e:
+2026-02-11T10:42:26.986Z ERROR: Job 37 has failed with admin is not defined
+2026-02-11T10:42:29.073Z INFO: [WORKER] Processing job 37 for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e
+2026-02-11T10:42:29.090Z INFO: [WORKER] Alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e status updated to ACTIVE.
+2026-02-11T10:42:29.102Z ERROR: [WORKER] Job 37 failed for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e:
+2026-02-11T10:42:29.161Z ERROR: Job 37 has failed with admin is not defined
+2026-02-11T10:42:43.059Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-11T10:43:14.884Z INFO: [DEV OTP] LOGIN | eeee@gmail.com | OTP: 111111
+2026-02-11T10:43:44.960Z INFO: [DEV OTP] LOGIN | rrrr@gmail.com | OTP: 111111
+2026-02-11T10:44:15.797Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T10:45:50.429Z INFO: [DEV OTP] LOGIN | rrrr@gmail.com | OTP: 111111
+2026-02-11T11:23:01.153Z WARN: Reuse detection triggered for user f139d9ab-a336-4baf-b832-81892c029a2e
+2026-02-11T11:23:01.308Z WARN: Reuse detection triggered for user f139d9ab-a336-4baf-b832-81892c029a2e
+2026-02-11T11:27:59.172Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T11:29:32.012Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T11:40:41.256Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T11:41:45.334Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-11T11:42:11.283Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T11:55:20.274Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-11T12:15:08.770Z INFO: [DEV OTP] LOGIN | eeee@gmail.com | OTP: 111111
+2026-02-11T12:16:20.936Z INFO: [DEV OTP] LOGIN | eeee@gmail.com | OTP: 111111
+2026-02-11T12:17:11.032Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T12:18:12.836Z INFO: [DEV OTP] LOGIN | pppp@gmail.com | OTP: 111111
+2026-02-11T12:18:51.425Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T12:19:18.265Z INFO: [DEV OTP] LOGIN | pppp@gmail.com | OTP: 111111
+2026-02-11T12:23:14.344Z INFO: [DEV OTP] LOGIN | pppp@gmail.com | OTP: 111111
+2026-02-11T12:24:58.064Z INFO: [DEV OTP] LOGIN | jjjj@gmail.com | OTP: 111111
+2026-02-11T12:28:28.109Z INFO: [DEV OTP] LOGIN | ssss@gmail.com | OTP: 111111
+2026-02-11T12:31:57.683Z INFO: [API] Job added to queue for active alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e
+2026-02-11T12:31:57.695Z INFO: [WORKER] Processing job 38 for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e
+2026-02-11T12:31:57.705Z INFO: [WORKER] Alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e status updated to ACTIVE.
+2026-02-11T12:31:57.730Z ERROR: [WORKER] Job 38 failed for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e:
+2026-02-11T12:31:57.750Z ERROR: Job 38 has failed with admin is not defined
+2026-02-11T12:31:58.808Z INFO: [WORKER] Processing job 38 for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e
+2026-02-11T12:31:58.814Z INFO: [WORKER] Alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e status updated to ACTIVE.
+2026-02-11T12:31:58.826Z ERROR: [WORKER] Job 38 failed for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e:
+2026-02-11T12:31:58.831Z ERROR: Job 38 has failed with admin is not defined
+2026-02-11T12:32:00.919Z INFO: [WORKER] Processing job 38 for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e
+2026-02-11T12:32:00.937Z INFO: [WORKER] Alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e status updated to ACTIVE.
+2026-02-11T12:32:00.950Z ERROR: [WORKER] Job 38 failed for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e:
+2026-02-11T12:32:01.011Z ERROR: Job 38 has failed with admin is not defined
+2026-02-11T12:43:51.795Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T12:44:36.054Z INFO: [API] Job added to queue for active alert 52451e79-77d5-4f09-a286-90b00572a283
+2026-02-11T12:44:36.057Z INFO: [WORKER] Processing job 39 for alert 52451e79-77d5-4f09-a286-90b00572a283
+2026-02-11T12:44:36.069Z INFO: [WORKER] Alert 52451e79-77d5-4f09-a286-90b00572a283 status updated to ACTIVE.
+2026-02-11T12:44:36.090Z ERROR: [WORKER] Job 39 failed for alert 52451e79-77d5-4f09-a286-90b00572a283:
+2026-02-11T12:44:36.097Z ERROR: Job 39 has failed with admin is not defined
+2026-02-11T12:44:37.127Z INFO: [WORKER] Processing job 39 for alert 52451e79-77d5-4f09-a286-90b00572a283
+2026-02-11T12:44:37.142Z INFO: [WORKER] Alert 52451e79-77d5-4f09-a286-90b00572a283 status updated to ACTIVE.
+2026-02-11T12:44:37.156Z ERROR: [WORKER] Job 39 failed for alert 52451e79-77d5-4f09-a286-90b00572a283:
+2026-02-11T12:44:37.160Z ERROR: Job 39 has failed with admin is not defined
+2026-02-11T12:44:39.257Z INFO: [WORKER] Processing job 39 for alert 52451e79-77d5-4f09-a286-90b00572a283
+2026-02-11T12:44:39.266Z INFO: [WORKER] Alert 52451e79-77d5-4f09-a286-90b00572a283 status updated to ACTIVE.
+2026-02-11T12:44:39.279Z ERROR: [WORKER] Job 39 failed for alert 52451e79-77d5-4f09-a286-90b00572a283:
+2026-02-11T12:44:39.284Z ERROR: Job 39 has failed with admin is not defined
+2026-02-11T12:49:21.542Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-11T13:20:03.659Z WARN: Reuse detection triggered for user ab42acbf-2390-4438-b4f6-7a3587ccef76
+2026-02-11T13:20:10.845Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-11T13:30:26.816Z WARN: Reuse detection triggered for user 29eda178-c69f-479d-89b0-283a40a2b06e
+2026-02-11T13:30:26.883Z WARN: Reuse detection triggered for user 29eda178-c69f-479d-89b0-283a40a2b06e
+2026-02-11T13:32:19.059Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T13:34:15.560Z INFO: [API] Job added to queue for active alert 4fda52ce-89df-4dd5-a591-74294a8fafbf
+2026-02-11T13:34:15.566Z INFO: [WORKER] Processing job 40 for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf
+2026-02-11T13:34:15.578Z INFO: [WORKER] Alert 4fda52ce-89df-4dd5-a591-74294a8fafbf status updated to ACTIVE.
+2026-02-11T13:34:15.626Z ERROR: [WORKER] Job 40 failed for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf:
+2026-02-11T13:34:15.635Z ERROR: Job 40 has failed with admin is not defined
+2026-02-11T13:34:16.645Z INFO: [WORKER] Processing job 40 for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf
+2026-02-11T13:34:16.648Z INFO: [WORKER] Alert 4fda52ce-89df-4dd5-a591-74294a8fafbf status updated to ACTIVE.
+2026-02-11T13:34:16.652Z ERROR: [WORKER] Job 40 failed for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf:
+2026-02-11T13:34:16.655Z ERROR: Job 40 has failed with admin is not defined
+2026-02-11T13:34:18.759Z INFO: [WORKER] Processing job 40 for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf
+2026-02-11T13:34:18.776Z INFO: [WORKER] Alert 4fda52ce-89df-4dd5-a591-74294a8fafbf status updated to ACTIVE.
+2026-02-11T13:34:18.789Z ERROR: [WORKER] Job 40 failed for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf:
+2026-02-11T13:34:18.798Z ERROR: Job 40 has failed with admin is not defined
+2026-02-11T13:34:30.897Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-11T13:34:58.409Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-11T13:42:19.117Z INFO: [API] Job added to queue for active alert b846ac5b-53a8-41a8-9b43-53544787bb42
+2026-02-11T13:42:19.122Z INFO: [WORKER] Processing job 41 for alert b846ac5b-53a8-41a8-9b43-53544787bb42
+2026-02-11T13:42:19.135Z INFO: [WORKER] Alert b846ac5b-53a8-41a8-9b43-53544787bb42 status updated to ACTIVE.
+2026-02-11T13:42:19.163Z ERROR: [WORKER] Job 41 failed for alert b846ac5b-53a8-41a8-9b43-53544787bb42:
+2026-02-11T13:42:19.165Z ERROR: Job 41 has failed with admin is not defined
+2026-02-11T13:42:20.238Z INFO: [WORKER] Processing job 41 for alert b846ac5b-53a8-41a8-9b43-53544787bb42
+2026-02-11T13:42:20.248Z INFO: [WORKER] Alert b846ac5b-53a8-41a8-9b43-53544787bb42 status updated to ACTIVE.
+2026-02-11T13:42:20.259Z ERROR: [WORKER] Job 41 failed for alert b846ac5b-53a8-41a8-9b43-53544787bb42:
+2026-02-11T13:42:20.263Z ERROR: Job 41 has failed with admin is not defined
+2026-02-11T13:42:22.348Z INFO: [WORKER] Processing job 41 for alert b846ac5b-53a8-41a8-9b43-53544787bb42
+2026-02-11T13:42:22.351Z INFO: [WORKER] Alert b846ac5b-53a8-41a8-9b43-53544787bb42 status updated to ACTIVE.
+2026-02-11T13:42:22.356Z ERROR: [WORKER] Job 41 failed for alert b846ac5b-53a8-41a8-9b43-53544787bb42:
+2026-02-11T13:42:22.358Z ERROR: Job 41 has failed with admin is not defined
+2026-02-11T13:42:33.017Z INFO: [DEV OTP] LOGIN | chat@gmail.com | OTP: 111111
+2026-02-25T04:39:59.342Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-25T04:40:49.957Z INFO: [API] Job added to queue for active alert 6c290a29-6482-4838-b1d8-09d2d986305a
+2026-02-25T04:40:49.959Z INFO: [WORKER] Processing job 42 for alert 6c290a29-6482-4838-b1d8-09d2d986305a
+2026-02-25T04:40:49.966Z INFO: [WORKER] Alert 6c290a29-6482-4838-b1d8-09d2d986305a status updated to ACTIVE.
+2026-02-25T04:40:50.023Z ERROR: [WORKER] Job 42 failed for alert 6c290a29-6482-4838-b1d8-09d2d986305a:
+2026-02-25T04:40:50.047Z ERROR: Job 42 has failed with admin is not defined
+2026-02-25T04:40:51.101Z INFO: [WORKER] Processing job 42 for alert 6c290a29-6482-4838-b1d8-09d2d986305a
+2026-02-25T04:40:51.136Z INFO: [WORKER] Alert 6c290a29-6482-4838-b1d8-09d2d986305a status updated to ACTIVE.
+2026-02-25T04:40:51.190Z ERROR: [WORKER] Job 42 failed for alert 6c290a29-6482-4838-b1d8-09d2d986305a:
+2026-02-25T04:40:51.316Z ERROR: Job 42 has failed with admin is not defined
+2026-02-25T04:40:53.323Z INFO: [WORKER] Processing job 42 for alert 6c290a29-6482-4838-b1d8-09d2d986305a
+2026-02-25T04:40:53.338Z INFO: [WORKER] Alert 6c290a29-6482-4838-b1d8-09d2d986305a status updated to ACTIVE.
+2026-02-25T04:40:53.354Z ERROR: [WORKER] Job 42 failed for alert 6c290a29-6482-4838-b1d8-09d2d986305a:
+2026-02-25T04:40:53.436Z ERROR: Job 42 has failed with admin is not defined
+2026-02-25T04:42:09.500Z INFO: [DEV OTP] LOGIN | jjjj@gmail.com | OTP: 111111
+2026-02-25T04:42:40.273Z INFO: [DEV OTP] LOGIN | pppp@gmail.com | OTP: 111111
+2026-02-25T04:43:16.869Z INFO: [DEV OTP] LOGIN | eeee@gmail.com | OTP: 111111
+2026-02-25T04:43:54.447Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-25T04:47:34.003Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-25T04:48:57.559Z INFO: [API] Job added to queue for active alert e28beec6-eb12-4b93-b7a0-80e0137504b9
+2026-02-25T04:48:57.560Z INFO: [WORKER] Processing job 43 for alert e28beec6-eb12-4b93-b7a0-80e0137504b9
+2026-02-25T04:48:57.566Z INFO: [WORKER] Alert e28beec6-eb12-4b93-b7a0-80e0137504b9 status updated to ACTIVE.
+2026-02-25T04:48:57.591Z ERROR: [WORKER] Job 43 failed for alert e28beec6-eb12-4b93-b7a0-80e0137504b9:
+2026-02-25T04:48:57.598Z ERROR: Job 43 has failed with admin is not defined
+2026-02-25T04:48:58.643Z INFO: [WORKER] Processing job 43 for alert e28beec6-eb12-4b93-b7a0-80e0137504b9
+2026-02-25T04:48:58.649Z INFO: [WORKER] Alert e28beec6-eb12-4b93-b7a0-80e0137504b9 status updated to ACTIVE.
+2026-02-25T04:48:58.658Z ERROR: [WORKER] Job 43 failed for alert e28beec6-eb12-4b93-b7a0-80e0137504b9:
+2026-02-25T04:48:58.661Z ERROR: Job 43 has failed with admin is not defined
+2026-02-25T04:49:00.756Z INFO: [WORKER] Processing job 43 for alert e28beec6-eb12-4b93-b7a0-80e0137504b9
+2026-02-25T04:49:00.760Z INFO: [WORKER] Alert e28beec6-eb12-4b93-b7a0-80e0137504b9 status updated to ACTIVE.
+2026-02-25T04:49:00.765Z ERROR: [WORKER] Job 43 failed for alert e28beec6-eb12-4b93-b7a0-80e0137504b9:
+2026-02-25T04:49:00.767Z ERROR: Job 43 has failed with admin is not defined
+2026-02-25T04:49:12.023Z INFO: [DEV OTP] LOGIN | jjjj@gmail.com | OTP: 111111
+2026-02-25T04:49:31.080Z INFO: [DEV OTP] LOGIN | eeee@gmail.com | OTP: 111111
+2026-02-25T04:49:59.274Z INFO: [DEV OTP] LOGIN | pppp@gmail.com | OTP: 111111
+2026-02-25T04:50:17.546Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-25T08:53:12.820Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-02-25T09:55:41.319Z INFO: [API] Job added to queue for active alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1
+2026-02-25T09:55:41.334Z INFO: [WORKER] Processing job 44 for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1
+2026-02-25T09:55:41.353Z INFO: [WORKER] Alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1 status updated to ACTIVE.
+2026-02-25T09:55:41.408Z ERROR: [WORKER] Job 44 failed for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1:
+2026-02-25T09:55:41.421Z ERROR: Job 44 has failed with admin is not defined
+2026-02-25T09:55:42.446Z INFO: [WORKER] Processing job 44 for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1
+2026-02-25T09:55:42.454Z INFO: [WORKER] Alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1 status updated to ACTIVE.
+2026-02-25T09:55:42.468Z ERROR: [WORKER] Job 44 failed for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1:
+2026-02-25T09:55:42.474Z ERROR: Job 44 has failed with admin is not defined
+2026-02-25T09:55:44.561Z INFO: [WORKER] Processing job 44 for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1
+2026-02-25T09:55:44.578Z INFO: [WORKER] Alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1 status updated to ACTIVE.
+2026-02-25T09:55:44.590Z ERROR: [WORKER] Job 44 failed for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1:
+2026-02-25T09:55:44.642Z ERROR: Job 44 has failed with admin is not defined
+2026-02-25T10:15:20.207Z INFO: [API] Job added to queue for active alert 9b5fb46b-84d8-411d-8049-aa83992823c5
+2026-02-25T10:15:20.223Z INFO: [WORKER] Processing job 45 for alert 9b5fb46b-84d8-411d-8049-aa83992823c5
+2026-02-25T10:15:20.246Z INFO: [WORKER] Alert 9b5fb46b-84d8-411d-8049-aa83992823c5 status updated to ACTIVE.
+2026-02-25T10:15:20.306Z ERROR: [WORKER] Job 45 failed for alert 9b5fb46b-84d8-411d-8049-aa83992823c5:
+2026-02-25T10:15:20.318Z ERROR: Job 45 has failed with admin is not defined
+2026-02-25T10:15:21.376Z INFO: [WORKER] Processing job 45 for alert 9b5fb46b-84d8-411d-8049-aa83992823c5
+2026-02-25T10:15:21.386Z INFO: [WORKER] Alert 9b5fb46b-84d8-411d-8049-aa83992823c5 status updated to ACTIVE.
+2026-02-25T10:15:21.399Z ERROR: [WORKER] Job 45 failed for alert 9b5fb46b-84d8-411d-8049-aa83992823c5:
+2026-02-25T10:15:21.404Z ERROR: Job 45 has failed with admin is not defined
+2026-02-25T10:15:23.506Z INFO: [WORKER] Processing job 45 for alert 9b5fb46b-84d8-411d-8049-aa83992823c5
+2026-02-25T10:15:23.516Z INFO: [WORKER] Alert 9b5fb46b-84d8-411d-8049-aa83992823c5 status updated to ACTIVE.
+2026-02-25T10:15:23.527Z ERROR: [WORKER] Job 45 failed for alert 9b5fb46b-84d8-411d-8049-aa83992823c5:
+2026-02-25T10:15:23.580Z ERROR: Job 45 has failed with admin is not defined
+2026-02-25T12:06:54.682Z INFO: [DEV OTP] LOGIN | jjjj@gmail.com | OTP: 111111
+2026-02-25T13:19:15.661Z WARN: Reuse detection triggered for user 9487e77d-890e-4d1d-8a2b-6685f9413ff3
+2026-02-25T13:19:15.765Z WARN: Reuse detection triggered for user 9487e77d-890e-4d1d-8a2b-6685f9413ff3
+2026-02-25T13:19:15.898Z WARN: Reuse detection triggered for user 9487e77d-890e-4d1d-8a2b-6685f9413ff3
+2026-02-25T13:19:46.064Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111
+2026-03-03T13:25:17.142Z INFO: [DEV OTP] LOGIN | tomsebastian715@gmail.com | OTP: 111111

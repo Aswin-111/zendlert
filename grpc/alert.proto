@@ -10,10 +10,10 @@ service AlertService {
   // Streams the full list of active alerts for an org, refreshed periodically.
   rpc StreamActiveAlerts (StreamActiveAlertsRequest) returns (stream ActiveAlertsResponse);
 
-  // NEW: Unary fetch for active alerts (optional but useful)
+  // Unary fetch for active alerts (optional but useful)
   rpc GetActiveAlerts (GetActiveAlertsRequest) returns (ActiveAlertsResponse);
 
-  // NEW: Employee response update (for gRPC clients)
+  // Employee response update (for gRPC clients)
   rpc UpdateEmployeeResponse (UpdateEmployeeResponseRequest) returns (UpdateEmployeeResponseResponse);
 }
 
@@ -32,13 +32,13 @@ message EmployeeCounts {
 }
 
 message AlertDataResponse {
-  string emergency_type               = 1;
-  repeated string sites               = 2;
-  repeated string areas               = 3;
-  string message                      = 4;
-  EmployeeCounts employee_counts      = 5;
-  string status                       = 6;
-  string priority                     = 7;
+  string emergency_type                    = 1;
+  repeated string sites                    = 2;
+  repeated string areas                    = 3;
+  string message                           = 4;
+  EmployeeCounts employee_counts           = 5;
+  string status                            = 6;
+  string priority                          = 7;
   google.protobuf.Timestamp delivered_time = 8;
 }
 
@@ -47,7 +47,22 @@ message StreamActiveAlertsRequest {
   string organization_id = 1;
 }
 
-// Extend ActiveAlert with count fields (backward compatible in proto3)
+// Latest location snapshot for a user for a specific alert
+message UserLocation {
+  string user_id = 1;
+
+  // ✅ NEW: user identity + response status
+  string name = 6; // full name
+  EmployeeResponseStatus status = 7;
+
+  double latitude = 2;
+  double longitude = 3;
+  string location_name = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+
+// Active alert row returned to admin clients
 message ActiveAlert {
   string alert_id                      = 1;
   string emergency_type                = 2;
@@ -56,18 +71,21 @@ message ActiveAlert {
   google.protobuf.Timestamp start_time = 5;
 
   // counts (keep old field numbers)
-  int32 safe_count             = 6;
-  int32 need_help_count        = 7;
-  int32 evacuated_count        = 8; // legacy
-  int32 seeking_shelter_count  = 9; // legacy
-  int32 not_responded_count    = 10;
-  int32 total_recipients       = 11;
+  int32 safe_count            = 6;
+  int32 need_help_count       = 7;
+  int32 evacuated_count       = 8; // legacy
+  int32 seeking_shelter_count = 9; // legacy
+  int32 not_responded_count   = 10;
+  int32 total_recipients      = 11;
 
-  // NEW fields (safe for older clients)
-  repeated string locations                 = 12;
-  string status                             = 13;
-  string report                             = 14;
+  // Newer fields (safe for older clients)
+  repeated string locations                       = 12;
+  string status                                   = 13;
+  string report                                   = 14;
   google.protobuf.Timestamp last_response_updated_at = 15;
+
+  // ✅ NEW: latest user locations for this alert
+  repeated UserLocation user_locations = 16;
 }
 
 message ActiveAlertsResponse {

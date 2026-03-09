@@ -1,0 +1,1 @@
+docker exec -it zendlert-zendlert_db-1 psql -U zendlertuser -d zendlert_db

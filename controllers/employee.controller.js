@@ -1,102 +1,25 @@
 // controllers/employee.controller.js
 import loginSchema from "../validators/organization/login.validator.js";
-import { PrismaClient } from "@prisma/client";
-import z from "zod";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import logger from "../utils/logger.js";
+import prisma from "../utils/prisma.js";
 
 import {
-  recordEmployeeAlertResponse,
+  recordEmployeeAlertResponseWithLocation,
   ALLOWED_RESPONSES,
 } from "../services/employeeAlertResponse.service.js";
-
-const prisma = new PrismaClient();
-
-// Reads ids injected by verifyJWT
-function getAuthContext(req) {
-  const u = req.user || {};
-  return {
-    user_id: u.user_id || u.id || u.userId,
-    organization_id: u.organization_id || u.organizationId,
-  };
-}
-
-async function buildAlertLocationsForAlerts(alertIds) {
-  if (!alertIds?.length) return new Map();
-
-  const [alertSites, alertAreas] = await Promise.all([
-    prisma.alert_Sites.findMany({
-      where: { alert_id: { in: alertIds } },
-      include: {
-        site: {
-          select: {
-            id: true,
-            name: true,
-            address_line_1: true,
-            address_line_2: true,
-            city: true,
-            state: true,
-            zip_code: true,
-          },
-        },
-      },
-    }),
-    prisma.alert_Areas.findMany({
-      where: { alert_id: { in: alertIds } },
-      include: { area: { select: { name: true, site_id: true } } },
-    }),
-  ]);
-
-  const siteIdsFromAreas = Array.from(
-    new Set(alertAreas.map((x) => x.area?.site_id).filter(Boolean))
-  );
-
-  const sitesForAreas = siteIdsFromAreas.length
-    ? await prisma.sites.findMany({
-      where: { id: { in: siteIdsFromAreas } },
-      select: { id: true, name: true },
-    })
-    : [];
-
-  const siteNameById = new Map(sitesForAreas.map((s) => [s.id, s.name]));
-
-  const map = new Map();
-  for (const id of alertIds) map.set(id, []);
-
-  for (const row of alertSites) {
-    const arr = map.get(row.alert_id);
-    if (!arr) continue;
-
-    const s = row.site;
-    if (!s?.name) continue;
-
-    const addr = [
-      s.address_line_1,
-      s.address_line_2,
-      s.city,
-      s.state,
-      s.zip_code,
-    ]
-      .filter(Boolean)
-      .join(", ");
-
-    arr.push(addr ? `${s.name} (${addr})` : s.name);
-  }
-
-  for (const row of alertAreas) {
-    const arr = map.get(row.alert_id);
-    if (!arr) continue;
-
-    const a = row.area;
-    if (!a?.name) continue;
-
-    const siteName = siteNameById.get(a.site_id);
-    arr.push(siteName ? `${siteName} — ${a.name}` : a.name);
-  }
-
-  return map;
-}
+import {
+  buildRespondToAlertSchema,
+  listLimitQuerySchema,
+  reportVisitorSchema,
+  toggleNotificationSchema,
+  updateProfileBodySchema,
+} from "../validators/employee/employee.validator.js";
+import {
+  buildAlertLocationsForAlerts,
+  getAuthContext,
+} from "../helpers/employee.helper.js";
+import { generateTokens, sendRefreshTokenCookie } from "../utils/token.js";
 
 const EmployeeController = {
   employeeLogin: async (req, res) => {
@@ -163,38 +86,36 @@ const EmployeeController = {
     }
   },
 
-  // NOTE: If verifyJWT is used on this route, you can remove user_id from body.
+  // NOTE: If auth middleware is used on this route, you can remove user_id from body.
   // Keeping it as you had (no behavior change) but still validates response enum.
   respondToAlert: async (req, res) => {
     try {
-      const RespondToAlertSchema = z.object({
-        alert_id: z.string().uuid("alert_id must be a valid UUID"),
-        user_id: z.string().uuid("user_id must be a valid UUID"),
-        response: z.enum(ALLOWED_RESPONSES),
-        latitude: z.coerce.number().optional(),
-        longitude: z.coerce.number().optional(),
-        location_name: z.string().trim().max(255).optional(),
+      const parsed = buildRespondToAlertSchema(ALLOWED_RESPONSES).parse(req.body);
+      const result = await recordEmployeeAlertResponseWithLocation({
+        alert_id: parsed.alert_id,
+        user_id: parsed.user_id,
+        response: parsed.response,
+        latitude: parsed.latitude,
+        longitude: parsed.longitude,
+        location_name: parsed.location_name ?? null,
       });
-
-      const parsed = RespondToAlertSchema.parse(req.body);
-
-      const result = await recordEmployeeAlertResponse(parsed);
 
       return res.status(200).json({
         message: "Response recorded successfully",
-        recipient: result,
+        recipient: result.recipient,
       });
     } catch (err) {
       if (err?.statusCode) {
         return res.status(err.statusCode).json({ error: err.message });
       }
-      if (err.name === "ZodError") {
+      if (err?.name === "ZodError") {
         return res.status(400).json({ error: err.errors });
       }
-      console.error("respondToAlert error:", err);
+      logger.error("respondToAlert error:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
+
 
   /**
    * 1) Get Response History (for the logged-in employee)
@@ -205,17 +126,14 @@ const EmployeeController = {
    */
   getResponseHistory: async (req, res) => {
     try {
-      const { user_id } = getAuthContext(req);
-      if (!user_id) return res.status(401).json({ message: "Unauthorized" });
+      const { user_id: userId } = getAuthContext(req);
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-      const schema = z.object({
-        limit: z.coerce.number().int().min(1).max(100).optional().default(20),
-      });
-      const { limit } = schema.parse(req.query);
+      const { limit } = listLimitQuerySchema.parse(req.query);
 
       const rows = await prisma.notification_Recipients.findMany({
         where: {
-          user_id,
+          user_id: userId,
           response: { not: null },
         },
         orderBy: { response_updated_at: "desc" },
@@ -235,7 +153,7 @@ const EmployeeController = {
       });
 
       const alertIds = rows.map((r) => r.alert.id);
-      const locationsMap = await buildAlertLocationsForAlerts(alertIds);
+      const locationsMap = await buildAlertLocationsForAlerts(prisma, alertIds);
 
       const data = rows.map((r) => {
         const alert = r.alert;
@@ -252,7 +170,7 @@ const EmployeeController = {
     } catch (err) {
       if (err?.name === "ZodError")
         return res.status(400).json({ error: err.errors });
-      console.error("getResponseHistory error:", err);
+      logger.error("getResponseHistory error:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -264,15 +182,16 @@ const EmployeeController = {
    *
    * GET /employee/organization-info
    */
+  
   getOrganizationInfo: async (req, res) => {
     try {
-      const { user_id, organization_id } = getAuthContext(req);
-      if (!organization_id)
+      const { user_id: userId, organization_id: organizationId } = getAuthContext(req);
+      if (!organizationId)
         return res.status(401).json({ message: "Unauthorized" });
 
       // Organization info (from org_id)
       const org = await prisma.organizations.findUnique({
-        where: { organization_id },
+        where: { organization_id: organizationId },
         select: {
           organization_id: true,
           name: true,
@@ -288,9 +207,9 @@ const EmployeeController = {
       let site = null;
       let area = null;
 
-      if (user_id) {
+      if (userId) {
         const user = await prisma.users.findUnique({
-          where: { user_id },
+          where: { user_id: userId },
           select: {
             site: {
               select: {
@@ -354,7 +273,7 @@ const EmployeeController = {
         },
       });
     } catch (err) {
-      console.error("getOrganizationInfo error:", err);
+      logger.error("getOrganizationInfo error:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -368,16 +287,13 @@ const EmployeeController = {
    */
   getRecentNotifications: async (req, res) => {
     try {
-      const { user_id } = getAuthContext(req);
-      if (!user_id) return res.status(401).json({ message: "Unauthorized" });
+      const { user_id: userId } = getAuthContext(req);
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-      const schema = z.object({
-        limit: z.coerce.number().int().min(1).max(100).optional().default(20),
-      });
-      const { limit } = schema.parse(req.query);
+      const { limit } = listLimitQuerySchema.parse(req.query);
 
       const rows = await prisma.notification_Recipients.findMany({
-        where: { user_id },
+        where: { user_id: userId },
         orderBy: { created_at: "desc" },
         take: limit,
         select: {
@@ -419,22 +335,22 @@ const EmployeeController = {
     } catch (err) {
       if (err?.name === "ZodError")
         return res.status(400).json({ error: err.errors });
-      console.error("getRecentNotifications error:", err);
+      logger.error("getRecentNotifications error:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
   },
   getProfile: async (req, res) => {
     try {
-      const { user_id, organization_id } = req.user;
+      const { user_id: userId, organization_id: organizationId } = req.user;
 
-      if (!user_id || !organization_id) {
+      if (!userId || !organizationId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
       const user = await prisma.users.findFirst({
         where: {
-          user_id,
-          organization_id,
+          user_id: userId,
+          organization_id: organizationId,
           is_active: true,
           employee: { isNot: null }, // ensure employee
         },
@@ -485,110 +401,19 @@ const EmployeeController = {
 
   updateProfile: async (req, res) => {
     try {
-      const { user_id, organization_id } = req.user;
+      const { user_id: userId, organization_id: organizationId } = req.user;
+      const parsedBody = updateProfileBodySchema.safeParse(req.body ?? {});
 
-      if (!user_id || !organization_id) {
-        return res.status(400).json({ success: false, message: "Invalid token payload" });
-      }
-
-      // Ensure employee exists in this org (optional but recommended)
-      const employee = await prisma.employees.findFirst({
-        where: { user_id, organization_id },
-        select: { id: true, user_id: true },
-      });
-
-      if (!employee) {
-        return res.status(404).json({ success: false, message: "Employee profile not found" });
-      }
-
-      const first_name = cleanStr(req.body.first_name);
-      const last_name = cleanStr(req.body.last_name);
-      const email = cleanStr(req.body.email);
-      const phone = cleanStr(req.body.phone);
-
-      // Require at least one field
-      if (!first_name && !last_name && !email && !phone) {
-        return res.status(400).json({
-          success: false,
-          message: "Provide at least one field to update",
-        });
-      }
-
-      // Validate email if present
-      if (email && !isEmail(email)) {
-        return res.status(400).json({ success: false, message: "Invalid email" });
-      }
-
-      // Validate phone if present (basic; adjust for your needs)
-      if (phone && phone.length < 8) {
-        return res.status(400).json({ success: false, message: "Invalid phone" });
-      }
-
-      // If email is changing, enforce uniqueness (optional but recommended)
-      if (email) {
-        const existing = await prisma.users.findFirst({
-          where: {
-            email,
-            NOT: { id: user_id }, // adjust if your PK is not id
-          },
-          select: { id: true },
-        });
-
-        if (existing) {
-          return res.status(409).json({
-            success: false,
-            message: "Email already in use",
-          });
-        }
-      }
-
-      // Build update payload only with provided fields
-      const userUpdate = {};
-      if (first_name) userUpdate.first_name = first_name;
-      if (last_name) userUpdate.last_name = last_name;
-      if (email) userUpdate.email = email;
-      if (phone) userUpdate.phone = phone;
-
-      // Update user table (name/email/phone should live in users table)
-      const updatedUser = await prisma.users.update({
-        where: { id: user_id }, // adjust if your PK is user_id
-        data: userUpdate,
-        select: {
-          first_name: true,
-          last_name: true,
-          email: true,
-          phone: true,
-        },
-      });
-
-      return res.status(200).json({
-        success: true,
-        message: "Profile updated successfully",
-        data: {
-          full_name: `${updatedUser.first_name} ${updatedUser.last_name}`.trim(),
-          email: updatedUser.email,
-          phone: updatedUser.phone,
-        },
-      });
-    } catch (err) {
-      console.error("updateProfile error:", err);
-      return res.status(500).json({ success: false, message: "Server error" });
-    }
-  },
-  updateProfile: async (req, res) => {
-    try {
-      const { user_id, organization_id } = req.user;
-      const { full_name, email, phone } = req.body;
-
-      if (!user_id || !organization_id) {
+      if (!userId || !organizationId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      if (!full_name && !email && !phone) {
+      if (!parsedBody.success) {
         return res.status(400).json({
           message: "At least one field is required to update",
         });
       }
+      const { full_name, email, phone } = parsedBody.data;
 
       let first_name, last_name;
       if (full_name) {
@@ -600,8 +425,8 @@ const EmployeeController = {
       // Ensure employee exists & belongs to org
       const existingUser = await prisma.users.findFirst({
         where: {
-          user_id,
-          organization_id,
+          user_id: userId,
+          organization_id: organizationId,
           employee: { isNot: null },
         },
       });
@@ -624,7 +449,7 @@ const EmployeeController = {
       }
 
       const updatedUser = await prisma.users.update({
-        where: { user_id },
+        where: { user_id: userId },
         data: {
           ...(first_name && { first_name }),
           ...(last_name !== undefined && { last_name }),
@@ -656,6 +481,157 @@ const EmployeeController = {
         message: "Server error",
         error: error.message,
       });
+    }
+  },
+  reportVisitor: async (req, res) => {
+    try {
+      const { user_id: userId, organization_id: organizationId } = getAuthContext(req);
+      if (!userId || !organizationId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const parsed = reportVisitorSchema.parse(req.body);
+
+      // Ensure alert belongs to same org
+      const alert = await prisma.alerts.findFirst({
+        where: { id: parsed.alert_id, organization_id: organizationId },
+        select: { id: true },
+      });
+      if (!alert) {
+        return res.status(404).json({ message: "Alert not found for this organization" });
+      }
+
+      // (Optional) Ensure reporter user exists + active in org
+      const reporter = await prisma.users.findFirst({
+        where: { user_id: userId, organization_id: organizationId, is_active: true },
+        select: { user_id: true },
+      });
+      if (!reporter) {
+        return res.status(404).json({ message: "Reporting user not found" });
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        // 1) Upsert company by name (you have Companies.name but not unique in schema)
+        // Recommended: add @@unique([name]) OR @@unique([name, ...]) for proper upsert.
+        // Since your schema shows `name String` (not unique), we'll do findFirst + create.
+        let company = await tx.companies.findFirst({
+          where: { name: parsed.company_name },
+          select: { id: true, name: true },
+        });
+
+        if (!company) {
+          company = await tx.companies.create({
+            data: { name: parsed.company_name },
+            select: { id: true, name: true },
+          });
+        }
+
+        // 2) Create visitor
+        const visitor = await tx.visitors.create({
+          data: {
+            organization_id: organizationId,
+            first_name: parsed.first_name,
+            last_name: parsed.last_name || null,
+            phone: parsed.contact_number || null,
+            company_id: company.id,
+            is_active: true,
+          },
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            phone: true,
+            company: { select: { id: true, name: true } },
+            created_at: true,
+          },
+        });
+
+        // 3) Create visitor status (linked to alert + reported_by user)
+        const status = await tx.visitor_Status.create({
+          data: {
+            alert_id: parsed.alert_id,
+            reported_by_user_id: userId,
+            visitor_id: visitor.id,
+            status: "reported", // your Visitor_Status.status is String; you can standardize values
+            location: parsed.location,
+            notes: parsed.visiting_purpose,
+          },
+          select: {
+            id: true,
+            alert_id: true,
+            reported_by_user_id: true,
+            visitor_id: true,
+            status: true,
+            location: true,
+            notes: true,
+            reported_at: true,
+          },
+        });
+
+        return { visitor, status };
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Visitor reported successfully",
+        data: result,
+      });
+    } catch (err) {
+      if (err?.name === "ZodError") {
+        return res.status(400).json({ error: err.errors });
+      }
+      logger.error("reportVisitor error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  },
+  toggleEmergencyNotification: async (req, res) => {
+    try {
+      const { user_id: userId, organization_id: organizationId } = getAuthContext(req);
+      if (!userId || !organizationId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const { enabled } = toggleNotificationSchema.parse(req.body ?? {});
+
+      // Ensure user exists + belongs to org + active
+      const user = await prisma.users.findFirst({
+        where: { user_id: userId, organization_id: organizationId, is_active: true },
+        select: { user_id: true, send_emergency_notification: true },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const nextValue =
+        typeof enabled === "boolean"
+          ? enabled
+          : !user.send_emergency_notification;
+
+      const updated = await prisma.users.update({
+        where: { user_id: userId },
+        data: { send_emergency_notification: nextValue },
+        select: {
+          user_id: true,
+          send_emergency_notification: true,
+          updated_at: true,
+        },
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Notification preference updated",
+        data: {
+          user_id: updated.user_id,
+          send_emergency_notification: updated.send_emergency_notification,
+          updated_at: updated.updated_at,
+        },
+      });
+    } catch (err) {
+      if (err?.name === "ZodError") {
+        return res.status(400).json({ error: err.errors });
+      }
+      logger.error("toggleEmergencyNotification error:", err);
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
 

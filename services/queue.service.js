@@ -1,5 +1,6 @@
 // services/queue.service.js
-import { Queue, Worker, QueueScheduler } from 'bullmq';
+import { Queue, Worker } from 'bullmq';
+import logger from "../utils/logger.js";
 
 // Prefer a single REDIS_URL; fall back to host/port with Compose service name.
 const REDIS_URL = process.env.REDIS_URL;
@@ -20,6 +21,7 @@ function buildConnection() {
 }
 
 const connection = buildConnection();
+let notificationWorkerState = null;
 
 export const notificationQueue = new Queue('notificationQueue', {
   connection,
@@ -32,20 +34,29 @@ export const notificationQueue = new Queue('notificationQueue', {
 });
 
 export function startNotificationWorker(processorFn) {
-  // Ensure delayed/retried jobs are handled
-  const scheduler = new QueueScheduler('notificationQueue', { connection });
+  if (notificationWorkerState) {
+    logger.info("[notificationQueue] Worker already initialized, reusing existing instance");
+    return notificationWorkerState;
+  }
+
   const worker = new Worker('notificationQueue', processorFn, { connection });
 
   worker.on('failed', (job, err) => {
-    console.error(`notificationQueue job ${job?.id} failed:`, err?.message || err);
+    logger.error("notificationQueue job failed", {
+      error: err,
+      meta: { job_id: job?.id ?? null },
+    });
   });
   worker.on('completed', (job) => {
-    console.log(`notificationQueue job ${job.id} completed`);
+    logger.info("notificationQueue job completed", {
+      meta: { job_id: job?.id ?? null },
+    });
   });
 
-  console.log(
-    `🟢 BullMQ ready @ ${connection.host}:${connection.port} (notificationQueue)`
+  logger.info(
+    `[notificationQueue] BullMQ ready @ ${connection.host}:${connection.port}`
   );
 
-  return { worker, scheduler };
+  notificationWorkerState = { worker };
+  return notificationWorkerState;
 }

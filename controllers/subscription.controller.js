@@ -1,8 +1,12 @@
-import { PrismaClient } from "@prisma/client";
 import Stripe from "stripe";
 import logger from "../utils/logger.js";
+import prisma from "../utils/prisma.js";
+import {
+  normalizeIncomingDateOnlyToUtc,
+  normalizeUnixSecondsToUtcDateOnly,
+  utcNow,
+} from "../utils/datetime.js";
 
-const prisma = new PrismaClient();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const SubscriptionController = {
@@ -21,7 +25,7 @@ const SubscriptionController = {
         address, // Optional: { line1, city, state, postal_code, country }
       } = req.body;
 
-      const { user_id, email: userEmail } = req.user; // From verifyJWT
+      const { user_id, email: userEmail } = req.user; // From auth middleware
       const billingEmail = userEmail;
 
       // 1. Validate Input
@@ -107,11 +111,17 @@ const SubscriptionController = {
       const startTs = subscription.current_period_start;
       const endTs = subscription.current_period_end;
 
-      const periodStart = startTs ? new Date(startTs * 1000) : new Date();
+      const normalizedPeriodStart = startTs
+        ? normalizeUnixSecondsToUtcDateOnly(startTs)
+        : normalizeIncomingDateOnlyToUtc(utcNow());
+      const periodStart = normalizedPeriodStart ?? normalizeIncomingDateOnlyToUtc(utcNow());
       // If end date is missing (rare), default to 30 days from now
-      const periodEnd = endTs
-        ? new Date(endTs * 1000)
-        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const fallbackPeriodEndInstant = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const normalizedPeriodEnd = endTs
+        ? normalizeUnixSecondsToUtcDateOnly(endTs)
+        : normalizeIncomingDateOnlyToUtc(fallbackPeriodEndInstant);
+      const periodEnd = normalizedPeriodEnd
+        ?? normalizeIncomingDateOnlyToUtc(fallbackPeriodEndInstant);
 
       const newDbSubscription = await prisma.subscriptions.create({
         data: {
@@ -292,15 +302,17 @@ const SubscriptionController = {
           const invoice = event.data.object;
           if (invoice.subscription) {
             // Update DB to Active/Paid
+            const normalizedPeriodEnd = normalizeUnixSecondsToUtcDateOnly(
+              invoice.lines.data[0].period.end,
+            ) ?? normalizeIncomingDateOnlyToUtc(utcNow());
+
             await prisma.subscriptions.update({
               where: { stripe_subscription_id: invoice.subscription },
               data: {
                 status: "active",
                 payment_status: "paid",
-                current_period_end: new Date(
-                  invoice.lines.data[0].period.end * 1000,
-                ),
-                updated_at: new Date(),
+                current_period_end: normalizedPeriodEnd,
+                updated_at: utcNow(),
               },
             });
             logger.info(
@@ -319,7 +331,7 @@ const SubscriptionController = {
               data: {
                 status: "past_due",
                 payment_status: "failed",
-                updated_at: new Date(),
+                updated_at: utcNow(),
               },
             });
             logger.warn(`Webhook: Payment failed for ${invoice.subscription}`);
@@ -334,7 +346,7 @@ const SubscriptionController = {
             data: {
               status: "canceled",
               auto_renew: false,
-              updated_at: new Date(),
+              updated_at: utcNow(),
             },
           });
           logger.info(`Webhook: Subscription canceled ${sub.id}`);

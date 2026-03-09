@@ -1,7 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { DeliveryStatus } from "@prisma/client";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
+import prisma from "../utils/prisma.js";
 
-const prisma = new PrismaClient();
+const CHANNELS = ["sms", "in_app", "push"];
 
 
 /**
@@ -56,6 +57,96 @@ const calculateIncreaseRatio = (current, previous) => {
   return parseFloat(ratio.toFixed(2));
 };
 
+export const getPerformanceReportData = async (
+  organization_id,
+  { withMeta = false } = {},
+) => {
+  // Aggregate delivery metrics by channel/status to avoid repeated per-channel scans.
+  const [deliveryGroups, responseRows] = await Promise.all([
+    prisma.notification_Recipients.groupBy({
+      by: ["channel", "delivery_status"],
+      where: {
+        alert: { organization_id },
+        channel: { in: CHANNELS },
+      },
+      _count: { _all: true },
+    }),
+    prisma.notification_Recipients.findMany({
+      where: {
+        alert: { organization_id },
+        channel: { in: CHANNELS },
+        acknowledged_at: { not: null },
+        delivered_at: { not: null },
+      },
+      select: {
+        channel: true,
+        delivered_at: true,
+        acknowledged_at: true,
+      },
+    }),
+  ]);
+
+  const totalsByChannel = Object.fromEntries(
+    CHANNELS.map((channel) => [channel, { total: 0, delivered: 0 }]),
+  );
+
+  deliveryGroups.forEach((row) => {
+    const bucket = totalsByChannel[row.channel];
+    if (!bucket) return;
+    const count = Number(row?._count?._all ?? 0);
+    bucket.total += count;
+    if (row.delivery_status === DeliveryStatus.delivered) {
+      bucket.delivered += count;
+    }
+  });
+
+  const responseTimeByChannel = Object.fromEntries(
+    CHANNELS.map((channel) => [channel, { totalMs: 0, count: 0 }]),
+  );
+
+  responseRows.forEach((row) => {
+    const bucket = responseTimeByChannel[row.channel];
+    if (!bucket) return;
+    const diffMs = new Date(row.acknowledged_at) - new Date(row.delivered_at);
+    if (!Number.isFinite(diffMs)) return;
+    bucket.totalMs += diffMs;
+    bucket.count += 1;
+  });
+
+  const report = {};
+  CHANNELS.forEach((channel) => {
+    const delivery = totalsByChannel[channel];
+    const response = responseTimeByChannel[channel];
+
+    const successRate =
+      delivery.total === 0
+        ? 0
+        : parseFloat(((delivery.delivered / delivery.total) * 100).toFixed(1));
+
+    const avgSeconds =
+      response.count === 0
+        ? 0
+        : parseFloat((response.totalMs / response.count / 1000).toFixed(1));
+
+    report[channel] = {
+      success_rate: successRate,
+      average_time_seconds: avgSeconds,
+    };
+  });
+
+  if (withMeta) {
+    // Used by callers that must preserve historical 404 behavior for unknown orgs.
+    const hasAnyRecords = CHANNELS.some(
+      (channel) =>
+        totalsByChannel[channel].total > 0 ||
+        responseTimeByChannel[channel].count > 0,
+    );
+    return { report, hasAnyRecords };
+  }
+
+  return report;
+};
+
 
 
 /**
@@ -75,14 +166,32 @@ export const getOverviewData = async (organization_id) => {
     await Promise.all([
       prisma.alerts.findMany({
         where: { organization_id, created_at: { gte: currentMonthStart } },
-        include: { Notification_Recipients: true },
+        select: {
+          start_time: true,
+          Notification_Recipients: {
+            select: {
+              delivery_status: true,
+              response: true,
+              acknowledged_at: true,
+            },
+          },
+        },
       }),
       prisma.alerts.findMany({
         where: {
           organization_id,
           created_at: { gte: lastMonthStart, lte: lastMonthEnd },
         },
-        include: { Notification_Recipients: true },
+        select: {
+          start_time: true,
+          Notification_Recipients: {
+            select: {
+              delivery_status: true,
+              response: true,
+              acknowledged_at: true,
+            },
+          },
+        },
       }),
       // This query fetches data for the monthly response time chart
       prisma.$queryRaw`
@@ -203,9 +312,16 @@ export const getPerformanceData = async (organization_id) => {
 export const getDetailsData = async (organization_id) => {
   const alerts = await prisma.alerts.findMany({
     where: { organization_id },
-    include: {
+    select: {
+      start_time: true,
       emergency_type: { select: { name: true } },
-      Notification_Recipients: true,
+      Notification_Recipients: {
+        select: {
+          delivery_status: true,
+          response: true,
+          acknowledged_at: true,
+        },
+      },
     },
   });
   const reportsByAlertType = {};

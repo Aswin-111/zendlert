@@ -2,13 +2,15 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import grpc from '@grpc/grpc-js';
 import protoLoader from '@grpc/proto-loader';
+import logger from '../utils/logger.js';
+import { utcNow } from '../utils/datetime.js';
 
 // Helper to get __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export function startChatService(prisma, redisPublisher, redisSubscriber, firebaseAdmin) {
-    console.log("🚀 Initializing Chat Service...");
+    logger.info('chat.grpc.initializing');
 
     const protoPath = path.join(__dirname, '../grpc/chat.proto');
     const packageDefinition = protoLoader.loadSync(protoPath, {
@@ -91,7 +93,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
 
             callback(null, {});
         } catch (err) {
-            console.error('❌ SendMessage error:', err);
+            logger.error('chat.grpc.send_message_failed', { error: err });
             callback({ code: grpc.status.INTERNAL, message: 'Failed to send message' });
         }
     }
@@ -125,7 +127,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
                 });
             }
         } catch (err) {
-            console.error(`❌ ReceiveMessages error for user ${call.request.userId}:`, err);
+            logger.error('chat.grpc.receive_messages_failed', { error: err, meta: { userId: call.request.userId ?? null } });
             call.emit('error', { code: grpc.status.INTERNAL, message: 'Failed to retrieve messages' });
         } finally {
             call.end();
@@ -145,7 +147,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
 
             const updateData = { status };
             if (status === 'read') {
-                updateData.read_at = new Date();
+                updateData.read_at = utcNow();
             }
 
             const updatedMsg = await prisma.chat_Messages.update({
@@ -162,7 +164,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
 
             callback(null, {});
         } catch (err) {
-            console.error('❌ UpdateMessageStatus error:', err);
+            logger.error('chat.grpc.update_message_status_failed', { error: err });
             callback({ code: grpc.status.INTERNAL, message: 'Failed to update status' });
         }
     }
@@ -215,7 +217,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
 
             callback(null, { contacts });
         } catch (err) {
-            console.error('❌ GetContacts error:', err);
+            logger.error('chat.grpc.get_contacts_failed', { error: err });
             callback({ code: grpc.status.INTERNAL, message: 'Failed to get contacts' });
         }
     }
@@ -255,7 +257,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
                                         data: { status: 'delivered' },
                                     });
                                     message.status = 'delivered';
-                                } catch (updateErr) { console.error('Failed to mark as delivered:', updateErr); }
+                                } catch (updateErr) { logger.error('chat.grpc.mark_delivered_failed', { error: updateErr, meta: { messageId: message.id ?? null } }); }
                             }
 
                             if (clients.has(clientKey)) {
@@ -264,7 +266,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
                         });
 
                     } catch (subErr) {
-                        console.error(`❌ Redis subscription failed for ${clientKey}:`, subErr);
+                        logger.error('chat.grpc.redis_subscription_failed', { error: subErr, meta: { clientKey } });
                         cleanup();
                     }
                 }
@@ -283,7 +285,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
             if (clientKey) {
                 clients.delete(clientKey);
                 activeConversations.delete(clientKey);
-                console.log(`🔴 Cleaned up stream for client: ${clientKey}`);
+                logger.info('chat.grpc.stream_cleaned', { meta: { clientKey } });
             }
             if (sub.isOpen) {
                 await sub.quit();
@@ -295,7 +297,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
 
         call.on('end', cleanup);
         call.on('error', (err) => {
-            console.warn(`Stream error for ${streamMetadata.clientKey}: ${err.message}`);
+            logger.warn('chat.grpc.stream_error', { meta: { clientKey: streamMetadata.clientKey, message: err?.message ?? 'Unknown stream error' } });
             cleanup();
         });
     }
@@ -311,7 +313,7 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
             });
 
             if (!user?.fcm_token) {
-                console.warn(`⚠️ No FCM token for user ${userId}`);
+                logger.warn('chat.grpc.notification_missing_fcm_token', { meta: { userId } });
                 return;
             }
 
@@ -326,9 +328,9 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
             };
 
             await firebaseAdmin.messaging().send(message);
-            console.log(`📲 Notification sent to user ${userId}`);
+            logger.info('chat.grpc.notification_sent', { meta: { userId } });
         } catch (err) {
-            console.error(`❌ Failed to send notification to ${userId}:`, err);
+            logger.error('chat.grpc.notification_failed', { error: err, meta: { userId } });
         }
     }
 
@@ -348,9 +350,9 @@ export function startChatService(prisma, redisPublisher, redisSubscriber, fireba
     const addr = '0.0.0.0:5050';
     server.bindAsync(addr, grpc.ServerCredentials.createInsecure(), (err, port) => {
         if (err) {
-            console.error("❌ gRPC bind error:", err);
+            logger.error('chat.grpc.bind_failed', { error: err });
             return;
         }
-        console.log(`🟢 gRPC Chat Service running at ${addr}`);
+        logger.info('chat.grpc.ready', { meta: { addr, port } });
     });
 }

@@ -1,21 +1,15 @@
-import { PrismaClient } from "@prisma/client";
-
 import logger from "../utils/logger.js"; // your Winston logger
+import prisma from "../utils/prisma.js";
 
-const prisma = new PrismaClient();
+const isAdminRole = (req) => String(req?.user?.role || "").toLowerCase() === "admin";
 
 const ConfigController = {
     setFcmToken: async (req, res) => {
         try {
             const { fcm_token, user_id } = req.body;
-            const user_name = await prisma.users.findUnique({
-                where: { user_id: user_id },
-            })
-            console.log("username", user_name, "user_id : ", user_id)   
-            if (user_name?.first_name && user_name?.last_name) {
-                console.log("setfcmtoken called by : ", user_name.first_name, " ", user_name.last_name)
-            }
-
+            const actorUserId = req?.user?.user_id || null;
+            const actorOrganizationId = req?.user?.organization_id || null;
+            const actorIsAdmin = isAdminRole(req);
 
             if (!fcm_token) {
                 return res.status(400).json({ message: "FCM token is required" });
@@ -23,6 +17,34 @@ const ConfigController = {
             if (!user_id) {
                 return res.status(400).json({ message: "User ID is required" });
             }
+            if (actorUserId && !actorIsAdmin && actorUserId !== user_id) {
+                logger.warn("config.setFcmToken.forbidden_user_mismatch", {
+                    meta: { actor_user_id: actorUserId, target_user_id: user_id },
+                });
+                return res.status(403).json({ message: "Forbidden" });
+            }
+
+            if (actorOrganizationId && !actorIsAdmin) {
+                const targetUser = await prisma.users.findUnique({
+                    where: { user_id },
+                    select: { organization_id: true },
+                });
+
+                if (!targetUser || targetUser.organization_id !== actorOrganizationId) {
+                    logger.warn("config.setFcmToken.forbidden_organization_mismatch", {
+                        meta: {
+                            actor_user_id: actorUserId,
+                            actor_organization_id: actorOrganizationId,
+                            target_user_id: user_id,
+                        },
+                    });
+                    return res.status(403).json({ message: "Forbidden" });
+                }
+            }
+
+            logger.info("config.setFcmToken.requested", {
+                meta: { user_id },
+            });
 
             const user = await prisma.users.update({
                 where: { user_id: user_id },
@@ -33,8 +55,7 @@ const ConfigController = {
 
 
         catch (err) {
-            logger.error(err);
-            console.log(err)
+            logger.error("config.setFcmToken.error", { error: err, meta: { user_id: req.body?.user_id } });
             return res.status(500).json({ message: "Internal server error" });
         }
     },
@@ -48,10 +69,12 @@ const ConfigController = {
                     fcm_token: true
                 }
             })
-            console.log(usersoforganization)
+            logger.info("config.getNotification.fetched", {
+                meta: { recipient_count: usersoforganization.length },
+            });
             return res.status(200).json({ usersoforganization });
         } catch (error) {
-            console.error("getNotification error:", error);
+            logger.error("config.getNotification.error", { error });
             return res.status(500).json({ message: "Server error", error: error.message });
         }
     }

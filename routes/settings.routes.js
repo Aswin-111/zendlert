@@ -1,34 +1,22 @@
 // routes/settings.routes.js
 import express from "express";
 import SettingsController from "../controllers/settings.controller.js";
+import verifyAdminAccess from "../middlewares/verifyAdminAccess.js";
 
 const router = express.Router();
 
-// GET /api/v1/settings/get-organization-info?organization_id=UUID
-router.get("/get-organization-info", SettingsController.getOrganizationInfo);
+router.use(verifyAdminAccess);
 
-// GET /api/v1/alerts/get-alert-types
-router.get("/get-alert-types", SettingsController.getAlertTypes);
+router.get("/organization", SettingsController.getOrganizationInfo);
 
-// POST /api/v1/alerts/alert-type
-router.post("/alert-type", SettingsController.createAlertType);
+router.get("/alert-types", SettingsController.getAlertTypes);
+router.post("/alert-types", SettingsController.createAlertType);
+router.put("/alert-types/:alertTypeId", SettingsController.updateAlertType);
+router.delete("/alert-types/:alertTypeId", SettingsController.deleteAlertType);
 
-// UPDATE /api/v1/alerts/alert-type/id
-router.put("/alert-type", SettingsController.updateAlertType);
-
-// DELETE /api/v1/alerts/alert-type/id
-router.delete("/alert-type", SettingsController.deleteAlertType);
-
-// POST /api/v1/settings/create-severity-level
-router.post("/create-severity-level", SettingsController.createSeverityLevel);
-
-// GET /api/v1/settings/get-all-severity-levels
-router.get("/get-all-severity-levels", SettingsController.getAllSeverityLevels);
-
-// EDIT /api/v1/settings/edit-severity-level
-router.put("/edit-severity-level", SettingsController.editSeverityLevel);
-
-// DELETE /api/v1/settings/delete-severity-level
-router.delete("/delete-severity-level", SettingsController.deleteSeverityLevel);
+router.post("/severity-levels", SettingsController.createSeverityLevel);
+router.get("/severity-levels", SettingsController.getAllSeverityLevels);
+router.put("/severity-levels/:severityLevelId", SettingsController.editSeverityLevel);
+router.delete("/severity-levels/:severityLevelId", SettingsController.deleteSeverityLevel);
 
 export default router;

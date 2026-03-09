@@ -1,7 +1,18 @@
 // controllers/settings.controller.js
-import { PrismaClient } from "@prisma/client";
 import logger from "../utils/logger.js"; // make sure this exists
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
+import {
+  organizationIdQuerySchema,
+  alertTypeListQuerySchema,
+  alertTypeMutationQuerySchema,
+  createAlertTypeBodySchema,
+  updateAlertTypeBodySchema,
+  createSeverityLevelBodySchema,
+  severityLevelListQuerySchema,
+  editSeverityLevelBodySchema,
+  deleteSeverityLevelQuerySchema,
+} from "../validators/settings/settings.validator.js";
+import { findOrganizationById } from "../helpers/ownership.helper.js";
 
 const SettingsController = {
   /**
@@ -15,17 +26,24 @@ const SettingsController = {
    */
   getOrganizationInfo: async (req, res) => {
     try {
-      const { organization_id } = req.query;
-
-      if (!organization_id) {
+      const queryInput = {
+        ...(req.query ?? {}),
+        organization_id: req.user?.organization_id ?? req.query?.organization_id,
+      };
+      const parsedQuery = organizationIdQuerySchema.safeParse(queryInput);
+      if (!parsedQuery.success) {
         return res
           .status(400)
           .json({ message: "organization_id is required" });
       }
+      const { organization_id } = parsedQuery.data;
 
-      const org = await prisma.organizations.findUnique({
-        where: { organization_id: String(organization_id) },
-        include: {
+      const org = await findOrganizationById(prisma, organization_id, {
+        select: {
+          name: true,
+          main_contact_name: true,
+          main_contact_phone: true,
+          main_contact_email: true,
           industry_type: { select: { name: true } },
         },
       });
@@ -56,15 +74,22 @@ const SettingsController = {
  */
   getAlertTypes: async (req, res) => {
     try {
-      const { organization_id } = req.query;
-
-      if (!organization_id) {
+      const queryInput = {
+        ...(req.query ?? {}),
+        organization_id: req.user?.organization_id ?? req.query?.organization_id,
+      };
+      const parsedQuery = alertTypeListQuerySchema.safeParse(queryInput);
+      if (!parsedQuery.success) {
         return res
           .status(400)
           .json({ message: "organization_id is required" });
       }
+      const { organization_id, page, limit } = parsedQuery.data;
+      const usePagination = page !== undefined || limit !== undefined;
+      const pageNum = page ?? 1;
+      const limitNum = limit ?? 20;
 
-      const emergencyTypes = await prisma.emergency_Types.findMany({
+      const queryOptions = {
         where: { organization_id: String(organization_id) },
         select: {
           id: true,
@@ -73,6 +98,15 @@ const SettingsController = {
           created_at: true,
         },
         orderBy: { created_at: "desc" },
+      };
+
+      if (usePagination) {
+        queryOptions.skip = (pageNum - 1) * limitNum;
+        queryOptions.take = limitNum;
+      }
+
+      const emergencyTypes = await prisma.emergency_Types.findMany({
+        ...queryOptions,
       });
 
       if (!emergencyTypes || emergencyTypes.length === 0) {
@@ -105,19 +139,20 @@ const SettingsController = {
  */
   createAlertType: async (req, res) => {
     try {
-      const { organization_id, name, description } = req.body;
-
-      // === Validation ===
-      if (!organization_id || !name) {
+      const bodyInput = {
+        ...(req.body ?? {}),
+        organization_id: req.user?.organization_id ?? req.body?.organization_id,
+      };
+      const parsedBody = createAlertTypeBodySchema.safeParse(bodyInput);
+      if (!parsedBody.success) {
         return res
           .status(400)
           .json({ message: "organization_id and name are required" });
       }
+      const { organization_id, name, description } = parsedBody.data;
 
       // Check if organization exists
-      const orgExists = await prisma.organizations.findUnique({
-        where: { organization_id: String(organization_id) },
-      });
+      const orgExists = await findOrganizationById(prisma, organization_id);
 
       if (!orgExists) {
         return res.status(404).json({ message: "Organization not found" });
@@ -168,14 +203,26 @@ const SettingsController = {
    */
   updateAlertType: async (req, res) => {
     try {
-      const { organization_id, alert_type_id } = req.query;
-      const { name, description } = req.body;
-
-      if (!organization_id || !alert_type_id) {
+      const queryInput = {
+        ...(req.query ?? {}),
+        organization_id: req.user?.organization_id ?? req.query?.organization_id,
+        alert_type_id: req.params?.alertTypeId ?? req.query?.alert_type_id,
+      };
+      const parsedQuery = alertTypeMutationQuerySchema.safeParse(queryInput);
+      if (!parsedQuery.success) {
         return res
           .status(400)
           .json({ message: "organization_id and alert_type_id are required" });
       }
+      const { organization_id, alert_type_id } = parsedQuery.data;
+
+      const parsedBody = updateAlertTypeBodySchema.safeParse(req.body ?? {});
+      if (!parsedBody.success) {
+        return res
+          .status(400)
+          .json({ message: "No fields provided to update" });
+      }
+      const { name, description } = parsedBody.data;
 
       // Check if the emergency type exists and belongs to this organization
       const existingType = await prisma.emergency_Types.findFirst({
@@ -224,13 +271,18 @@ const SettingsController = {
   */
   deleteAlertType: async (req, res) => {
     try {
-      const { organization_id, alert_type_id } = req.query;
-
-      if (!organization_id || !alert_type_id) {
+      const queryInput = {
+        ...(req.query ?? {}),
+        organization_id: req.user?.organization_id ?? req.query?.organization_id,
+        alert_type_id: req.params?.alertTypeId ?? req.query?.alert_type_id,
+      };
+      const parsedQuery = alertTypeMutationQuerySchema.safeParse(queryInput);
+      if (!parsedQuery.success) {
         return res
           .status(400)
           .json({ message: "organization_id and alert_type_id are required" });
       }
+      const { organization_id, alert_type_id } = parsedQuery.data;
 
       // Check if the emergency type exists for the organization
       const existingType = await prisma.emergency_Types.findFirst({
@@ -266,15 +318,18 @@ const SettingsController = {
    // CREATE Severity Level
   createSeverityLevel: async (req, res) => {
     try {
-      const { organization_id, severity_name, description } = req.body;
-      if (!organization_id || !severity_name) {
+      const bodyInput = {
+        ...(req.body ?? {}),
+        organization_id: req.user?.organization_id ?? req.body?.organization_id,
+      };
+      const parsedBody = createSeverityLevelBodySchema.safeParse(bodyInput);
+      if (!parsedBody.success) {
         return res.status(400).json({ message: "organization_id and severity_name are required" });
       }
+      const { organization_id, severity_name, description } = parsedBody.data;
 
       // Check if organization already exists
-      const orgExists = await prisma.organizations.findUnique({
-        where: { organization_id: String(organization_id) }
-      });
+      const orgExists = await findOrganizationById(prisma, organization_id);
       if (!orgExists) {
         return res.status(404).json({ message: "organization not exist" });
       }
@@ -311,22 +366,37 @@ const SettingsController = {
    // GET ALL Severity Levels for organization
   getAllSeverityLevels: async (req, res) => {
     try {
-      const { organization_id } = req.query;
-      if (!organization_id) {
+      const queryInput = {
+        ...(req.query ?? {}),
+        organization_id: req.user?.organization_id ?? req.query?.organization_id,
+      };
+      const parsedQuery = severityLevelListQuerySchema.safeParse(queryInput);
+      if (!parsedQuery.success) {
         return res.status(400).json({ message: "organization_id is required" });
       }
+      const { organization_id, page, limit } = parsedQuery.data;
+      const usePagination = page !== undefined || limit !== undefined;
+      const pageNum = page ?? 1;
+      const limitNum = limit ?? 20;
 
       // Check organization exists
-      const orgExists = await prisma.organizations.findUnique({
-        where: { organization_id: String(organization_id) }
-      });
+      const orgExists = await findOrganizationById(prisma, organization_id);
       if (!orgExists) {
         return res.status(404).json({ message: "organization not exist" });
       }
 
-      const severityLevels = await prisma.severity_Levels.findMany({
+      const queryOptions = {
         where: { organization_id: String(organization_id) },
-        select: { id: true, name: true, description: true }
+        select: { id: true, name: true, description: true },
+      };
+
+      if (usePagination) {
+        queryOptions.skip = (pageNum - 1) * limitNum;
+        queryOptions.take = limitNum;
+      }
+
+      const severityLevels = await prisma.severity_Levels.findMany({
+        ...queryOptions
       });
 
       if (!severityLevels.length) {
@@ -346,15 +416,19 @@ const SettingsController = {
    // EDIT Severity Level
   editSeverityLevel: async (req, res) => {
     try {
-      const { organization_id, severity_name, description, id } = req.body;
-      if (!organization_id || !id) {
+      const bodyInput = {
+        ...(req.body ?? {}),
+        organization_id: req.user?.organization_id ?? req.body?.organization_id,
+        id: req.params?.severityLevelId ?? req.body?.id,
+      };
+      const parsedBody = editSeverityLevelBodySchema.safeParse(bodyInput);
+      if (!parsedBody.success) {
         return res.status(400).json({ message: "organization_id and severity_level id are required" });
       }
+      const { organization_id, severity_name, description, id } = parsedBody.data;
 
       // Check organization exists
-      const orgExists = await prisma.organizations.findUnique({
-        where: { organization_id: String(organization_id) }
-      });
+      const orgExists = await findOrganizationById(prisma, organization_id);
       if (!orgExists) {
         return res.status(404).json({ message: "organization not exist" });
       }
@@ -406,15 +480,19 @@ const SettingsController = {
 // DELETE Severity Level
   deleteSeverityLevel: async (req, res) => {
     try {
-      const { organization_id, id } = req.query;
-      if (!organization_id || !id) {
+      const queryInput = {
+        ...(req.query ?? {}),
+        organization_id: req.user?.organization_id ?? req.query?.organization_id,
+        id: req.params?.severityLevelId ?? req.query?.id,
+      };
+      const parsedQuery = deleteSeverityLevelQuerySchema.safeParse(queryInput);
+      if (!parsedQuery.success) {
         return res.status(400).json({ message: "organization_id and severity_level id are required" });
       }
+      const { organization_id, id } = parsedQuery.data;
 
       // Check organization exists
-      const orgExists = await prisma.organizations.findUnique({
-        where: { organization_id: String(organization_id) }
-      });
+      const orgExists = await findOrganizationById(prisma, organization_id);
       if (!orgExists) {
         return res.status(404).json({ message: "organization not exist" });
       }

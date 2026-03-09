@@ -1,117 +1,280 @@
-import { PrismaClient, DeliveryStatus, UserTypes } from "@prisma/client";
+import { DeliveryStatus, UserTypes, DeliveryMethod } from "@prisma/client";
 import moment from "moment";
 import bcrypt from "bcrypt";
-import z from "zod";
+import crypto from "crypto";
+import { Resend } from "resend";
+
 
 import admin from "../config/firebase.auth.js";
 import logger from "../utils/logger.js"; // your Winston logger
-
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
+import {
+    normalizeIncomingDateTimeToUtc,
+    utcNow,
+} from "../utils/datetime.js";
 import addEmployeeSchema from "../validators/admin/add-employee.validator.js";
-const AdminController = {
-    getOrganizationAlerts: async (req, res) => {
-        try {
-            const { organization_id, alert_type } = req.query;
+import adminCreateAlertSchema from "../validators/admin/create-alert.validator.js";
+import createContractingCompanySchema from "../validators/admin/create-contracting-company.validator.js";
+import {
+    alertIdParamSchema,
+    areaIdParamSchema,
+    createAreaSchema,
+    createSiteSchema,
+    siteIdParamSchema,
+    updateAreaSchema,
+    updateSiteSchema,
+} from "../validators/admin/site-area.validator.js";
+import {
+    companyIdParamSchema,
+    editContractingCompanyBodySchema,
+    editContractingCompanyParamsSchema,
+    reportNotificationBodySchema,
+    siteAlertsBodySchema,
+    toggleEmployeeStatusBodySchema,
+    toggleEmployeeStatusParamsSchema,
+} from "../validators/admin/user-company.validator.js";
+import {
+    getEmailDomainOrThrow,
+    normalizeDomain,
+} from "../helpers/admin.helper.js";
+import {
+    buildSiteAddress,
+    ensureAdminOrganizationOrError,
+    ensureSiteIdOrError,
+    findSiteForOrganization,
+} from "../helpers/admin-site.helper.js";
+import { getOrganizationIdOrUnauthorized } from "../helpers/alert-controller.helper.js";
+import { findAreaByOrganization } from "../helpers/ownership.helper.js";
+import {
+    buildAlertDetailComputedFields,
+    buildRecipientUsers,
+    summarizeRecipientResponses,
+} from "../helpers/admin-alert-details.helper.js";
+const resend = new Resend(process.env.RESEND_KEY);
 
-            if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+// Block common/public email providers (employee + contractor)
+const PUBLIC_EMAIL_DOMAINS = new Set([
+    // "gmail.com",
+    "googlemail.com",
+    "yahoo.com",
+    "yahoo.co.in",
+    "yahoo.in",
+    "ymail.com",
+    "aol.com",
+    "outlook.com",
+    "hotmail.com",
+    "live.com",
+    "msn.com",
+    "icloud.com",
+    "me.com",
+    "mac.com",
+    "proton.me",
+    "protonmail.com",
+    "zoho.com",
+    "zohomail.com",
+    "mail.com",
+    "gmx.com",
+    "gmx.net",
+    "yandex.com",
+    "yandex.ru",
+    "fastmail.com",
+    "hey.com",
+]);
+const AdminController = {
+    getAlertSummaryForOrg: async (req, res) => {
+        const organizationId = req.user?.organization_id;
+        const userId = req.user?.user_id;
+        const requestId = req.requestId || null;
+
+        try {
+            const { q } = req.query;
+
+            logger.info("Fetching alert summary for organization", {
+                meta: {
+                    requestId,
+                    userId,
+                    organizationId,
+                    query: q || null
+                }
+            });
+
+            if (!organizationId) {
+                logger.warn("Organization ID missing in token", {
+                    meta: { requestId, userId }
+                });
+
+                return res.status(401).json({ message: "Unauthorized" });
             }
 
-            // Fetch organization name
             const organization = await prisma.organizations.findUnique({
-                where: { organization_id },
+                where: { organization_id: organizationId },
                 select: { name: true },
             });
+
             if (!organization) {
+                logger.warn("Organization not found", {
+                    meta: { requestId, organizationId }
+                });
+
                 return res.status(404).json({ message: "Organization not found" });
             }
-            // Fetch alerts by type and organization
-            const alerts = await prisma.alerts.findMany({
-                where: {
-                    organization_id,
-                    ...(alert_type && { message: { contains: alert_type, mode: "insensitive" } }),
-                },
-                include: {
-                    Notification_Recipients: true,
-                },
+
+            const alertWhere = {
+                organization_id: organizationId,
+                ...(q
+                    ? {
+                        message: {
+                            contains: String(q),
+                            mode: "insensitive",
+                        },
+                    }
+                    : {}),
+            };
+
+            const totalAlerts = await prisma.alerts.count({
+                where: alertWhere,
             });
 
-            const totalAlerts = alerts.length;
-
-            const responseTimes = [];
-            let acknowledgedCount = 0;
-
-            for (const alert of alerts) {
-                alert.Notification_Recipients.forEach((recipient) => {
-                    if (recipient.acknowledged_at) {
-                        acknowledgedCount++;
-                        if (recipient.delivered_at) {
-                            const responseTime = new Date(recipient.acknowledged_at) - new Date(recipient.delivered_at);
-                            responseTimes.push(responseTime);
-                        }
-                    }
-                });
-            }
-
-            const avgResponseTime = responseTimes.length
-                ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length / 1000) // in seconds
-                : 0;
-
-            const responseRate = totalAlerts ? (acknowledgedCount / totalAlerts) * 100 : 0;
-
-            // Weather alert detection (example logic)
-            const weatherAlert = alerts.some(alert => alert.message.toLowerCase().includes("weather"));
-
-            // Active users
             const activeUsersCount = await prisma.users.count({
                 where: {
-                    organization_id,
+                    organization_id: organizationId,
                     is_active: true,
                 },
             });
 
-            // All Areas
             const areas = await prisma.areas.findMany({
                 where: {
                     site: {
-                        organization_id
-                    }
+                        organization_id: organizationId,
+                    },
                 },
                 select: {
                     id: true,
                     name: true,
-                    description: true
+                    description: true,
+                },
+                orderBy: {
+                    name: "asc",
+                },
+            });
+
+            const recipientMetrics = await prisma.$queryRaw`
+        SELECT
+          COUNT(nr.id)::int AS total_recipients,
+          COUNT(nr.acknowledged_at)::int AS acknowledged_recipients,
+          COALESCE(AVG(EXTRACT(EPOCH FROM (nr.acknowledged_at - nr.delivered_at))),0)::float AS avg_response_seconds
+        FROM "Notification_Recipients" nr
+        JOIN "Alerts" a ON a.id = nr.alert_id
+        WHERE a.organization_id = ${organizationId}
+          AND nr.delivered_at IS NOT NULL
+    `;
+
+            const row = Array.isArray(recipientMetrics)
+                ? recipientMetrics[0]
+                : recipientMetrics;
+
+            const totalRecipients = Number(row?.total_recipients ?? 0);
+            const acknowledgedRecipients = Number(row?.acknowledged_recipients ?? 0);
+            const avgResponseSeconds = Math.round(Number(row?.avg_response_seconds ?? 0));
+
+            const responseRate =
+                totalRecipients > 0
+                    ? (acknowledgedRecipients / totalRecipients) * 100
+                    : 0;
+
+            const weatherAlert =
+                (await prisma.alerts.findFirst({
+                    where: {
+                        organization_id: organizationId,
+                        message: {
+                            contains: "weather",
+                            mode: "insensitive",
+                        },
+                    },
+                    select: { id: true },
+                })) !== null;
+
+            const responsePayload = {
+                organization_name: organization.name,
+                total_alerts: totalAlerts,
+                total_recipients: totalRecipients,
+                acknowledged_recipients: acknowledgedRecipients,
+                response_rate_percent: Number(responseRate.toFixed(2)),
+                average_response_time_seconds: avgResponseSeconds,
+                active_users: activeUsersCount,
+                weather_alert: Boolean(weatherAlert),
+                areas,
+            };
+
+            logger.info("Alert summary generated successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    userId,
+                    totalAlerts,
+                    responseRate: Number(responseRate.toFixed(2)),
+                    activeUsersCount
                 }
             });
 
-            return res.status(200).json({
-                organization_name: organization.name,
-                total_alerts: totalAlerts,
-                response_rate: `${responseRate.toFixed(2)}%`,
-                average_response_time: `${avgResponseTime} seconds`,
-                alert_success: acknowledgedCount,
-                active_users: activeUsersCount,
-                areas,
-            });
+            return res.status(200).json(responsePayload);
+
         } catch (error) {
-            logger.error("getOrganizationAlerts error:", error);
-            return res.status(500).json({ message: "Server error", error: error.message });
+
+            logger.error("getAlertSummaryForOrg failed", {
+                error,
+                meta: {
+                    requestId,
+                    userId,
+                    organizationId
+                }
+            });
+
+            return res.status(500).json({
+                message: "Server error",
+            });
         }
     },
-    getBuildingAlerts: async (req, res) => {
-        try {
-            const { building_name } = req.body;
+    getAreaAlerts: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const userId = req.user?.user_id;
 
-            if (!building_name || typeof building_name !== "string") {
-                return res.status(400).json({ message: "building_name is required" });
+        try {
+            const { areaId } = req.params;
+
+            logger.info("Fetching area alerts", {
+                meta: { requestId, userId, organizationId, areaId },
+            });
+
+            if (!organizationId) {
+                logger.warn("Unauthorized: missing organization_id in token", {
+                    meta: { requestId, userId },
+                });
+                return res.status(401).json({ message: "Unauthorized" });
             }
 
-            // 1️⃣ Fetch area + organization
+            if (!areaId) {
+                logger.warn("Validation failed: areaId missing", {
+                    meta: { requestId, organizationId, userId },
+                });
+                return res.status(400).json({ message: "areaId is required" });
+            }
+
+            // ✅ Area must belong to this org
             const area = await prisma.areas.findFirst({
-                where: { name: building_name },
-                include: {
+                where: {
+                    id: areaId,
+                    site: { organization_id: organizationId },
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    description: true,
                     site: {
-                        include: {
+                        select: {
+                            id: true,
+                            name: true,
                             organization: {
                                 select: {
                                     organization_id: true,
@@ -127,41 +290,50 @@ const AdminController = {
             });
 
             if (!area) {
-                return res.status(404).json({ message: "Building (area) not found" });
+                logger.warn("Area not found or not in org", {
+                    meta: { requestId, organizationId, areaId },
+                });
+                return res.status(404).json({ message: "Area not found" });
             }
-
-            const organizationId = area.site.organization.organization_id;
-
-            // 2️⃣ Fetch alerts for this area
-            const alerts = await prisma.alerts.findMany({
-                where: {
-                    organization_id: organizationId,
-                    Alert_Areas: {
-                        some: {
-                            area_id: area.id,
-                        },
-                    },
-                },
-                orderBy: {
-                    created_at: "desc",
-                },
-            });
 
             const now = new Date();
 
-            const recentAlerts = alerts.filter(
-                (a) => a.created_at <= now && (!a.scheduled_time || a.scheduled_time <= now)
-            );
+            // ✅ Recent (already started; scheduled_time null OR <= now)
+            const recentAlerts = await prisma.alerts.findMany({
+                where: {
+                    organization_id: organizationId,
+                    Alert_Areas: { some: { area_id: area.id } },
+                    OR: [
+                        { scheduled_time: null },
+                        { scheduled_time: { lte: now } },
+                    ],
+                },
+                orderBy: { created_at: "desc" },
+                take: 100,
+            });
 
-            const upcomingAlerts = alerts.filter(
-                (a) => a.scheduled_time && a.scheduled_time > now
-            );
+            // ✅ Upcoming (scheduled in future)
+            const upcomingAlerts = await prisma.alerts.findMany({
+                where: {
+                    organization_id: organizationId,
+                    Alert_Areas: { some: { area_id: area.id } },
+                    scheduled_time: { gt: now },
+                },
+                orderBy: { scheduled_time: "asc" },
+                take: 100,
+            });
 
-            const scheduledAlerts = alerts.filter(
-                (a) => a.scheduled_time !== null
-            );
+            // ✅ Scheduled (any scheduled_time not null)
+            const scheduledAlerts = await prisma.alerts.findMany({
+                where: {
+                    organization_id: organizationId,
+                    Alert_Areas: { some: { area_id: area.id } },
+                    scheduled_time: { not: null },
+                },
+                orderBy: { scheduled_time: "desc" },
+                take: 100,
+            });
 
-            // 3️⃣ SINGLE emergency contact (from organization)
             const emergencyContact =
                 area.site.organization.main_contact_name
                     ? {
@@ -171,121 +343,1150 @@ const AdminController = {
                     }
                     : null;
 
-            // 4️⃣ Response
-            return res.status(200).json({
-                building: area.name,
-                organization: area.site.organization.name,
+            const payload = {
+                area: {
+                    id: area.id,
+                    name: area.name,
+                    description: area.description,
+                },
+                site: {
+                    id: area.site.id,
+                    name: area.site.name,
+                },
+                organization: {
+                    id: area.site.organization.organization_id,
+                    name: area.site.organization.name,
+                },
+                emergency_contact: emergencyContact,
 
                 recent_alerts: recentAlerts,
                 upcoming_alerts: upcomingAlerts,
                 scheduled_alerts: scheduledAlerts,
+            };
 
-                emergency_contact: emergencyContact, // ✅ SINGLE OBJECT
-            });
-        } catch (error) {
-            console.error("getBuildingAlerts error:", error);
-            return res.status(500).json({
-                message: "Server error",
-                error: error.message,
-            });
-        }
-    },
-
-    getAllAreasByOrganizationId: async (req, res) => {
-        const { organization_id } = req.query;
-
-        try {
-            // Step 1: Fetch all sites of the organization
-            if (!organization_id) {
-                return res.status(400).json({ message: "organizationId is required." });
-            }
-            const sites = await prisma.sites.findMany({
-                where: { organization_id: organization_id },
-                select: { id: true },
-            });
-
-            const siteIds = sites.map(site => site.id);
-
-            // Step 2: Fetch all areas related to these sites
-            const areas = await prisma.areas.findMany({
-                where: {
-                    site_id: { in: siteIds },
+            logger.info("Area alerts fetched successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    userId,
+                    areaId,
+                    recent: recentAlerts.length,
+                    upcoming: upcomingAlerts.length,
+                    scheduled: scheduledAlerts.length,
                 },
             });
 
-            return res.status(200).json({ organization_id, areas });
+            return res.status(200).json(payload);
         } catch (error) {
-            logger?.error("getAreasByOrganizationId error:", error);
-            return res.status(500).json({ message: "Server error", error: error.message });
+            logger.error("getAreaAlerts failed", {
+                error,
+                meta: { requestId, organizationId, userId, areaId: req.params?.areaId },
+            });
+
+            return res.status(500).json({ message: "Server error" });
         }
     },
-    getAllBuildingAlerts: async (req, res) => {
-        try {
-            const { building_name } = req.body;
+    listAreas: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const userId = req.user?.user_id;
 
-            if (!building_name || typeof building_name !== "string") {
-                return res.status(400).json({ message: "Building name is required." });
+        try {
+            if (!organizationId) {
+                logger.warn("Unauthorized: missing organization_id in token", {
+                    meta: { requestId, userId },
+                });
+                return res.status(401).json({ message: "Unauthorized" });
             }
 
-            // Step 1: Get Site (building) by name
+            // ✅ single query (same result as sites->areas)
+            const usePagination =
+                req.query?.page !== undefined || req.query?.limit !== undefined;
+            const pageNumber = Math.max(parseInt(req.query?.page, 10) || 1, 1);
+            const pageSize = Math.min(Math.max(parseInt(req.query?.limit, 10) || 20, 1), 100);
+
+            const queryOptions = {
+                where: {
+                    site: { organization_id: organizationId },
+                },
+                orderBy: { name: "asc" },
+            };
+
+            if (usePagination) {
+                queryOptions.skip = (pageNumber - 1) * pageSize;
+                queryOptions.take = pageSize;
+            }
+
+            const areas = await prisma.areas.findMany(queryOptions);
+
+            logger.info("Areas fetched successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    userId,
+                    count: areas.length,
+                },
+            });
+
+            return res.status(200).json({
+                organization_id: organizationId,
+                areas,
+            });
+        } catch (error) {
+            logger.error("listAreas error", {
+                error,
+                meta: { requestId, organizationId, userId },
+            });
+
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
+    listSites: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const userId = req.user?.user_id;
+
+        try {
+
+            if (!organizationId) {
+                logger.warn("Unauthorized request: organization_id missing", {
+                    meta: { requestId, userId }
+                });
+
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            logger.info("Fetching all sites for organization", {
+                meta: { requestId, organizationId, userId }
+            });
+
+            const usePagination =
+                req.query?.page !== undefined || req.query?.limit !== undefined;
+            const pageNumber = Math.max(parseInt(req.query?.page, 10) || 1, 1);
+            const pageSize = Math.min(Math.max(parseInt(req.query?.limit, 10) || 20, 1), 100);
+
+            // Fetch sites belonging to the organization
+            const queryOptions = {
+                where: { organization_id: organizationId },
+                orderBy: { created_at: "desc" },
+            };
+
+            if (usePagination) {
+                queryOptions.skip = (pageNumber - 1) * pageSize;
+                queryOptions.take = pageSize;
+            }
+
+            const sites = await prisma.sites.findMany(queryOptions);
+
+            const response = {
+                total_sites: sites.length,
+                sites
+            };
+
+            logger.info("Sites fetched successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    userId,
+                    total_sites: sites.length
+                }
+            });
+
+            return res.status(200).json(response);
+
+        } catch (error) {
+
+            logger.error("listSites error", {
+                error,
+                meta: { requestId, organizationId, userId }
+            });
+
+            return res.status(500).json({
+                message: "Server error"
+            });
+        }
+    },
+    listAreasBySite: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const userId = req.user?.user_id;
+
+        try {
+            // supports both: /sites/:siteId/areas and old ?site_id=
+            const siteId = req.params?.siteId || req.query?.site_id;
+
+            if (!organizationId) {
+                logger.warn("Unauthorized: missing organization_id in token", {
+                    meta: { requestId, userId },
+                });
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            if (!siteId) {
+                logger.warn("Validation failed: site_id missing", {
+                    meta: { requestId, organizationId, userId },
+                });
+                return res.status(400).json({ message: "site_id is required." });
+            }
+
+            // ✅ Verify site exists AND belongs to org
+            const siteExists = await findSiteForOrganization(
+                prisma,
+                siteId,
+                organizationId,
+                { id: true },
+            );
+
+            if (!siteExists) {
+                logger.warn("Site not found (or not in org)", {
+                    meta: { requestId, organizationId, siteId },
+                });
+                return res.status(404).json({ message: "Site not found." });
+            }
+
+            // ✅ Fetch areas belonging to the site
+            const areas = await prisma.areas.findMany({
+                where: { site_id: siteId },
+                orderBy: { created_at: "desc" },
+            });
+
+            logger.info("Areas fetched for site", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    userId,
+                    siteId,
+                    total_areas: areas.length,
+                },
+            });
+
+            return res.status(200).json({ total_areas: areas.length, areas });
+        } catch (error) {
+            logger.error("listAreasBySite error", {
+                error,
+                meta: { requestId, organizationId, userId },
+            });
+
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
+    listRoles: async (req, res) => {
+        const requestId = req.requestId || null;
+        const userId = req.user?.user_id;
+        const organizationId = req.user?.organization_id;
+
+        try {
+
+            logger.info("Fetching all roles", {
+                meta: { requestId, userId, organizationId }
+            });
+
+            const roles = await prisma.roles.findMany();
+
+            logger.info("Roles fetched successfully", {
+                meta: {
+                    requestId,
+                    userId,
+                    organizationId,
+                    total_roles: roles.length
+                }
+            });
+
+            return res.json({ roles });
+
+        } catch (err) {
+
+            logger.error("listRoles error", {
+                error: err,
+                meta: { requestId, userId, organizationId }
+            });
+
+            return res.status(500).json({
+                message: "something went wrong"
+            });
+        }
+    },
+    createUser: async (req, res) => {
+        const requestId = req.requestId || null;
+        const actorUserId = req.user?.user_id;
+        const organizationId = req.user?.organization_id;
+
+        try {
+            if (!organizationId) {
+                logger.warn("Unauthorized: missing organization_id in token", {
+                    meta: { requestId, actorUserId },
+                });
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            const parsed = addEmployeeSchema.safeParse(req.body);
+            if (!parsed.success) {
+                const errors = parsed.error.errors.map((e) => e.message);
+                logger.warn("Validation failed: createUser", {
+                    meta: { requestId, organizationId, actorUserId, errors },
+                });
+                return res.status(400).json({ message: "Validation failed", errors });
+            }
+
+            const {
+                // organization_id is intentionally ignored from body (security)
+                site_id,
+                area_id,
+                first_name,
+                last_name,
+                email,
+                phone_number,
+                admin_access,
+                is_employee,
+                contracting_company_id,
+            } = parsed.data;
+
+            const normalizedEmail = String(email).trim().toLowerCase();
+            const emailDomain = getEmailDomainOrThrow(normalizedEmail);
+
+            const user_type = is_employee ? UserTypes.employee : UserTypes.contractor;
+
+            logger.info("Creating user", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    actorUserId,
+                    user_type,
+                    admin_access: Boolean(admin_access),
+                    site_id: site_id || null,
+                    area_id: area_id || null,
+                    email_domain: emailDomain,
+                },
+            });
+
+            // org lookup (needed for domain match + email content)
+            const org = await prisma.organizations.findUnique({
+                where: { organization_id: String(organizationId) },
+                select: { organization_id: true, name: true, email_domain: true },
+            });
+
+            if (!org) {
+                logger.warn("Organization not found for actor", {
+                    meta: { requestId, organizationId, actorUserId },
+                });
+                return res.status(400).json({ message: "Organization not found." });
+            }
+
+            const orgDomain = normalizeDomain(org.email_domain);
+
+            // 1) Block public/ordinary emails for BOTH employee + contractor
+            if (PUBLIC_EMAIL_DOMAINS.has(emailDomain)) {
+                return res.status(400).json({
+                    message:
+                        "Public email domains (gmail, yahoo, outlook, etc.) are not allowed. Please use a company email address.",
+                    blocked_domain: emailDomain,
+                });
+            }
+
+            // 2) ONLY employees must match organization domain
+            if (user_type === UserTypes.employee && emailDomain !== orgDomain) {
+                return res.status(400).json({
+                    message: "Employee email must match organization email domain.",
+                    organization_email_domain: orgDomain,
+                    provided_email_domain: emailDomain,
+                });
+            }
+
+            // contractor must provide contracting company id
+            if (user_type === UserTypes.contractor && !contracting_company_id) {
+                return res.status(400).json({ message: "Contracting company is required." });
+            }
+
+            // ✅ Guard: site_id must belong to this org (if provided)
+            if (site_id) {
+                const siteOk = await findSiteForOrganization(
+                    prisma,
+                    site_id,
+                    organizationId,
+                    { id: true },
+                );
+                if (!siteOk) {
+                    return res.status(400).json({ message: "Invalid site_id for this organization." });
+                }
+            }
+
+            // ✅ Guard: area_id must belong to this org (if provided)
+            if (area_id) {
+                const areaOk = await findAreaByOrganization(
+                    prisma,
+                    area_id,
+                    organizationId,
+                    { select: { id: true } },
+                );
+                if (!areaOk) {
+                    return res.status(400).json({ message: "Invalid area_id for this organization." });
+                }
+            }
+
+            // Find role based on admin_access
+            const roleName = admin_access ? "admin" : "employee";
+            const role = await prisma.roles.findFirst({ where: { role_name: roleName } });
+
+            if (!role) {
+                return res.status(400).json({ message: `${roleName} role not found.` });
+            }
+
+            const temporaryPasswordHash = await bcrypt.hash(
+                crypto.randomBytes(32).toString("hex"),
+                10,
+            );
+
+            // Transaction so we don’t create partial records
+            const result = await prisma.$transaction(async (tx) => {
+                // Create user (same fields, but org comes from token)
+                const newUser = await tx.users.create({
+                    data: {
+                        organization_id: String(organizationId),
+                        site_id: site_id ? String(site_id) : null,
+                        area_id: area_id ? String(area_id) : null,
+                        email: normalizedEmail,
+                        password_hash: temporaryPasswordHash,
+                        first_name,
+                        last_name,
+                        phone_number: phone_number || "",
+                        role_id: role.id,
+                        user_type,
+                        must_reset_password: true,
+                    },
+                });
+
+                if (user_type === UserTypes.employee) {
+                    await tx.employees.create({ data: { user_id: newUser.user_id } });
+                } else {
+                    await tx.contractors.create({
+                        data: {
+                            user_id: newUser.user_id,
+                            contracting_company_id: String(contracting_company_id),
+                        },
+                    });
+                }
+
+                // Invitation token
+                const token = crypto.randomBytes(32).toString("hex");
+                const inviteSentAt = utcNow();
+                const expiresAt = new Date(inviteSentAt.getTime() + 1000 * 60 * 60 * 24 * 2); // 48h
+
+                await tx.invitations.create({
+                    data: {
+                        organization_id: org.organization_id,
+                        user_id: newUser.user_id,
+                        token,
+                        expires_at: expiresAt,
+                        is_used: false,
+                        created_by: actorUserId ?? null,
+                        delivery_method: DeliveryMethod.email,
+                        sent_at: inviteSentAt,
+                    },
+                });
+
+                return { newUser, token, expiresAt };
+            });
+
+            const { newUser, token, expiresAt } = result;
+
+            const appBaseUrl = process.env.APP_BASE_URL || "";
+            const setupLink = `${appBaseUrl.replace(/\/$/, "")}/finish-profile-setup?token=${token}`;
+
+            // Send email (same behavior: skip if missing key)
+            if (!process.env.RESEND_KEY) {
+                logger.warn("RESEND_KEY missing. Skipping email send.", {
+                    meta: { requestId, organizationId, actorUserId, to: normalizedEmail },
+                });
+            } else {
+                const from = process.env.RESEND_FROM_EMAIL || "Your App <no-reply@yourdomain.com>";
+
+                await resend.emails.send({
+                    from,
+                    to: normalizedEmail,
+                    subject: `You’ve been added to ${org.name} — finish your setup`,
+                    html: `
+          <div style="font-family:Arial,sans-serif;line-height:1.5">
+            <p>Hi ${first_name || ""} ${last_name || ""},</p>
+            <p>You have been added by an admin to <b>${org.name}</b>.</p>
+            <p>Click the button below to finish your profile setup:</p>
+            <p>
+              <a href="${setupLink}"
+                 style="display:inline-block;padding:10px 14px;border-radius:8px;
+                        text-decoration:none;background:#111827;color:#fff">
+                Finish profile setup
+              </a>
+            </p>
+            <p>If the button doesn’t work, copy/paste this link:</p>
+            <p><a href="${setupLink}">${setupLink}</a></p>
+            <p>This link expires at: ${expiresAt.toISOString()}</p>
+          </div>
+        `,
+                });
+            }
+
+            logger.info("User created successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    actorUserId,
+                    newUserId: newUser.user_id,
+                    user_type: newUser.user_type,
+                    role: role.role_name,
+                },
+            });
+
+            return res.status(200).json({
+                message: "Employee created successfully. Setup email sent.",
+                user: {
+                    id: newUser.user_id,
+                    name: `${newUser.first_name} ${newUser.last_name}`,
+                    email: newUser.email,
+                    role: role.role_name,
+                    user_type: newUser.user_type,
+                },
+            });
+        } catch (error) {
+            if (error?.code === "P2002" && error?.meta?.target?.includes("email")) {
+                return res.status(409).json({
+                    message: "Email is already in use. Please use a different email address.",
+                });
+            }
+
+            if (error?.statusCode) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+
+            logger.error("createUser error", {
+                error,
+                meta: { requestId, organizationId, actorUserId },
+            });
+
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
+    deactivateUser: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const actorUserId = req.user?.user_id;
+
+        try {
+            const userId = req.params.userId;
+
+            if (!organizationId) {
+                logger.warn("Unauthorized: organization_id missing in token", {
+                    meta: { requestId, actorUserId }
+                });
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            if (!userId) {
+                return res.status(400).json({ message: "user_id is required" });
+            }
+
+            // Check if user exists within the same organization
+            const user = await prisma.users.findFirst({
+                where: {
+                    user_id: userId,
+                    organization_id: organizationId
+                }
+            });
+
+            if (!user) {
+                logger.warn("User not found or not in organization", {
+                    meta: { requestId, organizationId, userId }
+                });
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            // Deactivate user
+            await prisma.users.update({
+                where: { user_id: userId },
+                data: { is_active: false },
+            });
+
+            logger.info("User deactivated successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    actorUserId,
+                    targetUserId: userId
+                }
+            });
+
+            return res.status(200).json({
+                message: "User deactivated successfully"
+            });
+
+        } catch (error) {
+
+            logger.error("deactivateUser error", {
+                error,
+                meta: { requestId, organizationId, actorUserId }
+            });
+
+            return res.status(500).json({
+                message: "Server error"
+            });
+        }
+    },
+    listEmergencyTypes: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const userId = req.user?.user_id;
+
+        try {
+
+            if (!organizationId) {
+                logger.warn("Unauthorized: organization_id missing in token", {
+                    meta: { requestId, userId }
+                });
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            logger.info("Fetching emergency types", {
+                meta: { requestId, organizationId, userId }
+            });
+
+            const alerts = await prisma.emergency_Types.findMany({
+                where: {
+                    organization_id: organizationId
+                }
+            });
+
+            logger.info("Emergency types fetched successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    userId,
+                    total_types: alerts.length
+                }
+            });
+
+            return res.status(200).json({ alerts });
+
+        } catch (error) {
+
+            logger.error("listEmergencyTypes error", {
+                error,
+                meta: { requestId, organizationId, userId }
+            });
+
+            return res.status(500).json({
+                message: "Server error"
+            });
+        }
+    },
+    createAlert: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const actorUserId = req.user?.user_id;
+
+        try {
+            if (!organizationId || !actorUserId) {
+                logger.warn("Unauthorized: missing org/user in token", {
+                    meta: { requestId, organizationId, actorUserId },
+                });
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            // ✅ Schema: org/user removed from body (JWT-scoped)
+            const parsed = adminCreateAlertSchema.parse(req.body);
+
+            const startTime = normalizeIncomingDateTimeToUtc(parsed.start_time);
+            const endTime = normalizeIncomingDateTimeToUtc(parsed.end_time);
+
+            if (!startTime || !endTime) {
+                return res.status(400).json({ error: "Invalid start or end time format" });
+            }
+            if (startTime.getTime() > endTime.getTime()) {
+                return res.status(400).json({ error: "Start time cannot be after end time." });
+            }
+
+            logger.info("Creating alert", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    actorUserId,
+                    emergency_type_id: parsed.emergency_type_id,
+                },
+            });
+
+            // ✅ Ensure emergency type belongs to same org (security)
+            const alertType = await prisma.emergency_Types.findFirst({
+                where: {
+                    id: parsed.emergency_type_id,
+                    organization_id: organizationId,
+                },
+                select: { name: true },
+            });
+
+            if (!alertType) {
+                return res.status(400).json({ error: "Invalid emergency_type_id for this organization" });
+            }
+
+            // Create alert
+            const alert = await prisma.alerts.create({
+                data: {
+                    user_id: actorUserId,
+                    organization_id: organizationId,
+                    emergency_type_id: parsed.emergency_type_id,
+                    message: parsed.message,
+                    start_time: startTime,
+                    end_time: endTime,
+                    status: "active",
+                },
+            });
+
+            // Fetch all users of org (same behavior)
+            const usersOfOrg = await prisma.users.findMany({
+                where: { organization_id: organizationId },
+                select: { fcm_token: true, user_id: true },
+            });
+
+            logger.info("Dispatching FCM notifications for alert", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    actorUserId,
+                    alertId: alert.id,
+                    recipients: usersOfOrg.length,
+                },
+            });
+
+            // Send notifications + create recipient rows
+            const tasks = usersOfOrg
+                .filter((u) => Boolean(u.fcm_token))
+                .map(async (u) => {
+                    const token = u.fcm_token;
+
+                    const individualMessage = {
+                        notification: { title: alertType.name, body: parsed.message },
+                        token,
+                    };
+
+                    try {
+                        await admin.messaging().send(individualMessage);
+
+                        await prisma.notification_Recipients.create({
+                            data: {
+                                alert_id: alert.id,
+                                user_id: u.user_id,
+                            },
+                        });
+                    } catch (err) {
+                        logger.warn("FCM send failed for user", {
+                            error: err,
+                            meta: { requestId, organizationId, alertId: alert.id, targetUserId: u.user_id },
+                        });
+
+                        if (err?.code === "messaging/registration-token-not-registered") {
+                            await prisma.users.update({
+                                where: { user_id: u.user_id },
+                                data: { fcm_token: null },
+                            });
+
+                            logger.warn("Removed invalid FCM token", {
+                                meta: { requestId, organizationId, targetUserId: u.user_id },
+                            });
+                        }
+                    }
+                });
+
+            // ✅ Ensure tasks actually run reliably; we don't fail the API if some sends fail
+            await Promise.allSettled(tasks);
+
+            logger.info("Alert created successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    actorUserId,
+                    alertId: alert.id,
+                },
+            });
+
+            // ✅ Your old code didn't send a response (bug). Return success.
+            return res.status(201).json({
+                message: "Alert created successfully",
+                alert_id: alert.id,
+            });
+        } catch (err) {
+            if (err?.name === "ZodError") {
+                return res.status(400).json({ error: err.errors });
+            }
+
+            logger.error("createAlert error", {
+                error: err,
+                meta: { requestId, organizationId, actorUserId },
+            });
+
+            return res.status(500).json({ error: "Server Error" });
+        }
+    },
+    reportNotification: async (req, res) => {
+        try {
+            const orgId = req.user.organization_id;
+
+            const parsed = reportNotificationBodySchema.safeParse(req.body ?? {});
+            if (!parsed.success) {
+                return res.status(400).json({
+                    message: "user_id are required",
+                });
+            }
+            const { user_id } = parsed.data;
+
+            // Ensure user belongs to this org (org ownership enforced)
+            const reporteduser = await prisma.users.findFirst({
+                where: {
+                    user_id: user_id,
+                    organization_id: orgId,
+                },
+                select: {
+                    first_name: true,
+                    last_name: true,
+                },
+            });
+
+            if (reporteduser) {
+                logger.info(
+                    `reported user : ${reporteduser.first_name} ${reporteduser.last_name}`
+                );
+            }
+
+            // Get latest recipient for that user within this org (via Alerts.organization_id)
+            const lastRecepient = await prisma.notification_Recipients.findFirst({
+                where: {
+                    user_id: user_id,
+                    alert: {
+                        organization_id: orgId,
+                    },
+                },
+                orderBy: {
+                    created_at: "desc",
+                },
+                select: {
+                    id: true,
+                    delivery_status: true,
+                },
+            });
+
+            if (!lastRecepient) {
+                return res.status(400).json({ message: "Notification not found" });
+            }
+
+            if (lastRecepient.delivery_status === DeliveryStatus.delivered) {
+                return res.status(400).json({ message: "Notification already reported" });
+            }
+
+            await prisma.notification_Recipients.update({
+                where: { id: lastRecepient.id },
+                data: {
+                    delivery_status: DeliveryStatus.delivered,
+                },
+            });
+
+            return res.status(200).json({ message: "Notification reported successfully" });
+        } catch (error) {
+            logger.error("reportNotification error:", error);
+            return res
+                .status(500)
+                .json({ message: "Server error", error: error.message });
+        }
+    },
+    getAllContractingCompanies: async (req, res) => {
+        try {
+            const organization_id = req.user.organization_id;
+
+            const contracting_companies = await prisma.contracting_Companies.findMany({
+                where: {
+                    organization_id: organization_id,
+                },
+            });
+
+            return res.json({ contracting_companies });
+        } catch (err) {
+            logger.error("getAllContractingCompanies error:", err);
+            return res
+                .status(500)
+                .json({ message: "Something went wrong", error: err });
+        }
+    },
+    createContractingCompany: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id;
+            if (!organization_id) {
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
+            }
+
+            const parsed = createContractingCompanySchema.safeParse(req.body);
+            if (!parsed.success) {
+                return res.status(400).json({
+                    message: "Validation failed",
+                    errors: parsed.error.flatten(),
+                });
+            }
+
+            const { name, contact_email, phone, address } = parsed.data;
+
+            // --- check name ---
+            const existingName = await prisma.contracting_Companies.findFirst({
+                where: { organization_id, name },
+            });
+            if (existingName) {
+                return res.status(409).json({
+                    message: "A company with this name already exists.",
+                });
+            }
+
+            // --- check email ---
+            const existingEmail = await prisma.contracting_Companies.findFirst({
+                where: { organization_id, contact_email },
+            });
+            if (existingEmail) {
+                return res.status(409).json({
+                    message: "A company with this email already exists.",
+                });
+            }
+
+            // --- check phone ---
+            const existingPhone = await prisma.contracting_Companies.findFirst({
+                where: { organization_id, phone },
+            });
+            if (existingPhone) {
+                return res.status(409).json({
+                    message: "A company with this phone number already exists.",
+                });
+            }
+
+            // --- create new company ---
+            const contracting_company = await prisma.contracting_Companies.create({
+                data: { organization_id, name, contact_email, phone, address },
+            });
+
+            return res.status(200).json({
+                message: "Contracting company created successfully",
+                contracting_company,
+            });
+        } catch (err) {
+            logger.error("createContractingCompany error:", err);
+            return res.status(500).json({
+                message: "Something went wrong",
+                error: err
+            });
+        }
+    },
+    getContractingCompanies: async (req, res) => {
+        try {
+            const organization_id = req.user.organization_id;
+
+            const contracting_companies = await prisma.contracting_Companies.findMany({
+                where: { organization_id },
+                select: {
+                    id: true,
+                    name: true,
+                    contact_email: true,
+                    phone: true,
+                    address: true,
+                    organization_id: true,
+                    _count: {
+                        select: {
+                            contractors: {
+                                where: {
+                                    user: {
+                                        is_active: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            // keep response structure exactly the same as existing behavior
+            const result = contracting_companies.map((company) => ({
+                ...company,
+                active_user_count: company._count.contractors,
+                _count: undefined,
+            }));
+
+            return res.json({ contracting_companies: result });
+        } catch (err) {
+            logger.error("getContractingCompanies error:", err);
+            return res
+                .status(500)
+                .json({ message: "Something went wrong", error: err.message });
+        }
+    },
+    editContractingCompany: async (req, res) => {
+        try {
+            const organization_id = req.user.organization_id;
+            const parsedParams = editContractingCompanyParamsSchema.safeParse(req.params ?? {});
+            if (!parsedParams.success) {
+                // keep same message text as old behavior
+                return res.status(400).json({ message: "company_id is required" });
+            }
+            const { companyId } = parsedParams.data;
+
+            const parsedBody = editContractingCompanyBodySchema.safeParse(req.body ?? {});
+            if (!parsedBody.success) {
+                return res.status(400).json({
+                    message: "Validation failed",
+                    errors: parsedBody.error.flatten(),
+                });
+            }
+            const { name, contact_email, phone, address } = parsedBody.data;
+
+            const data = {};
+            // never allow org reassignment from body
+            if (name) data.name = name.trim();
+            if (contact_email) data.contact_email = contact_email.trim().toLowerCase();
+            if (phone) data.phone = phone.trim();
+            if (address) data.address = address.trim();
+
+            // Ownership enforcement (org + id scoped)
+            const updated = await prisma.contracting_Companies.update({
+                where: {
+                    id: companyId,
+                    organization_id: organization_id,
+                },
+                data,
+                select: {
+                    id: true,
+                    organization_id: true,
+                    name: true,
+                    contact_email: true,
+                    phone: true,
+                    address: true,
+                },
+            });
+
+            return res.status(200).json({ message: "Company updated", company: updated });
+        } catch (err) {
+            if (err?.code === "P2025") {
+                return res.status(404).json({ message: "Company not found" });
+            }
+            logger.error("editContractingCompany error:", err);
+            return res.status(500).json({ message: "Server error", error: err.message });
+        }
+    },
+    getSiteAlerts: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const userId = req.user?.user_id;
+
+        try {
+            const parsedBody = siteAlertsBodySchema.safeParse(req.body ?? {});
+
+            if (!organizationId) {
+                logger.warn("Unauthorized: missing organization_id in token", {
+                    meta: { requestId, userId },
+                });
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            if (!parsedBody.success) {
+                logger.warn("Validation failed: building_name missing/invalid", {
+                    meta: { requestId, organizationId, userId, building_name: req.body?.building_name ?? null },
+                });
+                return res.status(400).json({ message: "Building name is required." });
+            }
+            const { building_name } = parsedBody.data;
+
+            logger.info("Fetching site alerts (building alerts)", {
+                meta: { requestId, organizationId, userId, building_name },
+            });
+
+            // Step 1: Get Site (building) by name within org
             const site = await prisma.sites.findFirst({
-                where: { name: building_name },
-                include: {
-                    Areas: true,
-                    organization: true,
+                where: {
+                    name: building_name,
+                    organization_id: organizationId, // ✅ enforce org ownership (previously missing)
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    organization: {
+                        select: { name: true },
+                    },
                 },
             });
 
             if (!site) {
+                logger.warn("Building(site) not found in org", {
+                    meta: { requestId, organizationId, building_name },
+                });
                 return res.status(404).json({ message: "Building not found." });
             }
 
             const siteId = site.id;
 
-            // Step 2: Get Alerts linked to this building via Alert_Sites
+            // Step 2: Get Alerts linked to this building via Alert_Sites (same as before)
             const alerts = await prisma.alerts.findMany({
                 where: {
+                    // keep same logic; just add org guard for safety
+                    organization_id: organizationId,
                     Alert_Sites: {
-                        some: {
-                            site_id: siteId
-                        }
-                    }
+                        some: { site_id: siteId },
+                    },
                 },
                 orderBy: { created_at: "desc" },
             });
 
+            // Keep EXACT filtering behavior (don’t change logic to SQL to avoid edge-case differences)
             const now = new Date();
-            const recentAlerts = alerts.filter(alert => alert.start_time && alert.start_time <= now);
-            const upcomingAlerts = alerts.filter(alert => alert.scheduled_time && alert.scheduled_time > now);
-            const scheduledAlerts = alerts.filter(alert => !alert.start_time && alert.scheduled_time);
+            const recentAlerts = alerts.filter((alert) => alert.start_time && alert.start_time <= now);
+            const upcomingAlerts = alerts.filter((alert) => alert.scheduled_time && alert.scheduled_time > now);
+            const scheduledAlerts = alerts.filter((alert) => !alert.start_time && alert.scheduled_time);
 
-            // Step 3: Emergency contacts: Users from the site
+            // Step 3: Emergency contacts: Users from the site (same)
             const emergencyContacts = await prisma.users.findMany({
                 where: {
+                    organization_id: organizationId, // ✅ safety guard
                     site_id: siteId,
-                    is_active: true
+                    is_active: true,
                 },
                 select: {
                     first_name: true,
                     last_name: true,
                     email: true,
-                    phone_number: true
-                }
+                    phone_number: true,
+                },
+                orderBy: [{ first_name: "asc" }, { last_name: "asc" }],
             });
 
-            return res.status(200).json({
+            const payload = {
                 building: building_name,
                 organization: site.organization?.name || null,
                 total_alerts: alerts.length,
                 recent_alerts: recentAlerts,
                 upcoming_alerts: upcomingAlerts,
                 scheduled_alerts: scheduledAlerts,
-                emergency_contacts: emergencyContacts
+                emergency_contacts: emergencyContacts,
+            };
+
+            logger.info("Site alerts fetched successfully", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    userId,
+                    siteId,
+                    building_name,
+                    total_alerts: alerts.length,
+                    recent: recentAlerts.length,
+                    upcoming: upcomingAlerts.length,
+                    scheduled: scheduledAlerts.length,
+                    emergency_contacts: emergencyContacts.length,
+                },
             });
 
+            return res.status(200).json(payload);
         } catch (error) {
-            console.error("getAllBuildingAlerts error:", error);
-            return res.status(500).json({ message: "Server error", error: error.message });
+            logger.error("getSiteAlerts error", {
+                error,
+                meta: { requestId, organizationId, userId },
+            });
+
+            return res.status(500).json({ message: "Server error" });
         }
     },
     getAllEmployees: async (req, res) => {
@@ -336,736 +1537,78 @@ const AdminController = {
                 employees
             });
         } catch (error) {
-            console.error("getAllEmployees error:", error);
+            logger.error("getAllEmployees error:", error);
             return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
-    getAllSites: async (req, res) => {
-        try {
-            const { organization_id } = req.query;
-
-            if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required." });
-            }
-
-            // Optional: Verify organization exists
-            const orgExists = await prisma.organizations.findUnique({
-                where: { organization_id },
-                select: { organization_id: true },
-            });
-            if (!orgExists) {
-                return res.status(404).json({ message: "Organization not found." });
-            }
-
-            // Fetch sites belonging to the organization
-            const sites = await prisma.sites.findMany({
-                where: { organization_id },
-                orderBy: { created_at: "desc" },
-            });
-
-            return res.status(200).json({ total_sites: sites.length, sites });
-        } catch (error) {
-            console.error("getAllSites error:", error);
-            return res.status(500).json({ message: "Server error", error: error.message });
-        }
-    },
-
-    getAllAreas: async (req, res) => {
-        try {
-            const { site_id } = req.query;
-
-            if (!site_id) {
-                return res.status(400).json({ message: "site_id is required." });
-            }
-
-            // Verify site exists
-            const siteExists = await prisma.sites.findUnique({
-                where: { id: site_id },
-                select: { id: true },
-            });
-            if (!siteExists) {
-                return res.status(404).json({ message: "Site not found." });
-            }
-
-            // Fetch areas belonging to the site
-            const areas = await prisma.areas.findMany({
-                where: { site_id },
-                orderBy: { created_at: "desc" },
-            });
-
-            return res.status(200).json({ total_areas: areas.length, areas });
-        } catch (error) {
-            console.error("getAllAreas error:", error);
-            return res.status(500).json({ message: "Server error", error: error.message });
-        }
-    },
-    getAllRoles: async (req, res) => {
-        try {
-
-            const roles = prisma.roles.findMany()
-            console.log(roles)
-            return res.json({ roles })
-        }
-        catch (err) {
-            return res.status(500).json({ message: "something went wrong", error: err })
-        }
-    },
-    addEmployee: async (req, res) => {
-        try {
-            const parsed = addEmployeeSchema.safeParse(req.body);
-            if (!parsed.success) {
-                const errors = parsed.error.errors.map(e => e.message);
-                return res.status(400).json({ message: "Validation failed", errors });
-            }
-
-            const { organization_id, site_id, area_id, first_name, last_name, email, phone_number, admin_access, is_employee, contracting_company_id } = parsed.data;
-
-            // Find role based on admin_access
-            const roleName = admin_access ? "admin" : "employee";
-            const role = await prisma.roles.findFirst({ where: { role_name: roleName } });
-
-            if (!role) {
-                return res.status(400).json({ message: `${roleName} role not found.` });
-            }
-
-            // Hash the password
-            // const saltRounds = 10;
-            // const password_hash = await bcrypt.hash(password, saltRounds);
-
-            // Create user
-            const user_type = is_employee ? UserTypes.employee : UserTypes.contractor
-
-            const newUser = await prisma.users.create({
-                data: {
-                    organization_id,
-                    site_id,
-                    area_id,
-                    email: email.toLowerCase(),
-                    password_hash: "1234",
-                    first_name,
-                    last_name,
-                    phone_number: phone_number || "",
-                    role_id: role.id,
-                    user_type,
-                },
-            });
-            if (user_type === UserTypes.employee) {
-                await prisma.employees.create({ data: { user_id: newUser.user_id } })
-            }
-            else {
-
-                if (!contracting_company_id) {
-                    return res.status(400).json({ message: "Contracting company is required." });
-                }
-
-
-                await prisma.contractors.create({
-                    data: {
-                        user_id: newUser.user_id,
-                        contracting_company_id,
-                    },
-                });
-
-            }
-
-            return res.status(200).json({
-                message: "Employee created successfully",
-                user: {
-                    id: newUser.user_id,
-                    name: `${newUser.first_name} ${newUser.last_name}`,
-                    email: newUser.email,
-                    role: role.role_name,
-                },
-            });
-            // send email for the user asking complete signup process
-        } catch (error) {
-            // Check for Prisma unique constraint error
-            if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-                return res.status(409).json({ message: "Email is already in use. Please use a different email address." });
-            }
-            console.error("addEmployee error:", error);
-            // Send a generic error without Prisma details
-            return res.status(500).json({ message: "Server error", });
-        }
-    },
-    // employeeEditDetails: async (req, res) => {
-    //     try {
-    //         const { user_id, organization_id } = req.query;
-
-    //         if (!user_id) {
-    //             return res.status(400).json({ message: "user_id is required." });
-    //         }
-    //         if (!organization_id) {
-    //             return res.status(400).json({ message: "organization_id is required." });
-    //         }
-
-    //         // Check if user exists and belongs to the specified organization (optional, but recommended)
-    //         const user = await prisma.users.findUnique({
-    //             where: { user_id },
-    //             include: {
-    //                 organization: true, // Include organization relation to validate
-    //                 site: true,
-    //                 area: true
-    //             },
-    //         });
-
-    //         if (!user) {
-    //             return res.status(404).json({ message: "User not found." });
-    //         }
-    //         if (user.organization_id !== organization_id) {
-    //             return res.status(400).json({
-    //                 message: "User does not belong to the specified organization.",
-    //             });
-    //         }
-
-    //         // Fetch all sites under the organization
-    //         const sites = await prisma.sites.findMany({
-    //             where: { organization_id },
-    //             orderBy: { created_at: "desc" },
-    //         });
-
-    //         return res.status(200).json({
-    //             user,
-    //             total_sites: sites.length,
-    //             sites,
-    //         });
-    //     } catch (error) {
-    //         console.error("employeeEditDetails error:", error);
-    //         return res.status(500).json({ message: "Server error", error: error.message });
-    //     }
-    // },
-    // updateEmployee: async (req, res) => {
-    //     try {
-    //         const {
-    //             user_id,
-    //             organization_id,
-    //             first_name,
-    //             last_name,
-    //             email,
-    //             phone,
-    //             site_id,
-    //             area_id,
-    //         } = req.body;
-
-    //         if (!organization_id || !user_id) {
-    //             return res.status(400).json({ message: "organization_id and user_id are required." });
-    //         }
-
-    //         // Verify the employee exists and belongs to the organization
-    //         const existingUser = await prisma.users.findUnique({
-    //             where: { user_id },
-    //             select: { organization_id: true },
-    //         });
-    //         if (!existingUser || existingUser.organization_id !== organization_id) {
-    //             return res.status(404).json({ message: "Employee not found in this organization." });
-    //         }
-
-    //         // Optional: Validate provided site and area IDs if present
-    //         if (site_id) {
-    //             const site = await prisma.sites.findUnique({ where: { id: site_id } });
-    //             if (!site || site.organization_id !== organization_id) {
-    //                 return res.status(400).json({ message: "Invalid site_id for this organization." });
-    //             }
-    //         }
-    //         if (area_id) {
-    //             const area = await prisma.areas.findUnique({ where: { id: area_id } });
-    //             if (!area) {
-    //                 return res.status(400).json({ message: "Invalid area_id." });
-    //             }
-    //             // Optionally check area belongs under the site/organization if needed
-    //         }
-
-    //         // Prepare update data object, only include fields if they are provided
-    //         const updateData = {};
-    //         if (first_name !== undefined) updateData.first_name = first_name;
-    //         if (last_name !== undefined) updateData.last_name = last_name;
-    //         if (email !== undefined) updateData.email = email;
-    //         if (phone !== undefined) updateData.phone_number = phone;
-    //         if (site_id !== undefined) updateData.site_id = site_id;
-    //         if (area_id !== undefined) updateData.area_id = area_id;
-
-    //         // For emergency contact fields, if you have them added on Users or separate model,
-    //         // update here accordingly. Assuming on Users with fields emergency_contact_name and emergency_contact_phone:
-
-
-    //         // Perform the update
-    //         const updatedUser = await prisma.users.update({
-    //             where: { user_id },
-    //             data: updateData,
-    //         });
-
-    //         return res.status(200).json({
-    //             message: "Employee updated successfully",
-    //             employee: updatedUser,
-    //         });
-    //     } catch (error) {
-    //         console.error("updateEmployee error:", error);
-    //         return res.status(500).json({ message: "Server error", error: error.message });
-    //     }
-    // },
     toggleEmployeeStatus: async (req, res) => {
         try {
-            const { user_id, organization_id, status } = req.body;
+            const organization_id = req.user?.organization_id;
 
-            // 1. Validate that all required query parameters are present
-            if (!user_id || !organization_id || !status) {
-                return res.status(400).json({ message: "user_id, organization_id, and status are required query parameters." });
+            if (!organization_id) {
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
-            // 2. Validate the 'status' parameter value
-            if (status !== 'activate' && status !== 'deactivate') {
+            const parsedParams = toggleEmployeeStatusParamsSchema.safeParse(req.params ?? {});
+            const parsedBody = toggleEmployeeStatusBodySchema.safeParse(req.body ?? {});
+
+            if (!parsedParams.success || (req.body?.status === undefined && !parsedBody.success)) {
+                return res.status(400).json({ message: "userId (path param) and status are required." });
+            }
+            const { userId } = parsedParams.success ? parsedParams.data : { userId: null };
+
+            if (!parsedBody.success) {
                 return res.status(400).json({ message: "Invalid status value. Must be 'activate' or 'deactivate'." });
             }
+            const { status } = parsedBody.data;
 
-            // 3. Find the user to ensure they exist
-            const user = await prisma.users.findUnique({
-                where: { user_id },
-                select: { user_id: true, is_active: true, organization_id: true },
+            const user = await prisma.users.findFirst({
+                where: { user_id: userId, organization_id },
+                select: { user_id: true, is_active: true },
             });
 
             if (!user) {
                 return res.status(404).json({ message: "User not found." });
             }
 
-            // 4. SECURITY CHECK: Ensure the found user belongs to the specified organization
-            if (user.organization_id !== organization_id) {
-                return res.status(403).json({ message: "Forbidden: User does not belong to the specified organization." });
-            }
-
-            // 5. Check if the user is already in the desired state to avoid redundant updates
-            const newActiveState = status === 'activate'; // Converts 'activate' to true, 'deactivate' to false
+            const newActiveState = status === 'activate';
 
             if (user.is_active === newActiveState) {
                 return res.status(409).json({ message: `User is already ${status}d.` });
             }
 
-            // 6. Update the user's is_active status
             await prisma.users.update({
-                where: { user_id },
+                where: { user_id: userId },
                 data: { is_active: newActiveState },
             });
 
-            // 7. Return a dynamic success message
             return res.status(200).json({ message: `User successfully ${status}d.` });
 
         } catch (error) {
-            console.error("toggleEmployeeStatus error:", error);
-            // Assuming you have a logger utility available in this scope
-            // logger.error("toggleEmployeeStatus error:", error);
+            logger.error("toggleEmployeeStatus error:", error);
             return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
-
-    // alerts
-    getAlerts: async (req, res) => {
-        try {
-            const alerts = await prisma.emergency_Types.findMany();
-            console.log(alerts)
-            return res.status(200).json({ alerts });
-        } catch (error) {
-            console.error("getAlerts error:", error);
-            return res.status(500).json({ message: "Server error", error: error.message });
-        }
-    },
-
-
-    createAlert: async (req, res) => {
-
-        try {
-            const createAlertSchema = z.object({
-                user_id: z.string({ required_error: "User id is required" }).uuid(),
-                organization_id: z.string({ required_error: "Organization id is required" }).uuid(),
-                emergency_type_id: z.string({ required_error: "Emergency type id is required" }).uuid(),
-                message: z.string({ required_error: "Message is required" }),
-                start_time: z.string({ required_error: "Start time is required" }),
-                end_time: z.string({ required_error: "End time is required" })
-            });
-
-            // Validate body
-            const parsed = createAlertSchema.parse(req.body);
-
-            // Validate the time order using moment.js
-            const startTime = moment(parsed.start_time, moment.ISO_8601, true);
-            const endTime = moment(parsed.end_time, moment.ISO_8601, true);
-
-            if (!startTime.isValid() || !endTime.isValid()) {
-                return res.status(400).json({ error: "Invalid start or end time format" });
-            }
-            if (startTime.isAfter(endTime)) {
-                return res.status(400).json({ error: "Start time cannot be after end time." });
-            }
-
-            // Save to backend (example using Prisma ORM)
-            const alert = await prisma.alerts.create({
-                data: {
-                    user_id: parsed.user_id,
-                    organization_id: parsed.organization_id,
-                    emergency_type_id: parsed.emergency_type_id,
-                    message: parsed.message,
-                    start_time: startTime.toDate(),
-                    end_time: endTime.toDate(),
-                    status: "active"
-                }
-            });
-
-
-            const usersoforganization = await prisma.users.findMany({
-                where: {
-                    organization_id: parsed.organization_id
-                },
-                select: {
-                    fcm_token: true,
-                    user_id: true
-                }
-            })
-
-            console.log(usersoforganization)
-            const alert_name = await prisma.emergency_Types.findUnique({ where: { id: parsed.emergency_type_id }, select: { name: true } })
-
-            console.log("------------------------------------------------------")
-            if (usersoforganization.length > 0) {
-                usersoforganization.forEach(i => {
-                    const token = i.fcm_token;
-                    if (token) {
-                        const individualMessage = {
-                            notification: { title: alert_name.name, body: parsed.message },
-                            token: token
-                        };
-                        (async () => {
-                            try {
-                                console.log("i: ", i)
-                                await admin.messaging().send(individualMessage);
-
-                                await prisma.notification_Recipients.create({
-                                    data: {
-                                        alert_id: alert.id,
-                                        user_id: i.user_id,
-                                    }
-                                })
-                            }
-                            catch (err) {
-                                console.log(err)
-                                if (err.code === 'messaging/registration-token-not-registered') {
-                                    // Remove / invalidate this token in your database
-                                    await prisma.users.update({
-                                        where: { user_id: i.user_id },
-                                        data: { fcm_token: null }
-                                    });
-                                    console.warn(`Removed invalid FCM token for user ${i.user_id}`);
-                                }
-                            }
-                        })()
-                    }
-                });
-
-
-            }
-        } catch (err) {
-            if (err instanceof z.ZodError) {
-                // Return validation errors
-                return res.status(400).json({ error: err.errors });
-            }
-            // Other errors
-            console.error(err);
-            return res.status(500).json({ error: "Server Error" });
-        }
-    }
-
-    ,
-    // report notifications
-
-    reportNotification: async (req, res) => {
-        try {
-            const { user_id } = req.body;
-            if (!user_id) {
-                return res.status(400).json({
-                    message: "user_id are required"
-                });
-            }
-            const lastRecepient = await prisma.notification_Recipients.findFirst({
-                where: {
-                    user_id: user_id
-                },
-                orderBy: {
-                    created_at: "desc"
-                }
-            })
-            const reporteduser = await prisma.users.findUnique({
-                where: {
-                    user_id: user_id
-                }
-            })
-            console.log("reported user :", `${reporteduser.first_name} ${reporteduser.last_name}`)
-            if (!lastRecepient) {
-                return res.status(400).json({ message: "Notification not found" });
-            }
-
-            if (lastRecepient.delivery_status === DeliveryStatus.DELIVERED) {
-                return res.status(400).json({ message: "Notification already reported" });
-            }
-
-            await prisma.notification_Recipients.update({
-                where: {
-                    id: lastRecepient.id
-                },
-                data: {
-                    delivery_status: DeliveryStatus.DELIVERED
-                }
-            })
-            return res.status(200).json({ message: "Notification reported successfully" });
-        } catch (error) {
-            console.error("reportNotification error:", error);
-            return res.status(500).json({ message: "Server error", error: error.message });
-        }
-    },
-
-
-    // importEmployees: async (req, res) => {
-    //     try {
-
-    //         const users_to_be_added = req.body.users
-
-    //         if (!users_to_be_added) {
-    //             return res.status(400).json({ "message": "Users is required" })
-    //         }
-
-
-    //         if (!Array.isArray(users_to_be_added) || users_to_be_added.length === 0) {
-    //             return res.status(400).json({ "message": "Users is not in correct format" })
-    //         }
-
-    //         const errors = []
-
-    //         try {
-    //             users_to_be_added.forEach((i, idx) => {
-
-    //                 await prisma.users.create()
-    //             })
-    //         }
-    //         catch (err) {
-    //             errors.push(err)
-    //         }
-    //     }
-    //     catch (err) {
-    //         console.log(err)
-    //     }
-    // }
-
-
-
-
-
-
-    // employee
-    // get all contracting companies
-    getAllContractingCompanies: async (req, res) => {
-
-        try {
-
-
-            const { organization_id } = req.query
-
-
-            const contracting_companies = await prisma.contracting_Companies.findMany({
-                where: {
-                    organization_id: organization_id
-                }
-            })
-            return res.json({ contracting_companies })
-        }
-
-        catch (err) {
-            console.log(err
-
-
-
-
-
-
-
-
-
-
-            )
-            return res.status(500).json({ message: "Something went wrong", error: err })
-        }
-    },
-
-    // create new contracting company
-    createContractingCompany: async (req, res) => {
-        try {
-            const createContractingCompanySchema = z.object({
-                organization_id: z.string({ required_error: "Organization id is required" }),
-                name: z.string({ required_error: "Company name is required" }),
-                address: z.string({ required_error: "Company address is required" }),
-                contact_email: z
-                    .string({ required_error: "Email is required" })
-                    .email({ message: "Email is in invalid format" }),
-                phone: z.string({ required_error: "Phone number is required" }),
-            });
-
-            const parsed = createContractingCompanySchema.safeParse(req.body);
-            if (!parsed.success) {
-                return res.status(400).json({
-                    message: "Validation failed",
-                    errors: parsed.error.flatten(),
-                });
-            }
-
-            const { organization_id, name, contact_email, phone, address } = parsed.data;
-
-            // --- check name ---
-            const existingName = await prisma.contracting_Companies.findFirst({
-                where: { organization_id, name },
-            });
-            if (existingName) {
-                return res.status(409).json({
-                    message: "A company with this name already exists.",
-                });
-            }
-
-            // --- check email ---
-            const existingEmail = await prisma.contracting_Companies.findFirst({
-                where: { organization_id, contact_email },
-            });
-            if (existingEmail) {
-                return res.status(409).json({
-                    message: "A company with this email already exists.",
-                });
-            }
-
-            // --- check phone ---
-            const existingPhone = await prisma.contracting_Companies.findFirst({
-                where: { organization_id, phone },
-            });
-            if (existingPhone) {
-                return res.status(409).json({
-                    message: "A company with this phone number already exists.",
-                });
-            }
-
-            // --- create new company ---
-            const contracting_company = await prisma.contracting_Companies.create({
-                data: { organization_id, name, contact_email, phone, address },
-            });
-
-            return res.status(200).json({
-                message: "Contracting company created successfully",
-                contracting_company,
-            });
-        } catch (err) {
-            console.error(err);
-            return res.status(500).json({
-                message: "Something went wrong",
-                error: err
-            });
-        }
-    },
-
-    // employee page overview
-
-    // get all contracting companies of an organization
-    getContractingCompanies: async (req, res) => {
-        try {
-            const { organization_id } = req.query;
-
-            if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
-            }
-
-            const contracting_companies = await prisma.contracting_Companies.findMany({
-                where: { organization_id },
-                select: {
-                    id: true,
-                    name: true,
-                    contact_email: true,
-                    phone: true,
-                    address: true,
-                    organization_id: true,
-                    _count: {
-                        select: {
-                            contractors: {
-                                where: {
-                                    user: {
-                                        is_active: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-
-            // Rename _count.contractors ➝ active_user_count for clarity
-            const result = contracting_companies.map(company => ({
-                ...company,
-                active_user_count: company._count.contractors,
-                _count: undefined, // remove raw _count object
-            }));
-
-            return res.json({ contracting_companies: result });
-        } catch (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Something went wrong", error: err.message });
-        }
-    },
-    // edit contracting company
-    editContractingCompany: async (req, res) => {
-        try {
-            const { company_id, organization_id, name, contact_email, phone, address } = req.body;
-            //   
-
-            if (!company_id) {
-                return res.status(400).json({ message: 'company_id is required' });
-            }
-
-            const data = {};
-            if (organization_id) data.organization_id = organization_id.trim();
-            if (name) data.name = name.trim();
-            if (contact_email) data.contact_email = contact_email.trim().toLowerCase();
-            if (phone) data.phone = phone.trim();
-            if (address) data.address = address.trim();
-
-            // if (Object.keys(data).length === 0) {
-            //     return res.status(400).json({ message: 'Update is null' });
-            // }
-
-            const updated = await prisma.contracting_Companies.update({
-                where: { id: company_id },
-                data,
-                select: {
-                    id: true,
-                    organization_id: true,
-                    name: true,
-                    contact_email: true,
-                    phone: true,
-                    address: true,
-                },
-            });
-
-            return res.status(200).json({ message: 'Company updated', company: updated });
-        } catch (err) {
-            if (err?.code === 'P2025') {
-                return res.status(404).json({ message: 'Company not found' });
-            }
-            console.error(err);
-            return res.status(500).json({ message: 'Server error', error: err.message });
-        }
-    },
-    // get active users of the contracting company
     getContractingActiveEmployees: async (req, res) => {
         try {
-            const { organization_id, company_id } = req.query;
+            const organization_id = req.user?.organization_id;
+            const parsedParams = companyIdParamSchema.safeParse(req.params ?? {});
 
-            if (!organization_id || !company_id) {
-                return res.status(400).json({ message: "organization_id and company_id are required" });
+            if (!organization_id) {
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
+
+            if (!parsedParams.success) {
+                return res.status(400).json({ message: "companyId is required" });
+            }
+            const { companyId } = parsedParams.data;
 
             // Check if the contracting company belongs to the organization
             const company = await prisma.contracting_Companies.findFirst({
                 where: {
-
-                    id: company_id,
+                    id: companyId,
                     organization_id,
                 },
             });
@@ -1077,7 +1620,7 @@ const AdminController = {
             // Count active contractor users
             const active_user_count = await prisma.contractors.count({
                 where: {
-                    contracting_company_id: company_id,
+                    contracting_company_id: companyId,
                     user: {
                         is_active: true,
                     },
@@ -1086,22 +1629,17 @@ const AdminController = {
 
             return res.json({ active_user_count });
         } catch (err) {
-            console.error(err);
+            logger.error("getContractingActiveEmployees error:", err);
             return res.status(500).json({ message: "Something went wrong", error: err.message });
         }
     },
-
-
-
-
-
-    // organization overview
     getOrganizationOverview: async (req, res) => {
         try {
-            const { organization_id } = req.query;
+            const organization_id = req.user?.organization_id;
 
             if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
             const [
@@ -1148,54 +1686,74 @@ const AdminController = {
                 pending_verifications,
             });
         } catch (err) {
-            console.error("getOrganizationOverview error:", err);
+            logger.error("getOrganizationOverview error:", err);
             return res.status(500).json({
                 message: "Something went wrong",
                 error: err.message,
             });
         }
     },
-
-
     getFilterValues: async (req, res) => {
         try {
+            const organization_id = req.user?.organization_id;
 
-            const org_id = req.query.organization_id;
-            const sites = await prisma.sites.findMany({ where: { organization_id: org_id } })
-            const roles = await prisma.roles.findMany()
+            if (!organization_id) {
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
+            }
 
-            return res.json({ sites, roles })
+            const sites = await prisma.sites.findMany({ where: { organization_id } });
+            const roles = await prisma.roles.findMany();
+
+            return res.json({ sites, roles });
         }
         catch (err) {
-            console.log("Error occurred")
-            return res.status(500).json({ message: "Something went wrong", error: err?.message })
+            logger.error("getFilterValues error:", err);
+            return res.status(500).json({ message: "Something went wrong", error: err?.message });
         }
     },
     employeeDetails: async (req, res) => {
-
-
         try {
-            // full name✅, organization_name✅, email✅ , phone ✅, is_phone_verfied ✅, role✅, site ✅ , area  ✅, alert history ✅
-            // alert_history [array] : name , date , time , response_elasped_time, comment , status
-            const { user_id } = req.query
+            const organization_id = req.user?.organization_id;
+            const { userId } = req.params;
 
-
-            const check_user = await prisma.users.findUnique({ where: { user_id: user_id } })
-
-
-
-            if (!check_user) {
-                return res.status(401).json({ message: "User doesnt exist" })
+            if (!organization_id) {
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
-            const employee_details = await prisma.users.findUnique({ where: { user_id: user_id }, include: { organization: { select: { name: true } }, role: { select: { role_name: true } }, site: { select: { name: true } }, area: { select: { name: true } } } })
-            const alert_history = await prisma.notification_Recipients.findMany({ where: { user_id: user_id }, include: { alert: { include: { emergency_type: true } } } })
+            if (!userId) {
+                return res.status(400).json({ message: "userId is required" });
+            }
 
-            // if (alert_history) {
+            const check_user = await prisma.users.findFirst({
+                where: { user_id: userId, organization_id },
+                select: { user_id: true },
+            });
+
+            if (!check_user) {
+                return res.status(404).json({ message: "User doesnt exist" });
+            }
+
+            const employee_details = await prisma.users.findUnique({
+                where: { user_id: userId },
+                include: {
+                    organization: { select: { name: true } },
+                    role: { select: { role_name: true } },
+                    site: { select: { name: true } },
+                    area: { select: { name: true } },
+                },
+            });
+
+            const alert_history = await prisma.notification_Recipients.findMany({
+                where: { user_id: userId },
+                include: { alert: { include: { emergency_type: true } } },
+            });
+
             const alert_data = alert_history.map(i => {
-                const delivered_at = moment(i.delivered_at)
-                const response_updated_at = alert_history.response_updated_at
-                    ? moment(recipient.response_updated_at)
+                const delivered_at = moment(i.delivered_at);
+                const response_updated_at = i.response_updated_at
+                    ? moment(i.response_updated_at)
                     : null;
 
                 let elapsed = null;
@@ -1203,28 +1761,23 @@ const AdminController = {
                     elapsed = response_updated_at.diff(delivered_at, 'seconds');
                 }
                 return {
-
                     name: i.alert.emergency_type.name,
                     date: delivered_at.format('YYYY-MM-DD'),
                     time: delivered_at.format('HH:mm:ss'),
                     response_elapsed_time: elapsed,
                     message: i.alert.message,
+                };
+            });
 
-
-                }
-            })
-            return res.json({ alert_history: alert_data, employee_details })
-        }
-        // }
-
-
-        catch (err) {
-            console.log(err)
-            return res.json({ message: err.message })
+            return res.json({ alert_history: alert_data, employee_details });
+        } catch (err) {
+            logger.error("employeeDetails error:", err);
+            return res.status(500).json({ message: err.message });
         }
     },
     getEmployees: async (req, res) => {
         try {
+            const organization_id = req.user?.organization_id;
             const {
                 search = '',
                 status = '',
@@ -1232,13 +1785,27 @@ const AdminController = {
                 sites = '',
                 page = 1,
                 limit = 20,
-                organization_id
             } = req.query;
+
             if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
-            const skip = (parseInt(page) - 1) * parseInt(limit);
-            const take = parseInt(limit);
+            const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+            const pageSize = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+            const skip = (pageNumber - 1) * pageSize;
+            const take = pageSize;
+            const normalizedSearch = String(search || "").trim().slice(0, 100);
+            const roleIds = String(roles || "")
+                .split(",")
+                .map((value) => value.trim())
+                .filter(Boolean)
+                .slice(0, 50);
+            const siteIds = String(sites || "")
+                .split(",")
+                .map((value) => value.trim())
+                .filter(Boolean)
+                .slice(0, 50);
 
             const where = {
                 organization_id,
@@ -1248,23 +1815,23 @@ const AdminController = {
                     : {}),
 
                 // Optional role filter
-                ...(roles
-                    ? { role_id: { in: roles.split(',') } }
+                ...(roleIds.length > 0
+                    ? { role_id: { in: roleIds } }
                     : {}),
 
                 // Optional site filter
-                ...(sites
-                    ? { site_id: { in: sites.split(',') } }
+                ...(siteIds.length > 0
+                    ? { site_id: { in: siteIds } }
                     : {}),
 
                 // Optional search filter (name, email, phone)
-                ...(search
+                ...(normalizedSearch
                     ? {
                         OR: [
-                            { first_name: { contains: search, mode: 'insensitive' } },
-                            { last_name: { contains: search, mode: 'insensitive' } },
-                            { email: { contains: search, mode: 'insensitive' } },
-                            { phone_number: { contains: search, mode: 'insensitive' } },
+                            { first_name: { contains: normalizedSearch, mode: 'insensitive' } },
+                            { last_name: { contains: normalizedSearch, mode: 'insensitive' } },
+                            { email: { contains: normalizedSearch, mode: 'insensitive' } },
+                            { phone_number: { contains: normalizedSearch, mode: 'insensitive' } },
                         ],
                     }
                     : {}),
@@ -1340,7 +1907,7 @@ const AdminController = {
                 employees: results,
             });
         } catch (err) {
-            console.error(err);
+            logger.error("getEmployees error:", err);
             return res.status(500).json({
                 message: 'Something went wrong',
                 error: err.message,
@@ -1349,9 +1916,9 @@ const AdminController = {
     },
     editEmployee: async (req, res) => {
         try {
+            const organization_id = req.user?.organization_id;
+            const { userId } = req.params;
             const {
-                user_id,
-                organization_id,
                 first_name,
                 last_name,
                 email,
@@ -1363,12 +1930,13 @@ const AdminController = {
                 company_id        // required if user_type is CONTRACTOR
             } = req.body;
 
-            console.log("Incoming body:", req.body);
+            if (!organization_id) {
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
+            }
+            if (!userId) return res.status(400).json({ message: "userId is required" });
 
-            if (!user_id) return res.status(400).json({ message: "user id is required" });
-            if (!organization_id) return res.status(400).json({ message: "organization id is required" });
-
-            const user = await prisma.users.findUnique({ where: { user_id } });
+            const user = await prisma.users.findFirst({ where: { user_id: userId, organization_id } });
             if (!user) return res.status(404).json({ message: "User not found" });
 
             // Check if new email is already in use
@@ -1393,20 +1961,18 @@ const AdminController = {
             if (site_id) updates.site_id = site_id;
             if (area_id) updates.area_id = area_id;
             if (user_type) updates.user_type = user_type;
-            console.log(updates, "updates")
-
 
             // Handle user_type change (EMPLOYEE <-> CONTRACTOR)
             if (user_type && user.user_type !== user_type) {
                 if (user_type === "employee") {
-                    await prisma.contractors.deleteMany({ where: { user_id } });
-                    await prisma.employees.create({ data: { user_id } });
+                    await prisma.contractors.deleteMany({ where: { user_id: userId } });
+                    await prisma.employees.create({ data: { user_id: userId } });
                 } else if (user_type === "contractor") {
                     if (!company_id) return res.status(400).json({ message: "company_id is required for contractors" });
-                    await prisma.employees.deleteMany({ where: { user_id } });
+                    await prisma.employees.deleteMany({ where: { user_id: userId } });
                     await prisma.contractors.create({
                         data: {
-                            user_id,
+                            user_id: userId,
                             contracting_company_id: company_id,
                         },
                     });
@@ -1416,7 +1982,7 @@ const AdminController = {
             }
 
             const updatedUser = await prisma.users.update({
-                where: { user_id },
+                where: { user_id: userId },
                 data: updates,
                 select: {
                     user_id: true,
@@ -1441,72 +2007,46 @@ const AdminController = {
                 },
             });
         } catch (error) {
-            console.error("editEmployee error:", error);
-            return res.status(500).json({ message: "Server error" });
-        }
-    }
-    ,
-
-
-    deleteContractingCompany: async (req, res) => {
-        try {
-            const { organization_id, company_id } = req.body;
-
-            if (!company_id) {
-                return res.status(400).json({ message: "contracting_company_id is required" });
-            }
-            const contracting_company = await prisma.contracting_Companies.findUnique({ where: { id: company_id, organization_id } });
-            console.log(contracting_company)
-            if (!contracting_company) {
-                return res.status(400).json({ message: "Contracting company not found" });
-            }
-
-            await prisma.contracting_Companies.delete({ where: { id: company_id } });
-
-            return res.status(200).json({ message: "Contracting company deleted successfully" });
-        } catch (error) {
-            console.error("deleteContractingCompany error:", error);
+            logger.error("editEmployee error:", error);
             return res.status(500).json({ message: "Server error" });
         }
     },
-
-    // deactivate employee
-    deactivateEmployee: async (req, res) => {
+    deleteContractingCompany: async (req, res) => {
         try {
-            const { user_id } = req.body;
-
-            if (!user_id) {
-                return res.status(400).json({ message: "user_id is required" });
-            }
-
-            // Check if user exists
-            const user = await prisma.users.findUnique({ where: { user_id } });
-
-            if (!user) {
-                return res.status(404).json({ message: "User not found" });
-            }
-
-            // Deactivate user
-            await prisma.users.update({
-                where: { user_id },
-                data: { is_active: false },
-            });
-
-            return res.status(200).json({ message: "User deactivated successfully" });
-        } catch (error) {
-            console.error("deactivateEmployee error:", error);
-            return res.status(500).json({ message: "Server error" });
-        }
-    }
-
-
-    // sites
-    , getSitesCards: async (req, res) => {
-        try {
-            const { organization_id } = req.query;
+            const organization_id = req.user?.organization_id;
+            const { companyId } = req.params;
 
             if (!organization_id) {
-                return res.status(400).json({ error: 'organization_id is required' });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
+            }
+
+            if (!companyId) {
+                return res.status(400).json({ message: "companyId is required" });
+            }
+
+            const contracting_company = await prisma.contracting_Companies.findFirst({
+                where: { id: companyId, organization_id },
+            });
+
+            if (!contracting_company) {
+                return res.status(404).json({ message: "Contracting company not found" });
+            }
+
+            await prisma.contracting_Companies.delete({ where: { id: companyId } });
+
+            return res.status(200).json({ message: "Contracting company deleted successfully" });
+        } catch (error) {
+            logger.error("deleteContractingCompany error:", error);
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
+    getSitesCards: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id;
+
+            if (!organization_id) {
+                return res.status(401).json({ error: 'Unauthorized' });
             }
 
             // Run counts in parallel for speed
@@ -1537,171 +2077,16 @@ const AdminController = {
                 current_occupancy,
             });
         } catch (error) {
-            console.error('getSitesCards error:', error);
+            logger.error('getSitesCards error:', error);
             return res.status(500).json({
                 error: 'Internal server error',
-                details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
             });
         }
     },
-
-    // searchSites: async (req, res) => {
-    //     try {
-    //         const {
-    //             organization_id,
-    //             name,
-    //             status,
-    //             address,
-    //             page = '1',
-    //             page_size = '10',
-    //             sort_by = 'name',
-    //             sort_order = 'asc',
-    //         } = req.query;
-
-    //         const pageNum = Math.max(parseInt(page, 10) || 1, 1);
-    //         const pageSizeNum = Math.min(Math.max(parseInt(page_size, 10) || 10, 1), 100);
-    //         const skip = (pageNum - 1) * pageSizeNum;
-    //         const take = pageSizeNum;
-
-    //         // ---- Build WHERE ----
-    //         const where = {};
-
-    //         if (organization_id) {
-    //             where.organization_id = organization_id;
-    //         }
-
-    //         if (name && name.trim()) {
-    //             where.name = {
-    //                 startsWith: name.trim(),
-    //                 mode: 'insensitive',
-    //             };
-    //         }
-
-    //         if (address && address.trim()) {
-    //             const needle = address.trim();
-    //             where.OR = [
-    //                 { address_line_1: { contains: needle, mode: 'insensitive' } },
-    //                 { address_line_2: { contains: needle, mode: 'insensitive' } },
-    //                 { city: { contains: needle, mode: 'insensitive' } },
-    //                 { state: { contains: needle, mode: 'insensitive' } },
-    //                 { zip_code: { contains: needle, mode: 'insensitive' } },
-    //             ];
-    //         }
-
-    //         // Status filter: interpret as "site is active if it has at least one active user"
-    //         if (status) {
-    //             const normalized = String(status).toLowerCase();
-    //             if (normalized === 'active') {
-    //                 where.Users = { some: { is_active: true } };
-    //             } else if (normalized === 'inactive') {
-    //                 where.Users = { none: { is_active: true } };
-    //             } else {
-    //                 return res.status(400).json({ error: "Invalid status. Use 'active' or 'inactive'." });
-    //             }
-    //         }
-
-    //         // ---- Sorting ----
-    //         const sortFields = new Set(['name', 'created_at', 'city', 'state']);
-    //         const orderBy = sortFields.has(String(sort_by)) ? { [sort_by]: sort_order === 'desc' ? 'desc' : 'asc' }
-    //             : { name: 'asc' };
-
-    //         // ---- Total for pagination ----
-    //         const [total] = await Promise.all([
-    //             prisma.sites.count({ where }),
-    //         ]);
-
-    //         if (total === 0) {
-    //             return res.json({
-    //                 data: [],
-    //                 meta: { page: pageNum, page_size: pageSizeNum, total: 0 },
-    //             });
-    //         }
-
-    //         // ---- Fetch page of sites + raw counts (_count gives totals) ----
-    //         const sites = await prisma.sites.findMany({
-    //             where,
-    //             orderBy,
-    //             skip,
-    //             take,
-    //             select: {
-    //                 id: true,
-    //                 organization_id: true,
-    //                 name: true,
-    //                 address_line_1: true,
-    //                 address_line_2: true,
-    //                 city: true,
-    //                 state: true,
-    //                 zip_code: true,
-    //                 contact_name: true,
-    //                 contact_email: true,
-    //                 contact_phone: true,
-    //                 created_at: true,
-    //                 _count: {
-    //                     select: {
-    //                         Users: true, // total users (any status)
-    //                         Areas: true, // total areas
-    //                     },
-    //                 },
-    //             },
-    //         });
-
-    //         const siteIds = sites.map(s => s.id);
-
-    //         // ---- Active users per site (filtered count) via groupBy to avoid N+1 ----
-    //         // If there are no sites in the page, skip.
-    //         let activeCountsMap = {};
-    //         if (siteIds.length > 0) {
-    //             const activeCounts = await prisma.users.groupBy({
-    //                 by: ['site_id'],
-    //                 where: {
-    //                     site_id: { in: siteIds },
-    //                     is_active: true,
-    //                 },
-    //                 _count: { _all: true },
-    //             });
-    //             activeCountsMap = activeCounts.reduce((acc, row) => {
-    //                 acc[row.site_id] = row._count._all;
-    //                 return acc;
-    //             }, {});
-    //         }
-
-    //         // ---- Shape the response ----
-    //         const data = sites.map(s => ({
-    //             id: s.id,
-    //             name: s.name,
-    //             address_line_1: s.address_line_1,
-    //             address_line_2: s.address_line_2,
-    //             city: s.city,
-    //             state: s.state,
-    //             zip_code: s.zip_code,
-    //             contact_name: s.contact_name,
-    //             contact_email: s.contact_email,
-    //             contact_phone: s.contact_phone,
-    //             counts: {
-    //                 total_users: s._count.Users,
-    //                 active_users: activeCountsMap[s.id] || 0,
-    //                 total_areas: s._count.Areas,
-    //             },
-    //         }));
-
-    //         return res.json({
-    //             data,
-    //             meta: { page: pageNum, page_size: pageSizeNum, total },
-    //         });
-    //     } catch (error) {
-    //         console.error('searchSites error:', error);
-    //         return res.status(500).json({
-    //             error: 'Internal server error',
-    //             details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
-    //         });
-    //     }
-    // },
-
-    // create site
     searchSites: async (req, res) => {
         try {
+            const organization_id = req.user?.organization_id;
             const {
-                organization_id,
                 name = '',
                 status,              // allow default 'all'
                 page = '1',
@@ -1709,7 +2094,7 @@ const AdminController = {
             } = req.query;
 
             if (!organization_id) {
-                return res.status(400).json({ error: 'organization_id is required' });
+                return res.status(401).json({ error: 'Unauthorized' });
             }
 
             const normalizedStatus = String(status).toLowerCase();
@@ -1787,53 +2172,26 @@ const AdminController = {
                 meta: { page: pageNum, page_size: pageSizeNum, total },
             });
         } catch (error) {
-            console.error('searchSites error:', error);
+            logger.error('searchSites error:', error);
             return res.status(500).json({
                 error: 'Internal server error',
-                details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
             });
         }
-    }
-    ,
-
+    },
     createSite: async (req, res) => {
         try {
+            const organization_id = req.user?.organization_id;
 
-            console.log("Create called")
-            const phoneRegex = /^\+?[1-9]\d{7,14}$/;
-            const CreateSiteSchema = z.object({
-                organization_id: z.string().uuid("organization_id must be a valid UUID"),
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
+            }
 
-                // Site fields (match your controller naming)
-                site_name: z.string().trim().min(1, "site_name is required").max(255),
-                address: z.string().trim().min(1, "address is required"),
-                address_line_2: z
-                    .string()
-                    .trim()
-                    .optional()
-                    .nullable()
-                    .transform((v) => (v ?? undefined)),
-                city: z.string().trim().min(1, "city is required"),
-                state: z.string().trim().min(1, "state is required"),
-                zipcode: z.string().trim().min(3).max(12),
-
-                // Contact fields
-                site_contact_name: z.string().trim().min(1, "site_contact_name is required"),
-                contact_email: z.string().email().transform((s) => s.toLowerCase()),
-                contact_phone: z
-                    .string()
-                    .trim()
-                    .regex(phoneRegex, "contact_phone must be a valid phone number")
-                    .optional()
-                    .nullable()
-                    .transform((v) => (v ?? undefined)),
-            });
-            const parsed = CreateSiteSchema.parse(req.body);
+            const parsed = createSiteSchema.parse(req.body);
 
             // ✅ create site
             const site = await prisma.sites.create({
                 data: {
-                    organization_id: parsed.organization_id,
+                    organization_id,
                     name: parsed.site_name,
                     address_line_1: parsed.address,
                     address_line_2: parsed.address_line_2 ?? null,
@@ -1868,30 +2226,150 @@ const AdminController = {
             if (error.name === 'ZodError') {
                 return res.status(400).json({ error: error.errors });
             }
-            console.error('createSite error:', error);
+            logger.error('createSite error:', error);
             return res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+    updateSite: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id;
+            const siteId = siteIdParamSchema.parse(req.params.id);
+
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
+            }
+
+            const parsed = updateSiteSchema.parse(req.body);
+
+            // 1) Ensure site exists and belongs to org
+            const existing = await prisma.sites.findFirst({
+                where: { id: siteId, organization_id },
+                include: { Areas: true },
+            });
+
+            if (!existing) {
+                return res.status(404).json({ error: "Site not found" });
+            }
+
+            // 2) Build update payload (only provided fields)
+            const data = {
+                ...(parsed.site_name !== undefined ? { name: parsed.site_name } : {}),
+                ...(parsed.address !== undefined ? { address_line_1: parsed.address } : {}),
+                ...(parsed.address_line_2 !== undefined ? { address_line_2: parsed.address_line_2 ?? null } : {}),
+                ...(parsed.city !== undefined ? { city: parsed.city } : {}),
+                ...(parsed.state !== undefined ? { state: parsed.state } : {}),
+                ...(parsed.zipcode !== undefined ? { zip_code: parsed.zipcode } : {}),
+                ...(parsed.site_contact_name !== undefined ? { contact_name: parsed.site_contact_name } : {}),
+                ...(parsed.contact_email !== undefined ? { contact_email: parsed.contact_email } : {}),
+                ...(parsed.contact_phone !== undefined ? { contact_phone: parsed.contact_phone ?? null } : {}),
+                ...(parsed.is_active !== undefined ? { is_active: parsed.is_active } : {}),
+            };
+
+            // 3) Transaction: update site + (optionally) replace areas
+            const updated = await prisma.$transaction(async (tx) => {
+                await tx.sites.update({
+                    where: { id: siteId },
+                    data,
+                });
+
+                if (parsed.areas) {
+                    // Replace all existing areas
+                    await tx.areas.deleteMany({ where: { site_id: siteId } });
+
+                    if (parsed.areas.length > 0) {
+                        await tx.areas.createMany({
+                            data: parsed.areas.map((a) => ({
+                                site_id: siteId,
+                                name: a.name,
+                                description: a.description ?? null,
+                            })),
+                        });
+                    }
+                }
+
+                // Return fresh site with areas
+                return tx.sites.findUnique({
+                    where: { id: siteId },
+                    include: { Areas: true },
+                });
+            });
+
+            return res.status(200).json(updated);
+        } catch (error) {
+            if (error?.name === "ZodError") {
+                return res.status(400).json({ error: error.errors });
+            }
+            logger.error("updateSite error:", error);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    },
+    deleteSite: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id;
+            const siteId = siteIdParamSchema.parse(req.params.id);
+
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
+            }
+
+            // 1) Ensure exists and belongs to org
+            const existing = await prisma.sites.findFirst({
+                where: { id: siteId, organization_id },
+                select: { id: true },
+            });
+
+            if (!existing) {
+                return res.status(404).json({ error: "Site not found" });
+            }
+
+            // 2) Delete in a transaction to avoid FK issues
+            // NOTE: Areas has required relation to site, so delete areas first unless you set onDelete: Cascade.
+            await prisma.$transaction(async (tx) => {
+                // Remove dependent children first (adjust based on your DB constraints)
+                await tx.areas.deleteMany({ where: { site_id: siteId } });
+
+                // If Users references site_id, you must decide:
+                // A) block delete if users exist
+                // B) set users.site_id = null
+                // Here: set to null (recommended)
+                await tx.users.updateMany({
+                    where: { site_id: siteId },
+                    data: { site_id: null, area_id: null },
+                });
+
+                // Remove Alert_Sites join rows if you allow deleting sites that were targeted by alerts
+                await tx.alert_Sites.deleteMany({ where: { site_id: siteId } });
+
+                // Finally delete site
+                await tx.sites.delete({ where: { id: siteId } });
+            });
+
+            return res.status(200).json({ message: "Site deleted successfully" });
+        } catch (error) {
+            if (error?.name === "ZodError") {
+                return res.status(400).json({ error: error.errors });
+            }
+            logger.error("deleteSite error:", error);
+            return res.status(500).json({ error: "Internal server error" });
         }
     },
     createArea: async (req, res) => {
         try {
-            const CreateAreaSchema = z.object({
-                name: z.string().trim().min(1, "Area name is required").max(255),
-                site_id: z.string().uuid("site_id must be a valid UUID"),
-                description: z
-                    .string()
-                    .trim()
-                    .max(1000, "Description too long")
-                    .optional()
-                    .nullable()
-                    .transform((v) => (v ?? undefined)),
-            });
-            const parsed = CreateAreaSchema.parse(req.body);
+            const organization_id = req.user?.organization_id;
 
-            // ✅ check if site exists
-            const site = await prisma.sites.findUnique({
-                where: { id: parsed.site_id },
-                select: { id: true },
-            });
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
+            }
+
+            const parsed = createAreaSchema.parse(req.body);
+
+            // ✅ check if site exists and belongs to org
+            const site = await findSiteForOrganization(
+                prisma,
+                parsed.site_id,
+                organization_id,
+                { id: true },
+            );
 
             if (!site) {
                 return res.status(404).json({ error: 'Site not found' });
@@ -1911,23 +2389,131 @@ const AdminController = {
             if (error.name === 'ZodError') {
                 return res.status(400).json({ error: error.errors });
             }
-            console.error('createArea error:', error);
+            logger.error('createArea error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
-    }
-    ,
-    siteOverview: async (req, res) => {
+    },
+    updateArea: async (req, res) => {
         try {
-            const { site_id } = req.query;
+            const organization_id = req.user?.organization_id;
+            const areaId = areaIdParamSchema.parse(req.params.id);
 
-            if (!site_id) {
-                return res.status(400).json({ error: 'site_id is required' });
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
             }
 
-            // fetch site + areas + user counts
-            const site = await prisma.sites.findUnique({
-                where: { id: site_id },
-                select: {
+            const parsed = updateAreaSchema.parse(req.body);
+
+            // ✅ check area exists and belongs to org
+            const existingArea = await prisma.areas.findFirst({
+                where: { id: areaId, site: { organization_id } },
+                select: { id: true },
+            });
+
+            if (!existingArea) {
+                return res.status(404).json({ error: "Area not found" });
+            }
+
+            // ✅ if site_id provided, ensure site belongs to org
+            if (parsed.site_id) {
+                const site = await findSiteForOrganization(
+                    prisma,
+                    parsed.site_id,
+                    organization_id,
+                    { id: true },
+                );
+
+                if (!site) {
+                    return res.status(404).json({ error: "Site not found" });
+                }
+            }
+
+            // ✅ build update payload (only fields provided)
+            const data = {
+                ...(parsed.name !== undefined ? { name: parsed.name } : {}),
+                ...(parsed.description !== undefined ? { description: parsed.description ?? null } : {}),
+                ...(parsed.site_id !== undefined ? { site_id: parsed.site_id } : {}),
+            };
+
+            const updatedArea = await prisma.areas.update({
+                where: { id: areaId },
+                data,
+            });
+
+            return res.status(200).json(updatedArea);
+        } catch (error) {
+            if (error?.name === "ZodError") {
+                return res.status(400).json({ error: error.errors });
+            }
+            logger.error("updateArea error:", error);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    },
+    deleteArea: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id;
+            const areaId = areaIdParamSchema.parse(req.params.id);
+
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
+            }
+
+            // ✅ check area exists and belongs to org
+            const existingArea = await prisma.areas.findFirst({
+                where: { id: areaId, site: { organization_id } },
+                select: { id: true },
+            });
+
+            if (!existingArea) {
+                return res.status(404).json({ error: "Area not found" });
+            }
+
+            // ✅ If Users references area_id, we must detach them first (area_id is nullable in your schema)
+            await prisma.$transaction(async (tx) => {
+                await tx.users.updateMany({
+                    where: { area_id: areaId },
+                    data: { area_id: null },
+                });
+
+                // remove any alert-area joins
+                await tx.alert_Areas.deleteMany({
+                    where: { area_id: areaId },
+                });
+
+                // finally delete area
+                await tx.areas.delete({
+                    where: { id: areaId },
+                });
+            });
+
+            return res.status(200).json({ message: "Area deleted successfully" });
+        } catch (error) {
+            if (error?.name === "ZodError") {
+                return res.status(400).json({ error: error.errors });
+            }
+            logger.error("deleteArea error:", error);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    },
+    siteOverview: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id;
+            const site_id = req.params.siteId;
+
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
+            }
+
+            if (!ensureSiteIdOrError(res, site_id)) {
+                return;
+            }
+
+            // fetch site + areas + user counts (enforce org ownership)
+            const site = await findSiteForOrganization(
+                prisma,
+                site_id,
+                organization_id,
+                {
                     id: true,
                     name: true,
                     address_line_1: true,
@@ -1947,7 +2533,7 @@ const AdminController = {
                         orderBy: { name: 'asc' },
                     },
                 },
-            });
+            );
 
             if (!site) {
                 return res.status(404).json({ error: 'Site not found' });
@@ -1982,15 +2568,7 @@ const AdminController = {
 
             return res.json({
                 site_name: site.name,
-                address: [
-                    site.address_line_1,
-                    site.address_line_2,
-                    site.city,
-                    site.state,
-                    site.zip_code,
-                ]
-                    .filter(Boolean)
-                    .join(', '),
+                address: buildSiteAddress(site),
                 employees: employeesCount,
                 contractors: contractorsCount,
                 admins: adminsCount, // ✅ added field
@@ -2003,105 +2581,29 @@ const AdminController = {
                 unassigned_users: unassignedUsers,
             });
         } catch (error) {
-            console.error('siteOverview error:', error);
-            return res.status(500).json({
-                error: 'Internal server error',
-                details:
-                    process.env.NODE_ENV === 'development' ? String(error) : undefined,
-            });
+            logger.error('siteOverview error:', error);
+            return res.status(500).json({ error: 'Internal server error' });
         }
-    }
-
-    ,
-    updateArea: async (req, res) => {
+    },
+    sitePopupOverview: async (req, res) => {
         try {
-            const { id } = req.params;
+            const organization_id = req.user?.organization_id;
+            const site_id = req.params.siteId;
 
-            if (!id) {
-                return res.status(400).json({ error: 'Area id is required' });
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
             }
 
-            const { name, description } = req.body;
-
-            // ✅ check if area exists
-            const area = await prisma.areas.findUnique({ where: { id } });
-            if (!area) {
-                return res.status(404).json({ error: 'Area not found' });
+            if (!ensureSiteIdOrError(res, site_id)) {
+                return;
             }
 
-            // ✅ update area
-            const updated = await prisma.areas.update({
-                where: { id },
-                data: {
-                    name: name ?? area.name,
-                    description: description ?? area.description,
-                },
-            });
-
-            return res.status(200).json({
-                message: 'Area updated successfully',
-                data: updated,
-            });
-        } catch (error) {
-            console.error('updateArea error:', error);
-            return res.status(500).json({
-                error: 'Internal server error',
-                details:
-                    process.env.NODE_ENV === 'development' ? String(error) : undefined,
-            });
-        }
-    }
-    ,
-    deleteArea: async (req, res) => {
-        try {
-            const { site_id, area_id } = req.params;
-
-            if (!site_id || !area_id) {
-                return res.status(400).json({ error: 'site_id and area_id are required' });
-            }
-
-            // ✅ check if area exists under the site
-            const area = await prisma.areas.findFirst({
-                where: { id: area_id, site_id },
-            });
-
-            if (!area) {
-                return res.status(404).json({ error: 'Area not found for the given site' });
-            }
-
-            // ✅ delete area
-            await prisma.areas.delete({
-                where: { id: area_id },
-            });
-
-            return res.status(200).json({
-                message: 'Area deleted successfully',
-                deleted_area_id: area_id,
-            });
-        } catch (error) {
-            console.error('deleteArea error:', error);
-            return res.status(500).json({
-                error: 'Internal server error',
-                details:
-                    process.env.NODE_ENV === 'development' ? String(error) : undefined,
-            });
-        }
-    }
-
-
-    // sites popup overview
-    , sitePopupOverview: async (req, res) => {
-        try {
-            const { site_id } = req.query;
-
-            if (!site_id) {
-                return res.status(400).json({ error: 'site_id is required' });
-            }
-
-            // ✅ fetch basic site info with counts
-            const site = await prisma.sites.findUnique({
-                where: { id: site_id },
-                select: {
+            // ✅ fetch basic site info with counts (enforce org ownership)
+            const site = await findSiteForOrganization(
+                prisma,
+                site_id,
+                organization_id,
+                {
                     id: true,
                     name: true,
                     is_active: true,
@@ -2120,7 +2622,7 @@ const AdminController = {
                         },
                     },
                 },
-            });
+            );
 
             if (!site) {
                 return res.status(404).json({ error: 'Site not found' });
@@ -2159,30 +2661,34 @@ const AdminController = {
                 areas: site._count.Areas,
                 total_alerts: site._count.Alert_Sites,
                 average_response_time: avgResponseTime, // in seconds
-                address: [site.address_line_1, site.address_line_2, site.city, site.state, site.zip_code]
-                    .filter(Boolean)
-                    .join(', '),
+                address: buildSiteAddress(site),
                 contact_name: site.contact_name,
                 contact_email: site.contact_email,
             });
         } catch (error) {
-            console.error('sitePopupOverview error:', error);
+            logger.error('sitePopupOverview error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
-    }
-    ,
+    },
     sitePopupAreas: async (req, res) => {
         try {
-            const { site_id } = req.query;
+            const organization_id = req.user?.organization_id;
+            const site_id = req.params.siteId;
 
-            if (!site_id) {
-                return res.status(400).json({ error: 'site_id is required' });
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
             }
 
-            // ✅ fetch site and its areas
-            const site = await prisma.sites.findUnique({
-                where: { id: site_id },
-                select: {
+            if (!ensureSiteIdOrError(res, site_id)) {
+                return;
+            }
+
+            // ✅ fetch site and its areas (enforce org ownership)
+            const site = await findSiteForOrganization(
+                prisma,
+                site_id,
+                organization_id,
+                {
                     id: true,
                     address_line_1: true,
                     address_line_2: true,
@@ -2196,130 +2702,78 @@ const AdminController = {
                         },
                     },
                 },
-            });
+            );
 
             if (!site) {
                 return res.status(404).json({ error: 'Site not found' });
             }
 
-            const fullAddress = [
-                site.address_line_1,
-                site.address_line_2,
-                site.city,
-                site.state,
-                site.zip_code,
-            ]
-                .filter(Boolean)
-                .join(', ');
+            const fullAddress = buildSiteAddress(site);
+            const areaIds = site.Areas.map((area) => area.id);
 
-            // ✅ build response for each area
-            const areasData = await Promise.all(
-                site.Areas.map(async (area) => {
-                    const employees = await prisma.employees.count({
-                        where: { user: { area_id: area.id } },
-                    });
+            let employeeCountByArea = new Map();
+            let contractorCountByArea = new Map();
 
-                    const contractors = await prisma.contractors.count({
-                        where: { user: { area_id: area.id } },
-                    });
+            if (areaIds.length > 0) {
+                // Batch counts per area to avoid per-area N+1 queries.
+                const [employeeCountsRaw, contractorCountsRaw] = await Promise.all([
+                    prisma.$queryRaw`
+            SELECT u.area_id::text AS area_id, COUNT(e.user_id)::int AS count
+            FROM "Employees" e
+            INNER JOIN "Users" u ON u.user_id = e.user_id
+            WHERE u.area_id = ANY(${areaIds}::uuid[])
+            GROUP BY u.area_id
+          `,
+                    prisma.$queryRaw`
+            SELECT u.area_id::text AS area_id, COUNT(c.user_id)::int AS count
+            FROM "Contractors" c
+            INNER JOIN "Users" u ON u.user_id = c.user_id
+            WHERE u.area_id = ANY(${areaIds}::uuid[])
+            GROUP BY u.area_id
+          `,
+                ]);
 
-                    return {
-                        area_name: area.name,
-                        address: fullAddress,
-                        num_employees: employees,
-                        num_contractors: contractors,
-                        route: area.id, // 👈 returning route as area_id (frontend can use this)
-                    };
-                })
-            );
+                employeeCountByArea = new Map(
+                    employeeCountsRaw.map((row) => [row.area_id, Number(row.count)]),
+                );
+                contractorCountByArea = new Map(
+                    contractorCountsRaw.map((row) => [row.area_id, Number(row.count)]),
+                );
+            }
+
+            const areasData = site.Areas.map((area) => ({
+                area_name: area.name,
+                address: fullAddress,
+                num_employees: employeeCountByArea.get(area.id) ?? 0,
+                num_contractors: contractorCountByArea.get(area.id) ?? 0,
+                route: area.id,
+            }));
 
             return res.status(200).json(areasData);
         } catch (error) {
-            console.error('sitePopupAreas error:', error);
+            logger.error('sitePopupAreas error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     },
-
-    sitePopupAreas: async (req, res) => {
-        try {
-            const { site_id } = req.query;
-
-            if (!site_id) {
-                return res.status(400).json({ error: 'site_id is required' });
-            }
-
-            // ✅ fetch site and its areas
-            const site = await prisma.sites.findUnique({
-                where: { id: site_id },
-                select: {
-                    id: true,
-                    address_line_1: true,
-                    address_line_2: true,
-                    city: true,
-                    state: true,
-                    zip_code: true,
-                    Areas: {
-                        select: {
-                            id: true,
-                            name: true,
-                        },
-                    },
-                },
-            });
-
-            if (!site) {
-                return res.status(404).json({ error: 'Site not found' });
-            }
-
-            const fullAddress = [
-                site.address_line_1,
-                site.address_line_2,
-                site.city,
-                site.state,
-                site.zip_code,
-            ]
-                .filter(Boolean)
-                .join(', ');
-
-            // ✅ build response for each area
-            const areasData = await Promise.all(
-                site.Areas.map(async (area) => {
-                    const employees = await prisma.employees.count({
-                        where: { user: { area_id: area.id } },
-                    });
-
-                    const contractors = await prisma.contractors.count({
-                        where: { user: { area_id: area.id } },
-                    });
-
-                    return {
-                        area_name: area.name,
-                        address: fullAddress,
-                        num_employees: employees,
-                        num_contractors: contractors,
-                        route: area.id, // 👈 returning route as area_id (frontend can use this)
-                    };
-                })
-            );
-
-            return res.status(200).json(areasData);
-        } catch (error) {
-            console.error('sitePopupAreas error:', error);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-    },
-
     sitePopupEmployees: async (req, res) => {
         try {
-            const { site_id } = req.query;
-            if (!site_id) {
-                return res.status(400).json({ error: 'site_id is required' });
+            const organization_id = req.user?.organization_id;
+            const site_id = req.params.siteId;
+
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
             }
 
-            // Fetch site to build address once
-            const site = await prisma.sites.findUnique({
-                where: { id: site_id },
-                select: {
+            if (!ensureSiteIdOrError(res, site_id)) {
+                return;
+            }
+
+            // Fetch site to build address once (enforce org ownership)
+            const site = await findSiteForOrganization(
+                prisma,
+                site_id,
+                organization_id,
+                {
                     id: true,
                     address_line_1: true,
                     address_line_2: true,
@@ -2327,18 +2781,12 @@ const AdminController = {
                     state: true,
                     zip_code: true,
                 },
-            });
+            );
             if (!site) {
                 return res.status(404).json({ error: 'Site not found' });
             }
 
-            const areaAddress = [
-                site.address_line_1,
-                site.address_line_2,
-                site.city,
-                site.state,
-                site.zip_code,
-            ].filter(Boolean).join(', ');
+            const areaAddress = buildSiteAddress(site);
 
             // Get users at this site who are employees
             const users = await prisma.users.findMany({
@@ -2368,20 +2816,39 @@ const AdminController = {
 
             return res.status(200).json(employees);
         } catch (error) {
-            console.error('sitePopupEmployees error:', error);
+            logger.error('sitePopupEmployees error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     },
     getSitePopupAlerts: async (req, res) => {
         try {
-            const { site_id } = req.query;
-            if (!site_id) {
-                return res.status(400).json({ error: "site_id is required" });
+            const organization_id = req.user?.organization_id;
+            const site_id = req.params.siteId;
+
+            if (!ensureAdminOrganizationOrError(res, organization_id)) {
+                return;
+            }
+
+            if (!ensureSiteIdOrError(res, site_id)) {
+                return;
+            }
+
+            // Verify site belongs to org
+            const siteExists = await findSiteForOrganization(
+                prisma,
+                site_id,
+                organization_id,
+                { id: true },
+            );
+
+            if (!siteExists) {
+                return res.status(404).json({ error: 'Site not found' });
             }
 
             // Fetch alerts for this site with areas + recipients
             const alerts = await prisma.alerts.findMany({
                 where: {
+                    organization_id,
                     Alert_Sites: {
                         some: { site_id }
                     }
@@ -2430,22 +2897,20 @@ const AdminController = {
 
             res.json(response);
         } catch (error) {
-            console.error("Error in getSitePopupAlerts:", error);
-            res.status(500).json({ error: "Internal server error" });
+            logger.error("getSitePopupAlerts error:", error);
+            return res.status(500).json({ error: "Internal server error" });
         }
     },
-    // GET /admin/alert-history?organization_id=...&page=1
-    // Returns: { data: [...], meta: { page, per_page, total, total_pages } }
-    // ✅ Fixed: getAlertHistory with string comparisons
     getAlertHistory: async (req, res) => {
         try {
-            const { organization_id } = req.query;
-            const page = Number(req.query.page || 1);
-            const take = Number(req.query.per_page || 10);
+            const organization_id = req.user?.organization_id;
+            const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+            const take = Math.min(Math.max(parseInt(req.query.per_page, 10) || 10, 1), 100);
             const skip = (page - 1) * take;
 
             if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
             // ✅ Only resolved alerts for history
@@ -2547,18 +3012,17 @@ const AdminController = {
                 },
             });
         } catch (error) {
-            console.error("getAlertHistory error:", error);
+            logger.error("getAlertHistory error:", error);
             return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
-
-
     getScheduledAlerts: async (req, res) => {
         try {
-            const { organization_id } = req.query;
+            const organization_id = req.user?.organization_id;
 
             if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
             // Fetch all alerts with status = "scheduled"
@@ -2601,20 +3065,17 @@ const AdminController = {
                 data,
             });
         } catch (error) {
-            console.error("getScheduledAlerts error:", error);
+            logger.error("getScheduledAlerts error:", error);
             return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
-    // site analytics page
-    // ==============================
-    // 🆕 Get Site Analytics Card
-    // ==============================
     getSiteAnalyticsCard: async (req, res) => {
         try {
-            const { organization_id } = req.query;
+            const organization_id = req.user?.organization_id;
 
             if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
             // === Total Alerts ===
@@ -2654,30 +3115,18 @@ const AdminController = {
                 avg_response_time: avg_response_time ? `${avg_response_time} min` : "N/A",
             });
         } catch (error) {
-            console.error("getSiteAnalyticsCard error:", error);
+            logger.error("getSiteAnalyticsCard error:", error);
             return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
-
-    // =====================================
-    // 🆕 Get Site Performance (Organization-wide)
-    // =====================================
-    /**
-    * GET /get-site-performance
-    * Query: organization_id (required), page=1, page_size=10
-    * Returns paginated site performance:
-    *  - site_name
-    *  - num_of_alerts
-    *  - total_people
-    *  - performance (% = unique responders across alerts / total_people)
-    */
     getSitePerformance: async (req, res) => {
         try {
-            const { organization_id } = req.query;
+            const organization_id = req.user?.organization_id;
             let { page = "1", page_size = "10" } = req.query;
 
             if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
             // Normalize pagination params
@@ -2803,20 +3252,16 @@ const AdminController = {
                 site_performance,
             });
         } catch (error) {
-            console.error("getSitePerformance error:", error);
+            logger.error("getSitePerformance error:", error);
             return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
-    /**
-  * GET /get-alert-distribution?organization_id=xxx
-  * Returns: list of { alert_type_id, alert_type, count }
-  * - Includes types with zero alerts for this org
-  */
     getAlertDistribution: async (req, res) => {
         try {
-            const { organization_id } = req.query;
+            const organization_id = req.user?.organization_id;
             if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
             // 1) Fetch all Emergency Types for this org
@@ -2868,16 +3313,17 @@ const AdminController = {
                 distribution,       // detailed objects
             });
         } catch (error) {
-            console.error("getAlertDistribution error:", error);
+            logger.error("getAlertDistribution error:", error);
             return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
     getResponseTimeTrend: async (req, res) => {
         try {
-            const { organization_id } = req.query;
+            const organization_id = req.user?.organization_id;
 
             if (!organization_id) {
-                return res.status(400).json({ message: "organization_id is required" });
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
             }
 
             // 1️⃣ Fetch all sites of the organization
@@ -2980,29 +3426,16 @@ const AdminController = {
                 data,
             });
         } catch (error) {
-            console.error("getResponseTimeTrend error:", error);
-            return res
-                .status(500)
-                .json({ message: "Server error", error: error.message });
+            logger.error("getResponseTimeTrend error:", error);
+            return res.status(500).json({ message: "Server error", error: error.message });
         }
     },
-    /**
-   * GET /admin/general-settings
-   * Returns:
-   * company name,
-   * industry type name,
-   * primary contact name,
-   * contact phone,
-   * contact email,
-   * time zone,
-   * organization address object
-   */
     getGeneralSettings: async (req, res) => {
         try {
-            const organization_id = req.user?.organization_id || req.query.organization_id;
+            const organization_id = req.user?.organization_id;
 
             if (!organization_id) {
-                return res.status(400).json({ success: false, message: "organization_id is required" });
+                return res.status(401).json({ success: false, message: "Unauthorized" });
             }
 
             const org = await prisma.organizations.findUnique({
@@ -3057,7 +3490,7 @@ const AdminController = {
                 },
             });
         } catch (error) {
-            console.error("getGeneralSettings error:", error);
+            logger.error("getGeneralSettings error:", error);
             return res.status(500).json({
                 success: false,
                 message: "Internal server error",
@@ -3065,27 +3498,12 @@ const AdminController = {
             });
         }
     },
-
-
-    /**
-   * PUT /admin/general-settings
-   * Body:
-   * {
-   *   company_name,
-   *   industry_type_name,
-   *   primary_contact_name,
-   *   contact_phone,
-   *   contact_email,
-   *   time_zone,
-   *   organization_address: { street_address, state, city, zip, country }
-   * }
-   */
     updateGeneralSettings: async (req, res) => {
         try {
-            const organization_id = req.user?.organization_id || req.body.organization_id;
+            const organization_id = req.user?.organization_id;
 
             if (!organization_id) {
-                return res.status(400).json({ success: false, message: "organization_id is required" });
+                return res.status(401).json({ success: false, message: "Unauthorized" });
             }
 
             const {
@@ -3142,7 +3560,7 @@ const AdminController = {
                 message: "General settings updated successfully",
             });
         } catch (error) {
-            console.error("updateGeneralSettings error:", error);
+            logger.error("updateGeneralSettings error:", error);
             return res.status(500).json({
                 success: false,
                 message: "Internal server error",
@@ -3150,31 +3568,14 @@ const AdminController = {
             });
         }
     },
-
-    /**
-     * GET /admin/billing-history
-     * Source: subscriptions table
-     *
-     * Output (per row):
-     * plan_name
-     * amount
-     * currency
-     * billing_cycle
-     * status
-     * start_date
-     * end_date
-     * invoice_id
-     * payment_method
-     * created_at
-     */
     getBillingHistory: async (req, res) => {
         try {
-            const organization_id = req.user?.organization_id || req.query.organization_id;
+            const organization_id = req.user?.organization_id;
 
             if (!organization_id) {
-                return res.status(400).json({
+                return res.status(401).json({
                     success: false,
-                    message: "organization_id is required",
+                    message: "Unauthorized",
                 });
             }
 
@@ -3250,7 +3651,7 @@ const AdminController = {
                 data,
             });
         } catch (error) {
-            console.error("getBillingHistory error:", error);
+            logger.error("getBillingHistory error:", error);
             return res.status(500).json({
                 success: false,
                 message: "Internal server error",
@@ -3258,9 +3659,187 @@ const AdminController = {
             });
         }
     },
+    getIndividualAlertDetails: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id;
+            const alert_id = alertIdParamSchema.parse(req.params.alertId);
+
+            if (!organization_id) {
+                getOrganizationIdOrUnauthorized(req, res);
+                return;
+            }
+
+            // ----------------------------
+            // Fetch alert (must belong to org) + org name + created_by + targeted sites
+            // ----------------------------
+            const alert = await prisma.alerts.findFirst({
+                where: { id: alert_id, organization_id },
+                select: {
+                    id: true,
+                    status: true,
+                    message: true,
+                    action_required: true, // ✅ description source
+                    severity: true,
+                    response_required: true,
+                    start_time: true,
+                    scheduled_time: true,
+                    end_time: true, // ✅ end_date_time
+                    created_at: true,
+
+                    emergency_type: { select: { name: true } }, // ✅ alert_type
+                    organization: { select: { name: true } }, // ✅ organization_name
+
+                    user: {
+                        // ✅ created_by (user)
+                        select: {
+                            user_id: true,
+                            first_name: true,
+                            last_name: true,
+                        },
+                    },
+
+                    Alert_Sites: {
+                        // ✅ site name(s) targeted by alert
+                        select: {
+                            site: { select: { id: true, name: true } },
+                        },
+                    },
+
+                    // If you also want area targeting names, uncomment:
+                    // Alert_Areas: {
+                    //   select: { area: { select: { id: true, name: true } } },
+                    // },
+                },
+            });
+
+            if (!alert) {
+                return res.status(404).json({ message: "Alert not found for this organization." });
+            }
+
+            // ----------------------------
+            // Fetch recipients + user details + contractor company (if any)
+            // ----------------------------
+            const recipients = await prisma.notification_Recipients.findMany({
+                where: { alert_id },
+                select: {
+                    user_id: true,
+                    delivery_status: true,
+                    delivered_at: true,
+                    acknowledged_at: true,
+                    response: true,
+                    response_updated_at: true,
+                    user: {
+                        select: {
+                            user_id: true,
+                            first_name: true,
+                            last_name: true,
+                            user_type: true,
+                            area: { select: { id: true, name: true } },
+                            site: { select: { id: true, name: true } },
+
+                            // ✅ if user_type=contractor
+                            contractors: {
+                                select: {
+                                    contracting_company: {
+                                        select: { id: true, name: true },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: { created_at: "asc" },
+            });
+
+            // ----------------------------
+            // Latest location per user for this alert
+            // (Postgres: distinct on user_id)
+            // ----------------------------
+            const latestLocations = await prisma.user_Locations.findMany({
+                where: { alert_id },
+                orderBy: { timestamp: "desc" },
+                distinct: ["user_id"],
+                select: {
+                    user_id: true,
+                    latitude: true,
+                    longitude: true,
+                    location_name: true,
+                    timestamp: true,
+                },
+            });
+
+            const users = buildRecipientUsers(recipients, latestLocations);
+            const {
+                total_employees_count,
+                safe_count,
+                need_help_count,
+                emergency_help_needed_count,
+                not_responded_count,
+            } = summarizeRecipientResponses(users);
+            const { startDt, endDt, elapsed_time, sites, created_by } =
+                buildAlertDetailComputedFields(alert);
+
+            // ----------------------------
+            // Response
+            // ----------------------------
+            return res.status(200).json({
+                alert_id: alert.id,
+
+                // existing fields
+                alert_time: (alert.start_time ?? alert.created_at)?.toISOString?.() ?? null,
+                alert_date: alert.start_time
+                    ? new Date(alert.start_time).toISOString().slice(0, 10)
+                    : new Date(alert.created_at).toISOString().slice(0, 10),
+
+                alert_status: alert.status,
 
 
+                // ✅ requested fields
+                alert_type: alert.emergency_type?.name ?? null,
+                description: alert.message ?? null,
+
+
+                sites, // detailed array [{site_id, site_name}]
+
+                start_date_time: startDt?.toISOString?.() ?? null,
+                end_date_time: endDt?.toISOString?.() ?? null,
+                elapsed_time, // seconds
+
+
+                severity_level: alert.severity ?? null,
+
+                organization_id,
+                organization_name: alert.organization?.name ?? null,
+
+                created_by,
+
+                // counts
+                total_employees_count,
+                safe_count,
+                need_help_count,
+                emergency_help_needed_count,
+                not_responded_count,
+
+                users,
+            });
+        } catch (error) {
+            if (error?.name === "ZodError") {
+                return res.status(400).json({
+                    message: "Invalid alertId param",
+                    error: error.errors,
+                });
+            }
+
+            logger.error("getIndividualAlertDetails error:", { error });
+
+            return res.status(500).json({
+                message: "Server error",
+                error: error?.message ?? "Unknown error",
+            });
+        }
+    },
 };
 
 
 export default AdminController;
+

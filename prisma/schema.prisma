@@ -144,6 +144,7 @@ model Organizations {
   Severity_Levels       Severity_Levels[]
   Contracting_Companies Contracting_Companies[]
   Incident_Reports      Incident_Reports[]
+  visitors              Visitors[]
 }
 
 model Organization_Statuses {
@@ -199,20 +200,22 @@ model Areas {
 // ----------------------
 
 model Users {
-  user_id         String    @id @default(uuid())
-  organization_id String?
-  site_id         String?
-  area_id         String?
-  email           String    @unique
-  password_hash   String?
-  first_name      String
-  last_name       String
-  phone_number    String
-  phone_verified  Boolean   @default(false)
-  is_active       Boolean   @default(true)
-  role_id         String
-  profile_pic     String?
-  user_type       UserTypes
+  user_id                     String    @id @default(uuid())
+  organization_id             String?
+  site_id                     String?
+  area_id                     String?
+  email                       String    @unique
+  email_verified              Boolean   @default(false)
+  password_hash               String?
+  first_name                  String
+  last_name                   String
+  phone_number                String
+  phone_verified              Boolean   @default(false)
+  send_emergency_notification Boolean   @default(true)
+  is_active                   Boolean   @default(true)
+  role_id                     String
+  profile_pic                 String?
+  user_type                   UserTypes
 
   must_reset_password Boolean? @default(false)
   fcm_token           String?
@@ -450,6 +453,7 @@ model Emergency_Types {
   organization_id String
   name            String
   description     String?
+  image_url       String?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
@@ -508,17 +512,21 @@ model Companies {
 }
 
 model Visitors {
-  id         String   @id @default(uuid())
-  first_name String
-  last_name  String?
-  email      String?
-  phone      String?
-  company_id String
-  created_at DateTime @default(now())
-  is_active  Boolean  @default(true)
+  id              String   @id @default(uuid())
+  organization_id String
+  first_name      String
+  last_name       String?
+  email           String?
+  phone           String?
+  company_id      String
+  created_at      DateTime @default(now())
+  is_active       Boolean  @default(true)
 
+  organization   Organizations    @relation(fields: [organization_id], references: [organization_id])
   company        Companies        @relation(fields: [company_id], references: [id])
   Visitor_Status Visitor_Status[]
+
+  @@index([organization_id])
 }
 
 model Visitor_Status {
@@ -557,6 +565,7 @@ model Notification_Recipients {
   alert Alerts @relation(fields: [alert_id], references: [id])
   user  Users  @relation(fields: [user_id], references: [user_id])
 
+  @@unique([alert_id, user_id])
   @@index([alert_id])
   @@index([user_id])
 }

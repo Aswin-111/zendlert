@@ -1,30 +1,25 @@
-// routes/employee.route.js
 import express from "express";
 import EmployeeController from "../controllers/employee.controller.js";
-import verifyJWT from "../middlewares/verifyJWT.js";
+import verifyEmployeeAccess from "../middlewares/verifyEmployeeAccess.js";
 
 const router = express.Router();
 
-// Public
-router.post("/login", EmployeeController.employeeLogin);
+router.use(verifyEmployeeAccess);
 
-// Protected
-router.post("/respond-to-alert", verifyJWT, EmployeeController.respondToAlert);
-router.get("/response-history", verifyJWT, EmployeeController.getResponseHistory);
-router.get(
-    "/organization-info",
-    verifyJWT,
-    EmployeeController.getOrganizationInfo
-);
-router.get(
-    "/recent-notifications",
-    verifyJWT,
-    EmployeeController.getRecentNotifications
-);
-router.get(
-    "/profile",
-    verifyJWT,
-    EmployeeController.getProfile
-);
-router.put("/profile", verifyJWT, EmployeeController.updateProfile);
+router.post("/alerts/:alertId/responses", (req, res, next) => {
+  req.body = {
+    ...(req.body || {}),
+    alert_id: req.params.alertId,
+    user_id: req.user?.user_id,
+  };
+  return next();
+}, EmployeeController.respondToAlert);
+router.get("/alerts/responses/history", EmployeeController.getResponseHistory);
+router.get("/organization", EmployeeController.getOrganizationInfo);
+router.get("/notifications/recent", EmployeeController.getRecentNotifications);
+router.get("/profile", EmployeeController.getProfile);
+router.put("/profile", EmployeeController.updateProfile);
+router.post("/visitors/reports", EmployeeController.reportVisitor);
+router.patch("/notifications/emergency-preference", EmployeeController.toggleEmergencyNotification);
+
 export default router;

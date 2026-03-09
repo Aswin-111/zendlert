@@ -1,22 +1,16 @@
 import express from "express";
 import SubscriptionController from "../controllers/subscription.controller.js";
-import verifyJWT from "../middlewares/verifyJWT.js";
 
 const router = express.Router();
 
 // 1. Create Subscription (Protected)
-router.post("/create", verifyJWT, SubscriptionController.createSubscription);
-router.post("/preview", verifyJWT, SubscriptionController.previewInvoice);
+router.post("/create", SubscriptionController.createSubscription);
+router.post("/preview", SubscriptionController.previewInvoice);
 
 // Get details for Success Page
-router.get("/status", verifyJWT, SubscriptionController.getSubscriptionStatus);
+router.get("/status", SubscriptionController.getSubscriptionStatus);
 // 2. Webhook (Public)
-// IMPORTANT: The raw body parsing must be handled in your server.js (app.js)
-// before this route is mounted, or via specific middleware here if your setup supports it.
-router.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  SubscriptionController.handleWebhook,
-);
+// IMPORTANT: Raw body parsing for this route is configured centrally in app.js.
+router.post("/webhook", SubscriptionController.handleWebhook);
 
 export default router;

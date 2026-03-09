@@ -1,12 +1,10 @@
-import { PrismaClient } from "@prisma/client";
 import logger from "../utils/logger.js";
-
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
 
 const PlansController = {
   getAllPlans: async (req, res) => {
     try {
-      const { user_id } = req.user; // From verifyJWT
+      const { user_id } = req.user; // From auth middleware
 
       // 1. Fetch Plans AND join the Plan_Features table
       const plans = await prisma.subscription_Plans.findMany({

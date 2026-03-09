@@ -1197,3 +1197,100 @@ Invalid `prisma.emergency_Types.delete()` invocation:
 
 Foreign key constraint violated on the constraint: `Alerts_emergency_type_id_fkey`
 2026-01-22T15:50:42.778Z ERROR: verifyAdmin middleware used without verifyJWT
+2026-01-23T11:53:37.564Z ERROR: verifyAdmin middleware used without verifyJWT
+2026-01-29T07:09:33.531Z ERROR: [WORKER] Job 22 failed for alert 4128fec3-fb26-4e46-9e4e-b1693435f278:
+2026-01-29T07:09:33.535Z ERROR: Job 22 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-01-29T07:09:34.549Z ERROR: [WORKER] Job 22 failed for alert 4128fec3-fb26-4e46-9e4e-b1693435f278:
+2026-01-29T07:09:34.552Z ERROR: Job 22 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-01-29T07:09:36.565Z ERROR: [WORKER] Job 22 failed for alert 4128fec3-fb26-4e46-9e4e-b1693435f278:
+2026-01-29T07:09:36.619Z ERROR: Job 22 has failed with 
+Invalid `prisma.alerts.update()` invocation:
+
+
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+2026-02-06T13:38:34.357Z ERROR: [WORKER] Job 33 failed for alert 90062241-e0e5-4809-bc19-ccd878f1faed:
+2026-02-06T13:38:34.365Z ERROR: Job 33 has failed with admin is not defined
+2026-02-06T13:38:35.436Z ERROR: [WORKER] Job 33 failed for alert 90062241-e0e5-4809-bc19-ccd878f1faed:
+2026-02-06T13:38:35.441Z ERROR: Job 33 has failed with admin is not defined
+2026-02-06T13:38:37.568Z ERROR: [WORKER] Job 33 failed for alert 90062241-e0e5-4809-bc19-ccd878f1faed:
+2026-02-06T13:38:37.641Z ERROR: Job 33 has failed with admin is not defined
+2026-02-06T14:33:58.421Z ERROR: [WORKER] Job 34 failed for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4:
+2026-02-06T14:33:58.473Z ERROR: Job 34 has failed with admin is not defined
+2026-02-06T14:33:59.586Z ERROR: [WORKER] Job 34 failed for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4:
+2026-02-06T14:33:59.593Z ERROR: Job 34 has failed with admin is not defined
+2026-02-06T14:34:01.688Z ERROR: [WORKER] Job 34 failed for alert 6cfb0273-7410-4ab6-afce-f8dfc3cebce4:
+2026-02-06T14:34:01.751Z ERROR: Job 34 has failed with admin is not defined
+2026-02-06T15:05:07.677Z ERROR: [WORKER] Job 35 failed for alert 6b960312-d3c7-444f-ae55-d3969afc7a43:
+2026-02-06T15:05:07.795Z ERROR: Job 35 has failed with admin is not defined
+2026-02-06T15:05:08.809Z ERROR: [WORKER] Job 35 failed for alert 6b960312-d3c7-444f-ae55-d3969afc7a43:
+2026-02-06T15:05:08.815Z ERROR: Job 35 has failed with admin is not defined
+2026-02-06T15:05:10.930Z ERROR: [WORKER] Job 35 failed for alert 6b960312-d3c7-444f-ae55-d3969afc7a43:
+2026-02-06T15:05:10.985Z ERROR: Job 35 has failed with admin is not defined
+2026-02-11T09:11:09.296Z ERROR: [WORKER] Job 36 failed for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837:
+2026-02-11T09:11:09.302Z ERROR: Job 36 has failed with admin is not defined
+2026-02-11T09:11:10.413Z ERROR: [WORKER] Job 36 failed for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837:
+2026-02-11T09:11:10.417Z ERROR: Job 36 has failed with admin is not defined
+2026-02-11T09:11:12.537Z ERROR: [WORKER] Job 36 failed for alert c6fcd4e5-bbe1-4ea5-80f7-bc82e57f9837:
+2026-02-11T09:11:12.591Z ERROR: Job 36 has failed with admin is not defined
+2026-02-11T10:42:25.855Z ERROR: [WORKER] Job 37 failed for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e:
+2026-02-11T10:42:25.884Z ERROR: Job 37 has failed with admin is not defined
+2026-02-11T10:42:26.981Z ERROR: [WORKER] Job 37 failed for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e:
+2026-02-11T10:42:26.986Z ERROR: Job 37 has failed with admin is not defined
+2026-02-11T10:42:29.102Z ERROR: [WORKER] Job 37 failed for alert d3f3a4ec-0885-41e5-86b1-ead9454fe57e:
+2026-02-11T10:42:29.161Z ERROR: Job 37 has failed with admin is not defined
+2026-02-11T12:31:57.730Z ERROR: [WORKER] Job 38 failed for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e:
+2026-02-11T12:31:57.750Z ERROR: Job 38 has failed with admin is not defined
+2026-02-11T12:31:58.826Z ERROR: [WORKER] Job 38 failed for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e:
+2026-02-11T12:31:58.831Z ERROR: Job 38 has failed with admin is not defined
+2026-02-11T12:32:00.950Z ERROR: [WORKER] Job 38 failed for alert 82f7d3ce-e104-49a4-861e-57ea4a9ab41e:
+2026-02-11T12:32:01.011Z ERROR: Job 38 has failed with admin is not defined
+2026-02-11T12:44:36.090Z ERROR: [WORKER] Job 39 failed for alert 52451e79-77d5-4f09-a286-90b00572a283:
+2026-02-11T12:44:36.097Z ERROR: Job 39 has failed with admin is not defined
+2026-02-11T12:44:37.156Z ERROR: [WORKER] Job 39 failed for alert 52451e79-77d5-4f09-a286-90b00572a283:
+2026-02-11T12:44:37.160Z ERROR: Job 39 has failed with admin is not defined
+2026-02-11T12:44:39.279Z ERROR: [WORKER] Job 39 failed for alert 52451e79-77d5-4f09-a286-90b00572a283:
+2026-02-11T12:44:39.284Z ERROR: Job 39 has failed with admin is not defined
+2026-02-11T13:34:15.626Z ERROR: [WORKER] Job 40 failed for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf:
+2026-02-11T13:34:15.635Z ERROR: Job 40 has failed with admin is not defined
+2026-02-11T13:34:16.652Z ERROR: [WORKER] Job 40 failed for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf:
+2026-02-11T13:34:16.655Z ERROR: Job 40 has failed with admin is not defined
+2026-02-11T13:34:18.789Z ERROR: [WORKER] Job 40 failed for alert 4fda52ce-89df-4dd5-a591-74294a8fafbf:
+2026-02-11T13:34:18.798Z ERROR: Job 40 has failed with admin is not defined
+2026-02-11T13:42:19.163Z ERROR: [WORKER] Job 41 failed for alert b846ac5b-53a8-41a8-9b43-53544787bb42:
+2026-02-11T13:42:19.165Z ERROR: Job 41 has failed with admin is not defined
+2026-02-11T13:42:20.259Z ERROR: [WORKER] Job 41 failed for alert b846ac5b-53a8-41a8-9b43-53544787bb42:
+2026-02-11T13:42:20.263Z ERROR: Job 41 has failed with admin is not defined
+2026-02-11T13:42:22.356Z ERROR: [WORKER] Job 41 failed for alert b846ac5b-53a8-41a8-9b43-53544787bb42:
+2026-02-11T13:42:22.358Z ERROR: Job 41 has failed with admin is not defined
+2026-02-25T04:40:50.023Z ERROR: [WORKER] Job 42 failed for alert 6c290a29-6482-4838-b1d8-09d2d986305a:
+2026-02-25T04:40:50.047Z ERROR: Job 42 has failed with admin is not defined
+2026-02-25T04:40:51.190Z ERROR: [WORKER] Job 42 failed for alert 6c290a29-6482-4838-b1d8-09d2d986305a:
+2026-02-25T04:40:51.316Z ERROR: Job 42 has failed with admin is not defined
+2026-02-25T04:40:53.354Z ERROR: [WORKER] Job 42 failed for alert 6c290a29-6482-4838-b1d8-09d2d986305a:
+2026-02-25T04:40:53.436Z ERROR: Job 42 has failed with admin is not defined
+2026-02-25T04:48:57.591Z ERROR: [WORKER] Job 43 failed for alert e28beec6-eb12-4b93-b7a0-80e0137504b9:
+2026-02-25T04:48:57.598Z ERROR: Job 43 has failed with admin is not defined
+2026-02-25T04:48:58.658Z ERROR: [WORKER] Job 43 failed for alert e28beec6-eb12-4b93-b7a0-80e0137504b9:
+2026-02-25T04:48:58.661Z ERROR: Job 43 has failed with admin is not defined
+2026-02-25T04:49:00.765Z ERROR: [WORKER] Job 43 failed for alert e28beec6-eb12-4b93-b7a0-80e0137504b9:
+2026-02-25T04:49:00.767Z ERROR: Job 43 has failed with admin is not defined
+2026-02-25T09:55:41.408Z ERROR: [WORKER] Job 44 failed for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1:
+2026-02-25T09:55:41.421Z ERROR: Job 44 has failed with admin is not defined
+2026-02-25T09:55:42.468Z ERROR: [WORKER] Job 44 failed for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1:
+2026-02-25T09:55:42.474Z ERROR: Job 44 has failed with admin is not defined
+2026-02-25T09:55:44.590Z ERROR: [WORKER] Job 44 failed for alert a174b1b1-f376-4702-9d11-3b2a8e4f67f1:
+2026-02-25T09:55:44.642Z ERROR: Job 44 has failed with admin is not defined
+2026-02-25T10:15:20.306Z ERROR: [WORKER] Job 45 failed for alert 9b5fb46b-84d8-411d-8049-aa83992823c5:
+2026-02-25T10:15:20.318Z ERROR: Job 45 has failed with admin is not defined
+2026-02-25T10:15:21.399Z ERROR: [WORKER] Job 45 failed for alert 9b5fb46b-84d8-411d-8049-aa83992823c5:
+2026-02-25T10:15:21.404Z ERROR: Job 45 has failed with admin is not defined
+2026-02-25T10:15:23.527Z ERROR: [WORKER] Job 45 failed for alert 9b5fb46b-84d8-411d-8049-aa83992823c5:
+2026-02-25T10:15:23.580Z ERROR: Job 45 has failed with admin is not defined
