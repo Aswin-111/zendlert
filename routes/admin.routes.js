@@ -10,7 +10,14 @@ router.use(verifyAdminAccess);
 router.get("/alerts/summary", AdminController.getAlertSummaryForOrg);
 router.get("/alerts/history", AdminController.getAlertHistory);
 router.get("/alerts/scheduled", AdminController.getScheduledAlerts);
+// router.post("/alerts", AdminController.createAlert);
 router.post("/alerts", AdminController.createAlert);
+router.get("/alerts", AdminController.getAlertDashboard);
+router.put("/alerts/:alertId/resolve", AdminController.resolveAlert);
+router.get("/alerts/types", AdminController.getAlertTypes);
+router.get("/alerts/sites", AdminController.getSites);
+router.get("/alerts/areas", AdminController.getAreas);
+
 router.get("/alerts/:alertId", AdminController.getIndividualAlertDetails);
 
 router.get("/areas/:areaId/alerts", AdminController.getAreaAlerts);

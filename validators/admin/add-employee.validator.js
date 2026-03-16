@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const addEmployeeSchema = z.object({
-    organization_id: z.string().uuid({ message: "Invalid organization ID" }),
+   
     site_id: z.string().uuid({ message: "Invalid site ID" }),
     area_id: z.string().uuid({ message: "Invalid area ID" }),
     first_name: z.string().min(1, { message: "First name is required" }),

@@ -1,0 +1,343 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>
+      Login | SPCS India - Sahithya Pravarthaka Co-operative Society
+    </title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              spcsTeal: "#008080",
+              spcsTealLight: "#e6f2f2",
+              darkGray: "#333333",
+              mediumGray: "#666666",
+            },
+          },
+        },
+      };
+    </script>
+    <style data-purpose="custom-background">
+      /* Subtle sweeping Bezier curves / organic blobs background */
+      body {
+        background-color: #ffffff;
+        overflow-x: hidden;
+        position: relative;
+      }
+      .blob-bg {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+      }
+      .blob-1 {
+        position: absolute;
+        top: -10%;
+        right: -5%;
+        width: 50%;
+        height: 60%;
+        background: radial-gradient(
+          circle,
+          rgba(0, 128, 128, 0.05) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+      }
+      .blob-2 {
+        position: absolute;
+        bottom: 10%;
+        left: -10%;
+        width: 40%;
+        height: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(0, 128, 128, 0.03) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        border-radius: 50% 50% 30% 70% / 50% 60% 40% 40%;
+      }
+    </style>
+  </head>
+  <body class="font-sans text-darkGray min-h-screen flex flex-col">
+    <div aria-hidden="true" class="blob-bg">
+      <div class="blob-1"></div>
+      <div class="blob-2"></div>
+    </div>
+    <!-- BEGIN: MainHeader -->
+    <header
+      class="w-full py-6 px-6 md:px-12 flex justify-between items-center bg-white/80 backdrop-blur-sm sticky top-0 z-50"
+    >
+      <div class="logo-container" data-purpose="spcs-logo">
+        <!-- SPCS Logo Placeholder -->
+        <a class="flex items-center gap-2" href="/">
+          <div
+            class="w-10 h-10 bg-spcsTeal flex items-center justify-center rounded"
+          >
+            <span class="text-white font-bold text-sm">SPCS</span>
+          </div>
+          <span class="font-bold text-xl tracking-tight hidden sm:block"
+            >SPCS India</span
+          >
+        </a>
+      </div>
+      <nav>
+        <a
+          class="text-spcsTeal font-medium hover:underline decoration-2 underline-offset-4 transition-all"
+          href="#"
+          >Register</a
+        >
+      </nav>
+    </header>
+    <!-- END: MainHeader -->
+    <!-- BEGIN: MainContent -->
+    <main
+      class="flex-grow flex items-center justify-center py-12 px-6 md:px-12 lg:px-24"
+    >
+      <div
+        class="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
+      >
+        <!-- Left side: Marketing Content -->
+        <section
+          class="hidden lg:flex flex-col space-y-8"
+          data-purpose="marketing-section"
+        >
+          <div class="space-y-4">
+            <h1 class="text-5xl font-bold leading-tight text-darkGray">
+              The Home of <br />
+              <span class="text-spcsTeal">Malayalam Literature</span>
+            </h1>
+            <p class="text-lg text-mediumGray max-w-lg leading-relaxed">
+              Sahithya Pravarthaka Co-operative Society (SPCS) is the premier
+              platform for authors and readers in Kerala. Join our community to
+              explore a rich legacy of literature and cultural heritage.
+            </p>
+          </div>
+          <!-- Floating Book Cover -->
+          <div class="relative pt-8">
+            <div
+              class="w-64 h-80 bg-gray-100 rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center justify-center overflow-hidden transform -rotate-3 hover:rotate-0 transition-transform duration-500"
+            >
+              <img
+                alt="Featured Book Cover"
+                class="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxIMYat20IaWJw6a6nBSqWnVPNPrq6Ml6SM0PfCDSOkUgmQWjiv1BsndkXAywFE6OszLPxg63Dj_UHgaV3vzdKtMDBNqJa-4ZqKFufbCcZCi-fk8X0hawD9L0bh0aJOCbIhapfFh7H9quT9w_twshrVEtVW4ajUv2U0WKL2hkqQuK8hcjRui8snkSXY7kLdTNhZSL8xpCrkGQhs_rh_WscM4yWi9kOHU--Rv0eqtXY45y2yfbagDQG8mG9ktxL06WdHJ3DNeG_vg0"
+              />
+            </div>
+            <!-- Decorative element -->
+            <div
+              class="absolute -bottom-4 -left-4 w-24 h-24 bg-spcsTealLight -z-10 rounded-full"
+            ></div>
+          </div>
+        </section>
+        <!-- Right side: Login Card -->
+        <section
+          class="flex justify-center lg:justify-end"
+          data-purpose="login-container"
+        >
+          <div
+            class="w-full max-w-md bg-white rounded-[12px] p-10 shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-50"
+          >
+            <div class="mb-8" data-purpose="card-header">
+              <span
+                class="block text-xs font-bold text-spcsTeal tracking-widest mb-2"
+                >WELCOME</span
+              >
+              <h2 class="text-2xl font-bold text-darkGray mb-2">
+                Login with your phone
+              </h2>
+              <p class="text-mediumGray text-sm">
+                Enter your mobile number to receive a one-time password.
+              </p>
+            </div>
+            <form
+              action="#"
+              class="space-y-6"
+              data-purpose="login-form"
+              method="POST"
+            >
+              <div class="space-y-2">
+                <label class="text-sm font-semibold text-darkGray" for="phone"
+                  >Phone Number</label
+                >
+                <div class="flex">
+                  <span
+                    class="inline-flex items-center px-4 rounded-l-[4px] border border-r-0 border-gray-300 bg-gray-50 text-mediumGray text-sm"
+                  >
+                    +91
+                  </span>
+                  <input
+                    class="flex-1 block w-full rounded-none rounded-r-[4px] border-gray-300 focus:border-spcsTeal focus:ring-spcsTeal text-sm p-3"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter your mobile number"
+                    required=""
+                    type="tel"
+                  />
+                </div>
+              </div>
+              <button
+                class="w-full bg-spcsTeal hover:bg-[#006666] text-white font-semibold py-3.5 px-4 rounded-[6px] transition-colors shadow-md active:transform active:scale-[0.98]"
+                type="submit"
+              >
+                Send OTP
+              </button>
+            </form>
+            <div
+              class="mt-8 pt-6 border-t border-gray-100 space-y-3 text-center"
+              data-purpose="auth-links"
+            >
+              <p class="text-sm text-mediumGray">
+                Already registered?
+                <a class="text-spcsTeal font-medium hover:underline" href="#"
+                  >Continue</a
+                >
+              </p>
+              <p class="text-sm text-mediumGray">
+                New here?
+                <a class="text-spcsTeal font-medium hover:underline" href="#"
+                  >Create a new account</a
+                >
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <!-- END: MainContent -->
+    <!-- BEGIN: Footer -->
+    <footer class="bg-darkGray text-white py-12 px-6 md:px-12 lg:px-24">
+      <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <div
+              class="w-8 h-8 bg-spcsTeal flex items-center justify-center rounded-sm"
+            >
+              <span class="text-white font-bold text-xs text-[10px]">SPCS</span>
+            </div>
+            <span class="font-bold text-lg">SPCS India</span>
+          </div>
+          <p class="text-gray-400 text-sm leading-relaxed max-w-xs">
+            Sahithya Pravarthaka Co-operative Society is the largest writers'
+            co-operative in India, empowering Malayalam literature since 1945.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 gap-8 md:col-span-1">
+          <div class="space-y-4">
+            <h4
+              class="font-semibold text-sm uppercase tracking-wider text-gray-300"
+            >
+              Quick Links
+            </h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+              <li>
+                <a class="hover:text-spcsTeal transition-colors" href="#"
+                  >About Us</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-spcsTeal transition-colors" href="#"
+                  >Our Authors</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-spcsTeal transition-colors" href="#"
+                  >Bookstore</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-spcsTeal transition-colors" href="#"
+                  >Publications</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="space-y-4">
+            <h4
+              class="font-semibold text-sm uppercase tracking-wider text-gray-300"
+            >
+              Support
+            </h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+              <li>
+                <a class="hover:text-spcsTeal transition-colors" href="#"
+                  >Contact</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-spcsTeal transition-colors" href="#"
+                  >Help Center</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-spcsTeal transition-colors" href="#"
+                  >Privacy Policy</a
+                >
+              </li>
+              <li>
+                <a class="hover:text-spcsTeal transition-colors" href="#"
+                  >Terms</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <h4
+            class="font-semibold text-sm uppercase tracking-wider text-gray-300"
+          >
+            Connect
+          </h4>
+          <div class="flex gap-4">
+            <!-- Placeholder Icons -->
+            <a
+              class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-spcsTeal transition-colors"
+              href="#"
+            >
+              <span class="sr-only">Facebook</span>
+              <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+                <path
+                  d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"
+                ></path>
+              </svg>
+            </a>
+            <a
+              class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-spcsTeal transition-colors"
+              href="#"
+            >
+              <span class="sr-only">Twitter</span>
+              <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+                <path
+                  d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"
+                ></path>
+              </svg>
+            </a>
+          </div>
+          <p class="text-gray-500 text-xs pt-4 border-t border-gray-800">
+            © 2023 Sahithya Pravarthaka Co-operative Society Ltd. All rights
+            reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+    <!-- END: Footer -->
+  </body>
+</html>

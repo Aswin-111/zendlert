@@ -10,3 +10,5 @@ generated/prisma/*.dll
 generated/prisma/*.wasm
 backend.env
 logs/
+VKACCOUNTANCY.pem
+ai-context.txt

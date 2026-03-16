@@ -55,18 +55,18 @@ const AlertController = {
       });
     }
   },
-  getAlertTypes: async (req, res) => {
-    try {
-      const organizationId = getOrganizationIdOrUnauthorized(req, res);
-      if (!organizationId) return;
+  // getAlertTypes: async (req, res) => {
+  //   try {
+  //     const organizationId = getOrganizationIdOrUnauthorized(req, res);
+  //     if (!organizationId) return;
 
-      const alert_types = await getAlertTypesForOrganization(prisma, organizationId);
-      return res.json({ alert_types });
-    } catch (err) {
-      logger.error("getAlertTypes error:", { error: err });
-      return res.status(500).json({ message: "Something went wrong" });
-    }
-  },
+  //     const alert_types = await getAlertTypesForOrganization(prisma, organizationId);
+  //     return res.json({ alert_types });
+  //   } catch (err) {
+  //     logger.error("getAlertTypes error:", { error: err });
+  //     return res.status(500).json({ message: "Something went wrong" });
+  //   }
+  // },
   getSites: async (req, res) => {
     try {
       const organizationId = getOrganizationIdOrUnauthorized(req, res);
@@ -124,6 +124,14 @@ const AlertController = {
   },
   createAlert: async (req, res) => {
     try {
+      const organization_id = getOrganizationIdOrUnauthorized(req, res);
+      if (!organization_id) return;
+
+      const user_id = req.user?.user_id;
+      if (!user_id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const validation = createAlertSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({
@@ -133,8 +141,6 @@ const AlertController = {
       }
 
       const {
-        user_id,
-        organization_id,
         alert_type,
         severity_level,
         alert_message,
@@ -161,7 +167,8 @@ const AlertController = {
       );
 
       return res.status(201).json({
-        message: `Alert has been successfully ${newAlert.status === AlertStatus.active ? "queued for dispatch" : "scheduled"}.`,
+        message: `Alert has been successfully ${newAlert.status === AlertStatus.active ? "queued for dispatch" : "scheduled"
+          }.`,
         alert_id: newAlert.id,
         status: newAlert.status,
       });
@@ -174,7 +181,10 @@ const AlertController = {
       })) return;
 
       logger.error("createAlert error:", { error });
-      return res.status(500).json({ message: "Server error", error: error.message });
+      return res.status(500).json({
+        message: "Server error",
+        error: error.message,
+      });
     }
   },
   resolveAlert: async (req, res) => {

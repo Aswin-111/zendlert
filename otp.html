@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SPCS India - OTP Verification</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Font Import (Inter - close to the geometric sans-serif style in the screenshot) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="custom-config">
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .accent-teal {
+      background-color: #007979;
+    }
+    .text-teal {
+      color: #007979;
+    }
+    .shadow-card {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-800 antialiased">
+<!-- BEGIN: MainHeader -->
+<header class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+<div class="flex items-center space-x-2" data-purpose="logo-container">
+<div class="w-8 h-8 accent-teal flex items-center justify-center rounded-sm text-white font-bold text-xs">
+        SPCS
+      </div>
+<span class="font-bold text-xl tracking-tight">SPCS India</span>
+</div>
+<nav>
+<a class="text-teal font-semibold hover:underline" href="#">Register</a>
+</nav>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: HeroSection -->
+<main class="max-w-7xl mx-auto px-6 py-12 lg:py-20 flex flex-col lg:flex-row items-center justify-between min-h-[calc(100vh-160px)]">
+<!-- Left Column: Content and Book Illustration -->
+<div class="w-full lg:w-1/2 mb-12 lg:mb-0 relative" data-purpose="hero-content">
+<h1 class="text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+        The Home of <br/>
+<span class="text-teal">Malayalam Literature</span>
+</h1>
+<p class="text-lg text-slate-600 max-w-lg mb-12">
+        Sahithya Pravarthaka Co-operative Society (SPCS) is the premier platform for authors and readers in Kerala. Join our community to explore a rich legacy of literature and cultural heritage.
+      </p>
+<!-- Floating Book Illustration -->
+<div class="relative w-72 h-96 mx-auto lg:mx-0" data-purpose="floating-book-illustration">
+<!-- Abstract background shape -->
+<div class="absolute -bottom-8 -left-8 w-40 h-40 bg-teal-50 rounded-full blur-3xl opacity-60"></div>
+<div class="absolute -top-4 -right-4 w-32 h-32 bg-slate-100 rounded-full blur-2xl opacity-40"></div>
+<!-- Book Cover Placeholder -->
+<div class="relative z-10 w-64 h-80 bg-[#fdfdfd] shadow-2xl transform -rotate-3 border border-slate-100 rounded-sm p-2">
+<img alt="Featured Malayalam Book" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4WgippBWpylOrA19kcq4VWTnH_n0_U0tDGxPvku1YwN4dTNgOWZmb1nGOfBfkjmgAZTgl5o-0yCKWwQACqMt8MlRr8lXqnIsPJHtn3uOt2Zv4LG5BlG1mXaij_VRoTMBHfbq85-8nxi5GyEEDB8lcvEHa0Rq86LZk7yL_p8veoe6P0b6p1DiG9k_gS6jFOl-aFJpyszrGvYpvTe7EjS0uU38etEW4txspKvYdtUqtuU7_B9YsnHYBMjMP3thW99caL_1286QD6sQ"/>
+</div>
+</div>
+</div>
+<!-- Right Column: OTP Card -->
+<div class="w-full lg:w-5/12 flex justify-center lg:justify-end" data-purpose="auth-card-container">
+<div class="w-full max-w-md bg-white rounded-xl p-8 lg:p-10 shadow-card border border-slate-50" data-purpose="otp-card">
+<header class="mb-8">
+<p class="text-[10px] font-bold tracking-widest text-teal uppercase mb-2">VERIFY</p>
+<h2 class="text-2xl font-bold text-slate-900 mb-3">Enter Verification Code</h2>
+<p class="text-sm text-slate-500">
+            We sent a 6-digit code to your phone number <span class="font-medium text-slate-700">+91 98765 43210</span>
+</p>
+</header>
+<!-- OTP Form -->
+<form action="#" class="space-y-8" method="POST">
+<!-- 6-Digit OTP Inputs -->
+<div class="flex justify-between gap-2" data-purpose="otp-input-group">
+<input class="w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-slate-300 rounded-md focus:ring-teal focus:border-teal" maxlength="1" type="text"/>
+<input class="w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-slate-300 rounded-md focus:ring-teal focus:border-teal" maxlength="1" type="text"/>
+<input class="w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-slate-300 rounded-md focus:ring-teal focus:border-teal" maxlength="1" type="text"/>
+<input class="w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-slate-300 rounded-md focus:ring-teal focus:border-teal" maxlength="1" type="text"/>
+<input class="w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-slate-300 rounded-md focus:ring-teal focus:border-teal" maxlength="1" type="text"/>
+<input class="w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-slate-300 rounded-md focus:ring-teal focus:border-teal" maxlength="1" type="text"/>
+</div>
+<button class="w-full accent-teal text-white font-bold py-4 rounded-md transition-all hover:bg-[#006666] shadow-lg shadow-teal-900/10" type="submit">
+            Verify OTP
+          </button>
+</form>
+<footer class="mt-8 pt-8 border-t border-slate-100 flex flex-col items-center space-y-3 text-sm">
+<p class="text-slate-500">
+            Didn't receive code? <span class="text-teal font-medium">Resend code in 30s</span>
+</p>
+<a class="text-teal font-medium hover:underline" href="#">Change Phone Number</a>
+</footer>
+</div>
+</div>
+</main>
+<!-- END: HeroSection -->
+<!-- BEGIN: Footer -->
+<footer class="bg-[#1a1a1a] text-slate-300 py-16 px-6" data-purpose="main-footer">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+<!-- Brand & Info -->
+<div class="space-y-6">
+<div class="flex items-center space-x-2">
+<div class="w-7 h-7 accent-teal flex items-center justify-center rounded-sm text-white font-bold text-[10px]">
+            SPCS
+          </div>
+<span class="font-bold text-white text-lg">SPCS India</span>
+</div>
+<p class="text-sm leading-relaxed text-slate-400">
+          Sahithya Pravarthaka Co-operative Society is the largest writers' co-operative in India, empowering Malayalam literature since 1945.
+        </p>
+</div>
+<!-- Quick Links -->
+<div>
+<h4 class="text-white font-bold text-sm uppercase tracking-wider mb-6">Quick Links</h4>
+<ul class="space-y-4 text-sm">
+<li><a class="hover:text-white transition-colors" href="#">About Us</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Our Authors</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Bookstore</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Publications</a></li>
+</ul>
+</div>
+<!-- Support -->
+<div>
+<h4 class="text-white font-bold text-sm uppercase tracking-wider mb-6">Support</h4>
+<ul class="space-y-4 text-sm">
+<li><a class="hover:text-white transition-colors" href="#">Contact</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Help Center</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Terms</a></li>
+</ul>
+</div>
+<!-- Connect -->
+<div class="space-y-6">
+<h4 class="text-white font-bold text-sm uppercase tracking-wider mb-6">Connect</h4>
+<div class="flex space-x-4">
+<a class="w-9 h-9 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors" href="#">
+<!-- Simple FB SVG -->
+<svg class="w-4 h-4 fill-current" viewbox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path></svg>
+</a>
+<a class="w-9 h-9 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors" href="#">
+<!-- Simple TW SVG -->
+<svg class="w-4 h-4 fill-current" viewbox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+</a>
+</div>
+<div class="pt-6 border-t border-slate-800">
+<p class="text-[10px] text-slate-500">
+            © 2023 Sahithya Pravarthaka Co-operative Society Ltd. <br/>
+            All rights reserved.
+          </p>
+</div>
+</div>
+</div>
+</footer>
+<!-- END: Footer -->
+<!-- Script for basic OTP input behavior -->
+<script data-purpose="otp-handlers">
+    const inputs = document.querySelectorAll('[data-purpose="otp-input-group"] input');
+    
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+    });
+  </script>
+</body></html>
