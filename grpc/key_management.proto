@@ -1,0 +1,169 @@
+syntax = "proto3";
+package keymanagement;
+import "google/protobuf/empty.proto";
+
+service KeyManagementService {
+
+  // Called on first device after key pair is generated locally.
+  rpc UploadKeyBackup     (UploadKeyBackupRequest)    returns (google.protobuf.Empty);
+
+  // Called on reinstall/new device to get the encrypted backup blob.
+  rpc GetKeyBackup        (GetKeyBackupRequest)       returns (KeyBackupResponse);
+
+  // Called after key is successfully recovered, to register the device as active.
+  rpc RegisterDevice      (RegisterDeviceRequest)     returns (google.protobuf.Empty);
+
+  // New device posts its ephemeral public key here to begin transfer.
+  rpc RequestKeyTransfer  (KeyTransferRequest)        returns (KeyTransferResponse);
+
+  // New device polls this until status becomes "approved" or "rejected".
+  rpc PollKeyTransfer     (PollTransferRequest)       returns (KeyTransferStatusResponse);
+
+  // Trusted old device calls this to deliver the ECDH-wrapped private key.
+  rpc ApproveKeyTransfer  (ApproveTransferRequest)    returns (google.protobuf.Empty);
+
+  // Trusted device rejects the request (user denied it).
+  rpc RejectKeyTransfer   (RejectTransferRequest)     returns (google.protobuf.Empty);
+
+  // Returns all pending transfer requests for the authenticated user.
+  // Called on app open on trusted devices so they can show an approval prompt.
+  rpc ListPendingTransfers(ListTransfersRequest)      returns (PendingTransferList);
+
+  // Fallback: server re-wraps sealed key for new device. Requires OTP auth.
+  // Logs to Audit_Logs. Warns user that server briefly accessed key material.
+  rpc SealedKeyRecovery   (SealedRecoveryRequest)     returns (SealedRecoveryResponse);
+
+  // Lists all active devices for the authenticated user.
+  rpc ListDevices         (ListDevicesRequest)        returns (DeviceList);
+
+  // Marks a device as inactive (revoke access from security settings).
+  rpc RevokeDevice        (RevokeDeviceRequest)       returns (google.protobuf.Empty);
+}
+
+// ─── Upload / Get backup ──────────────────────────────────────────────────────
+
+message UploadKeyBackupRequest {
+  string user_id               = 1;
+  string organization_id       = 2;
+  string encrypted_private_key = 3; // base64 — only used if password backup path added later
+  string public_key            = 4; // plaintext SPKI base64
+  string kdf_salt              = 5; // leave empty for OTP-only accounts
+  int32  kdf_iterations        = 6; // leave 0 for OTP-only accounts
+  string device_id             = 7;
+  string platform              = 8; // "ios" | "android" | "web"
+  string fcm_token             = 9;
+  string sealed_blob           = 10; // server-sealed backup, produced client-side using server's public key
+}
+
+message GetKeyBackupRequest {
+  string user_id         = 1;
+  string organization_id = 2;
+}
+
+message KeyBackupResponse {
+  string encrypted_private_key = 1;
+  string public_key            = 2;
+  string kdf_salt              = 3;
+  int32  kdf_iterations        = 4;
+  string kdf_algorithm         = 5;
+  int32  version               = 6;
+}
+
+// ─── Device registration ──────────────────────────────────────────────────────
+
+message RegisterDeviceRequest {
+  string user_id         = 1;
+  string organization_id = 2;
+  string device_id       = 3;
+  string platform        = 4;
+  string fcm_token       = 5;
+}
+
+// ─── Device-to-device key transfer ───────────────────────────────────────────
+
+message KeyTransferRequest {
+  string user_id               = 1;
+  string organization_id       = 2;
+  string requesting_device_id  = 3;
+  string ephemeral_public_key  = 4; // base64 SPKI — EC P-256 key generated just for this transfer
+}
+
+message KeyTransferResponse {
+  string transfer_id = 1;
+  string expires_at  = 2; // ISO-8601 — tell the client how long to poll before giving up
+}
+
+message PollTransferRequest {
+  string transfer_id = 1;
+  string user_id     = 2;
+}
+
+message KeyTransferStatusResponse {
+  string status                       = 1; // "pending" | "approved" | "rejected" | "expired"
+  string wrapped_private_key          = 2; // populated only when approved
+  string approving_device_public_key  = 3; // the approving device's identity public key, needed for ECDH
+}
+
+message ApproveTransferRequest {
+  string transfer_id                  = 1;
+  string user_id                      = 2;
+  string approving_device_id          = 3;
+  string wrapped_private_key          = 4; // ECDH result: private key wrapped for the new device
+  string approving_device_public_key  = 5; // identity public key of approving device
+}
+
+message RejectTransferRequest {
+  string transfer_id = 1;
+  string user_id     = 2;
+}
+
+message ListTransfersRequest {
+  string user_id = 1;
+}
+
+message PendingTransferList {
+  repeated PendingTransfer transfers = 1;
+}
+
+message PendingTransfer {
+  string transfer_id          = 1;
+  string requesting_device_id = 2;
+  string ephemeral_public_key = 3;
+  string created_at           = 4;
+  string expires_at           = 5;
+}
+
+// ─── Sealed fallback recovery ─────────────────────────────────────────────────
+
+message SealedRecoveryRequest {
+  string user_id           = 1; 
+  string organization_id   = 2;
+  string device_id         = 3;
+  string device_public_key = 4; // new device's long-term public key (SPKI base64)
+}
+
+message SealedRecoveryResponse {
+  string wrapped_private_key = 1; // server decrypted sealed blob, re-wrapped for device's public key
+}
+
+// ─── Device management ────────────────────────────────────────────────────────
+
+message ListDevicesRequest {
+  string user_id = 1;
+}
+
+message DeviceList {
+  repeated DeviceInfo devices = 1;
+}
+
+message DeviceInfo {
+  string device_id  = 1;
+  string platform   = 2;
+  string last_seen  = 3; // ISO-8601
+  bool   is_active  = 4;
+}
+
+message RevokeDeviceRequest {
+  string user_id   = 1;
+  string device_id = 2;
+}

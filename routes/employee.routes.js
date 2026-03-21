@@ -6,14 +6,16 @@ const router = express.Router();
 
 router.use(verifyEmployeeAccess);
 
-router.post("/alerts/:alertId/responses", (req, res, next) => {
-  req.body = {
-    ...(req.body || {}),
-    alert_id: req.params.alertId,
-    user_id: req.user?.user_id,
-  };
-  return next();
-}, EmployeeController.respondToAlert);
+router.post(
+  "/alerts/:alertId/responses",
+  (req, res, next) => {
+    req.body = req.body || {};
+    req.body.alert_id = req.params.alertId;
+    return next();
+  },
+  EmployeeController.respondToAlert
+)
+
 router.get("/alerts/responses/history", EmployeeController.getResponseHistory);
 router.get("/organization", EmployeeController.getOrganizationInfo);
 router.get("/notifications/recent", EmployeeController.getRecentNotifications);

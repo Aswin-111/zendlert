@@ -294,9 +294,29 @@ const OrganizationController = {
       // Set Cookie
       sendRefreshTokenCookie(res, refreshToken);
 
+      const deviceId = req.body.device_id ?? null;
+
+      const [existingBackup, existingDevice] = await Promise.all([
+        prisma.user_Key_Backups.findUnique({
+          where: { user_id: user.user_id },
+          select: { version: true },
+        }),
+        deviceId
+          ? prisma.user_Devices.findFirst({
+            where: {
+              user_id: user.user_id,
+              device_id: deviceId,
+              is_active: true,
+            },
+            select: { id: true },
+          })
+          : Promise.resolve(null),
+      ]);
+
+      // Replace your existing return with this:
       return res.status(200).json({
         success: true,
-        message: "Login successful",
+        message: 'Login successful',
         accessToken,
         refreshToken,
         user: {
@@ -306,6 +326,14 @@ const OrganizationController = {
           email: user.email,
           name: `${user.first_name} ${user.last_name}`,
           role: user.role?.role_name,
+        },
+        key_status: {
+          has_backup: !!existingBackup,
+          device_registered: !!existingDevice,
+          // Flutter reads this and branches:
+          // has_backup=false               → generate keys, call UploadKeyBackup
+          // has_backup=true, registered=false → call RequestKeyTransfer, poll, then RegisterDevice
+          // has_backup=true, registered=true  → keys already in secure storage, proceed
         },
       });
     } catch (error) {
@@ -526,7 +554,7 @@ const OrganizationController = {
       }
 
       const { first_name: firstName,
-          last_name: lastName, phone_number, email } = parsed.data;
+        last_name: lastName, phone_number, email } = parsed.data;
 
       // 1. Check email uniqueness if it is being changed
       if (email) {

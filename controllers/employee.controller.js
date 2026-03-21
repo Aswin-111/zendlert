@@ -3,7 +3,10 @@ import loginSchema from "../validators/organization/login.validator.js";
 import bcrypt from "bcrypt";
 import logger from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
-
+import {
+  AUTH_RESPONSE_MESSAGES,
+  sendForbidden,
+} from "../middlewares/authResponse.js";
 import {
   recordEmployeeAlertResponseWithLocation,
   ALLOWED_RESPONSES,
@@ -20,7 +23,6 @@ import {
   getAuthContext,
 } from "../helpers/employee.helper.js";
 import { generateTokens, sendRefreshTokenCookie } from "../utils/token.js";
-
 const EmployeeController = {
   employeeLogin: async (req, res) => {
     try {
@@ -91,9 +93,21 @@ const EmployeeController = {
   respondToAlert: async (req, res) => {
     try {
       const parsed = buildRespondToAlertSchema(ALLOWED_RESPONSES).parse(req.body);
+
+      const user_id = req.user?.user_id;
+      const organization_id = req.user?.organization_id;
+
+      if (!user_id || !organization_id) {
+        return sendForbidden(
+          res,
+          AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN
+        );
+      }
+
       const result = await recordEmployeeAlertResponseWithLocation({
         alert_id: parsed.alert_id,
-        user_id: parsed.user_id,
+        user_id,
+        organization_id,
         response: parsed.response,
         latitude: parsed.latitude,
         longitude: parsed.longitude,
@@ -103,14 +117,19 @@ const EmployeeController = {
       return res.status(200).json({
         message: "Response recorded successfully",
         recipient: result.recipient,
+        saved_location: result.saved_location ?? null,
       });
     } catch (err) {
       if (err?.statusCode) {
         return res.status(err.statusCode).json({ error: err.message });
       }
+
       if (err?.name === "ZodError") {
-        return res.status(400).json({ error: err.errors });
+        return res.status(400).json({
+          error: err.issues || err.errors,
+        });
       }
+
       logger.error("respondToAlert error:", err);
       return res.status(500).json({ error: "Internal server error" });
     }
@@ -182,7 +201,7 @@ const EmployeeController = {
    *
    * GET /employee/organization-info
    */
-  
+
   getOrganizationInfo: async (req, res) => {
     try {
       const { user_id: userId, organization_id: organizationId } = getAuthContext(req);

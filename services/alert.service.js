@@ -3,7 +3,7 @@ import { fileURLToPath } from "url";
 import grpc from "@grpc/grpc-js";
 import protoLoader from "@grpc/proto-loader";
 import { AlertStatus } from "@prisma/client";
-
+import { verifyJwt, parseBearerToken } from "../utils/token.js";
 import logger from "../utils/logger.js";
 import { toGrpcErrorCode } from "../helpers/grpc-error.helper.js";
 import { recordEmployeeAlertResponse } from "./employeeAlertResponse.service.js";
@@ -14,6 +14,56 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+function handleGrpcError(callback, error, context = "gRPC") {
+  // ✅ handle custom service errors
+  if (error instanceof AlertServiceError) {
+    return callback({
+      code: toGrpcErrorCode(error.statusCode),
+      message: error.message,
+    });
+  }
+
+  // ✅ handle already-formed gRPC errors (like from verifyJwt)
+  if (error.code && error.message) {
+    return callback(error);
+  }
+
+  logger.error(`[${context}] error`, { error });
+
+  return callback({
+    code: grpc.status.INTERNAL,
+    message: "Internal server error",
+  });
+}
+
+function getAuthContext(call) {
+  const authHeader = call.metadata.get("authorization");
+
+  const token = parseBearerToken(authHeader);
+
+  if (!token) {
+    throw {
+      code: grpc.status.UNAUTHENTICATED,
+      message: "Missing or invalid auth token",
+    };
+  }
+
+  let decoded;
+  try {
+    decoded = verifyJwt(token);
+  } catch (err) {
+    throw {
+      code: grpc.status.UNAUTHENTICATED,
+      message: "Invalid or expired token",
+    };
+  }
+
+  return {
+    user_id: decoded.user_id,
+    organization_id: decoded.organization_id,
+  };
+}
 
 function toProtoTimestamp(date) {
   if (!date) return null;
@@ -49,13 +99,21 @@ function buildGrpcAlertRecipientCounts(recipients) {
   const total_employees = recipients.length;
   const responded_recipients = recipients.filter((r) => r.response !== null);
   const responded_employees = responded_recipients.length;
+
   const safe_count = responded_recipients.filter(
     (r) => r.response === "safe",
   ).length;
+
   const need_help_count = responded_recipients.filter(
-    (r) => r.response !== "safe",
+    (r) => r.response === "need_help",
   ).length;
+
+  const emergency_help_needed_count = responded_recipients.filter(
+    (r) => r.response === "emergency_help_needed",
+  ).length;
+
   const not_responded_count = total_employees - responded_employees;
+
   const delivered_count = recipients.filter(
     (r) => r.delivery_status === "delivered",
   ).length;
@@ -65,25 +123,36 @@ function buildGrpcAlertRecipientCounts(recipients) {
     responded_employees,
     safe_count,
     need_help_count,
+    emergency_help_needed_count,
     not_responded_count,
     delivered_count,
   };
 }
 
-export async function getAlertDataPayload(prisma, alert_id) {
+export async function getAlertDataPayload(prisma, alert_id, organization_id) {
   if (!alert_id) {
     throw new AlertServiceError("alert_id is a required field.", 400);
   }
 
-  const alert = await prisma.alerts.findUnique({
-    where: { id: alert_id },
+  if (!organization_id) {
+    throw new AlertServiceError("organization_id is required.", 400);
+  }
+
+  const alerts = await prisma.alerts.findMany({
+    where: {
+      id: alert_id,
+      organization_id,
+    },
     include: {
       emergency_type: { select: { name: true } },
       Alert_Sites: { include: { site: { select: { name: true } } } },
       Alert_Areas: { include: { area: { select: { name: true } } } },
       Notification_Recipients: true,
     },
+    take: 1,
   });
+
+  const alert = alerts[0];
 
   if (!alert) {
     throw new AlertServiceError(`Alert with ID '${alert_id}' not found.`, 404);
@@ -123,14 +192,21 @@ export async function resolveSiteAreaTargets(prisma, organization_id, siteSelect
     siteSelections.map(async (sel) => {
       if (!sel.area_ids || sel.area_ids.length === 0) {
         const allAreas = await prisma.areas.findMany({
-          where: { site_id: sel.site_id },
+          where: {
+            site_id: sel.site_id,
+            site: { organization_id },
+          },
           select: { id: true },
         });
         return allAreas.map((a) => a.id);
       }
 
       const pickedAreas = await prisma.areas.findMany({
-        where: { site_id: sel.site_id, id: { in: sel.area_ids } },
+        where: {
+          site_id: sel.site_id,
+          id: { in: sel.area_ids },
+          site: { organization_id },
+        },
         select: { id: true },
       });
 
@@ -284,11 +360,13 @@ export async function createAlertForOrganization(
   const { timing, scheduled_time: scheduledTimeStr } = timing_details;
   const now = utcNow();
 
-  const status = timing === "send_now" ? AlertStatus.active : AlertStatus.scheduled;
+  const status =
+    timing === "send_now" ? AlertStatus.active : AlertStatus.scheduled;
   const start_time = timing === "send_now" ? now : null;
-  const scheduled_time = timing === "scheduled"
-    ? normalizeIncomingDateTimeToUtc(scheduledTimeStr)
-    : null;
+  const scheduled_time =
+    timing === "scheduled"
+      ? normalizeIncomingDateTimeToUtc(scheduledTimeStr)
+      : null;
 
   if (status === AlertStatus.scheduled) {
     if (!scheduled_time || Number.isNaN(scheduled_time.getTime())) {
@@ -313,16 +391,9 @@ export async function createAlertForOrganization(
     finalAreaIdsArray,
   });
 
-  const targetUsers = await createRecipientsForAlert(
-    prisma,
-    newAlert.id,
-    organization_id,
-    finalAreaIdsArray,
-  );
-
   await enqueueAlertNotificationJob(notificationQueue, newAlert, send_sms);
 
-  return { newAlert, targetUsers };
+  return { newAlert };
 }
 
 export async function enqueueAlertNotificationJob(notificationQueue, alert, send_sms) {
@@ -528,7 +599,6 @@ export async function getAlertDashboardPayload(
     }),
   ]);
 
-  // Derive dashboard counters from grouped rows so we avoid multiple single-purpose count queries.
   const totalDeliveries = deliveryStatusCounts.reduce(
     (sum, row) => sum + Number(row?._count?.delivery_status ?? 0),
     0,
@@ -755,19 +825,18 @@ export async function resolveAlertForOrganization(
     );
   }
 
-  const alert = await prisma.alerts.findUnique({
-    where: { id: alert_id },
+  const alerts = await prisma.alerts.findMany({
+    where: {
+      id: alert_id,
+      organization_id,
+    },
+    take: 1,
   });
+
+  const alert = alerts[0];
 
   if (!alert) {
     throw new AlertServiceError("Alert not found.", 404);
-  }
-
-  if (alert.organization_id !== organization_id) {
-    throw new AlertServiceError(
-      "Forbidden: You cannot resolve this alert.",
-      403,
-    );
   }
 
   if (alert.status !== "active") {
@@ -890,9 +959,9 @@ async function buildActiveAlertsPayload(prisma, organization_id) {
 
   const sitesForAreas = siteIdsFromAreas.length
     ? await prisma.sites.findMany({
-        where: { id: { in: siteIdsFromAreas } },
-        select: { id: true, name: true },
-      })
+      where: { id: { in: siteIdsFromAreas }, organization_id },
+      select: { id: true, name: true },
+    })
     : [];
 
   const siteNameById = new Map(sitesForAreas.map((s) => [s.id, s.name]));
@@ -923,8 +992,6 @@ async function buildActiveAlertsPayload(prisma, organization_id) {
       safe: 0,
       need_help: 0,
       emergency_help_needed: 0,
-      evacuated: 0,
-      seeking_shelter: 0,
     });
   }
 
@@ -948,16 +1015,12 @@ async function buildActiveAlertsPayload(prisma, organization_id) {
       safe: 0,
       need_help: 0,
       emergency_help_needed: 0,
-      evacuated: 0,
-      seeking_shelter: 0,
     };
 
     const responded =
       s.safe +
       s.need_help +
-      s.emergency_help_needed +
-      s.evacuated +
-      s.seeking_shelter;
+      s.emergency_help_needed;
 
     const notResponded = Math.max(totalsForAlert - responded, 0);
 
@@ -969,8 +1032,7 @@ async function buildActiveAlertsPayload(prisma, organization_id) {
       start_time: toProtoTimestamp(alert.start_time ?? alert.created_at),
       safe_count: s.safe,
       need_help_count: s.need_help,
-      evacuated_count: s.evacuated,
-      seeking_shelter_count: s.seeking_shelter,
+      emergency_help_needed_count: s.emergency_help_needed,
       not_responded_count: notResponded,
       total_recipients: totalsForAlert,
       locations: locationsByAlertId.get(alert.id) ?? [],
@@ -999,111 +1061,104 @@ export function startAlertService(prisma) {
 
   const getAlertDataHandler = async (call, callback) => {
     try {
-      const payload = await getAlertDataPayload(prisma, call.request?.alert_id);
+      const { organization_id } = getAuthContext(call);
+
+      const payload = await getAlertDataPayload(
+        prisma,
+        call.request?.alert_id,
+        organization_id,
+      );
+
       return callback(null, payload);
     } catch (e) {
-      logger.error("[gRPC GetAlertData] error", { error: e });
-      if (e instanceof AlertServiceError) {
-        return callback({
-          code: toGrpcErrorCode(e.statusCode),
-          message: e.message,
-        });
-      }
-      return callback({
-        code: grpc.status.INTERNAL,
-        message: "An internal error occurred while fetching alert data.",
-      });
+      return handleGrpcError(callback, e, "GetAlertData");
     }
   };
 
   const getActiveAlertsUnary = async (call, callback) => {
     try {
-      const { organization_id } = call.request;
-      if (!organization_id) {
-        return callback({
-          code: grpc.status.INVALID_ARGUMENT,
-          message: "organization_id is required",
-        });
-      }
-      const payload = await buildActiveAlertsPayload(prisma, organization_id);
+      const { organization_id } = getAuthContext(call);
+
+      const payload = await buildActiveAlertsPayload(
+        prisma,
+        organization_id,
+      );
+
       return callback(null, { active_alerts: payload });
     } catch (e) {
-      logger.error("[gRPC GetActiveAlerts] error", { error: e });
-      return callback({ code: grpc.status.INTERNAL, message: "Internal server error" });
+      return handleGrpcError(callback, e, "GetActiveAlerts");
     }
   };
 
   const streamActiveAlerts = (call) => {
-    const { organization_id } = call.request;
-    if (!organization_id) {
-      call.emit("error", {
-        code: grpc.status.INVALID_ARGUMENT,
-        message: "organization_id is required",
-      });
+    let context;
+
+    try {
+      context = getAuthContext(call);
+    } catch (err) {
+      call.emit("error", err);
       return;
     }
 
-    logger.info("[gRPC Stream] Client connected", { meta: { organization_id } });
+    const { organization_id } = context;
 
     const sendUpdates = async () => {
+      if (call.cancelled) return;
+
       try {
-        if (call.cancelled) return;
-        const payload = await buildActiveAlertsPayload(prisma, organization_id);
+        const payload = await buildActiveAlertsPayload(
+          prisma,
+          organization_id,
+        );
+
         call.write({ active_alerts: payload });
-      } catch (e) {
-        logger.error("[gRPC Stream] Error while sending updates", {
-          error: e,
-          meta: { organization_id },
-        });
+      } catch (err) {
+        logger.error("[StreamActiveAlerts] error", err);
       }
     };
 
     sendUpdates();
-    const intervalId = setInterval(sendUpdates, 15000);
+
+    const interval = setInterval(sendUpdates, 15000);
 
     call.on("cancelled", () => {
-      logger.info("[gRPC Stream] Client disconnected", { meta: { organization_id } });
-      clearInterval(intervalId);
+      clearInterval(interval);
       call.end();
     });
   };
 
   const updateEmployeeResponse = async (call, callback) => {
     try {
-      const { alert_id, user_id, response } = call.request;
+      const { alert_id, response } = call.request;
 
-      if (!alert_id || !user_id) {
-        return callback({
-          code: grpc.status.INVALID_ARGUMENT,
-          message: "alert_id and user_id are required",
-        });
+      if (!alert_id || response === undefined) {
+        throw new AlertServiceError("Invalid request payload", 400);
       }
 
+      const { user_id, organization_id } = getAuthContext(call);
+
       const dbResponse = mapProtoResponseToDbEnum(response);
+
       if (!dbResponse) {
-        return callback({ code: grpc.status.INVALID_ARGUMENT, message: "Invalid response" });
+        throw new AlertServiceError("Invalid response type", 400);
       }
 
       const result = await recordEmployeeAlertResponse({
         alert_id,
         user_id,
+        organization_id,
         response: dbResponse,
       });
 
       return callback(null, {
         ok: true,
         message: "Response updated",
-        response_updated_at: toProtoTimestamp(result.response_updated_at),
+        response_updated_at: toProtoTimestamp(
+          result.response_updated_at,
+        ),
       });
     } catch (e) {
-      logger.error("[gRPC UpdateEmployeeResponse] error", { error: e });
-      if (e?.statusCode === 400) {
-        return callback({ code: grpc.status.INVALID_ARGUMENT, message: e.message });
-      }
-      if (e?.statusCode === 404) {
-        return callback({ code: grpc.status.NOT_FOUND, message: e.message });
-      }
-      return callback({ code: grpc.status.INTERNAL, message: "Internal server error" });
+      return handleGrpcError(callback, e, "UpdateEmployeeResponse");
     }
   };
 
@@ -1124,4 +1179,4 @@ export function startAlertService(prisma) {
     }
     logger.info(`[gRPC Alert] Service running at ${addr}`);
   });
-}
+} 

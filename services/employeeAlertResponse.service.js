@@ -22,54 +22,103 @@ function ensureAllowedResponse(response) {
   throw new EmployeeAlertResponseServiceError("Invalid response", 400);
 }
 
-async function findAlertForResponse(tx, alert_id) {
-  const alert = await tx.alerts.findUnique({
-    where: { id: alert_id },
-    select: { id: true, status: true, scheduled_time: true },
+async function findAlertForResponse(tx, alert_id, organization_id) {
+  const alerts = await tx.alerts.findMany({
+    where: {
+      id: alert_id,
+      organization_id,
+    },
+    select: {
+      id: true,
+      organization_id: true,
+      status: true,
+      scheduled_time: true,
+    },
+    take: 1,
   });
+
+  const alert = alerts[0];
 
   if (!alert) {
     throw new EmployeeAlertResponseServiceError("Alert not found", 404);
   }
 
+  if (alert.status !== "active" && alert.status !== "scheduled") {
+    throw new EmployeeAlertResponseServiceError(
+      `Cannot respond to alert with status '${alert.status}'`,
+      409,
+    );
+  }
+
   return alert;
 }
 
-async function upsertRecipientResponse(tx, { alert, alert_id, user_id, response }) {
-  const now = utcNow();
-  const newHistoryEntry = { response, at: now.toISOString() };
+async function ensureUserBelongsToOrganization(tx, user_id, organization_id) {
+  const users = await tx.users.findMany({
+    where: {
+      user_id,
+      organization_id,
+      is_active: true,
+    },
+    select: {
+      user_id: true,
+      organization_id: true,
+    },
+    take: 1,
+  });
 
-  const existing = await tx.notification_Recipients.findUnique({
+  const user = users[0];
+
+  if (!user) {
+    throw new EmployeeAlertResponseServiceError(
+      "User not found in this organization",
+      403,
+    );
+  }
+
+  return user;
+}
+
+async function findExistingRecipientOrThrow(tx, alert_id, user_id) {
+  const recipient = await tx.notification_Recipients.findUnique({
     where: {
       alert_id_user_id: { alert_id, user_id },
     },
     select: {
+      id: true,
+      alert_id: true,
+      user_id: true,
       acknowledged_at: true,
       delivery_status: true,
       response_history: true,
     },
   });
 
+  if (!recipient) {
+    throw new EmployeeAlertResponseServiceError(
+      "User is not a recipient of this alert",
+      403,
+    );
+  }
+
+  return recipient;
+}
+
+async function updateRecipientResponse(tx, { alert, alert_id, user_id, response }) {
+  const now = utcNow();
+  const newHistoryEntry = { response, at: now.toISOString() };
+
+  const existing = await findExistingRecipientOrThrow(tx, alert_id, user_id);
+
   const mergedHistory = Array.isArray(existing?.response_history)
     ? [...existing.response_history, newHistoryEntry]
     : [newHistoryEntry];
 
-  const recipient = await tx.notification_Recipients.upsert({
+  const recipient = await tx.notification_Recipients.update({
     where: {
       alert_id_user_id: { alert_id, user_id },
     },
-    create: {
-      alert_id,
-      user_id,
-      channel: "in_app",
-      delivery_status: "delivered",
-      delivered_at: now,
-      acknowledged_at: now,
-      response,
-      response_updated_at: now,
-      response_history: [newHistoryEntry],
-    },
-    update: {
+    data: {
       response,
       response_updated_at: now,
       acknowledged_at: existing?.acknowledged_at ?? now,
@@ -92,8 +141,15 @@ async function upsertRecipientResponse(tx, { alert, alert_id, user_id, response 
 
   if (alert.status === "scheduled") {
     await tx.alerts.updateMany({
-      where: { id: alert_id, status: "scheduled" },
-      data: { status: "active", start_time: alert.scheduled_time ?? now },
+      where: {
+        id: alert_id,
+        organization_id: alert.organization_id,
+        status: "scheduled",
+      },
+      data: {
+        status: "active",
+        start_time: alert.scheduled_time ?? now,
+      },
     });
   }
 
@@ -110,31 +166,45 @@ async function upsertRecipientResponse(tx, { alert, alert_id, user_id, response 
  * }
  *
  * Behavior:
- * - ALWAYS 1 row per (alert_id, user_id) (no duplicates)
- * - Response can be updated multiple times (overwrites response fields)
- * - response_history appends entries each time (optional, keep or remove)
+ * - Requires alert to belong to the caller's organization
+ * - Requires user to belong to the same organization
+ * - Requires an existing recipient row for (alert_id, user_id)
+ * - Response can be updated multiple times
+ * - response_history appends entries each time
  * - Marks delivered if not already delivered
- * - If alert is scheduled, nudge to active on first response
+ * - If alert is scheduled, nudges it to active on first response
  *
- * NOTE: This service NO LONGER writes user_Locations.
- * Your controller already writes user_Locations (history). Keep it there to avoid double inserts.
+ * NOTE:
+ * - This service does NOT auto-create notification recipient rows
+ * - This service does NOT write user_Locations
  */
 export async function recordEmployeeAlertResponse({
   alert_id,
   user_id,
+  organization_id,
   response,
 }) {
   try {
     ensureAllowedResponse(response);
+
     const recipient = await prisma.$transaction(async (tx) => {
-      const alert = await findAlertForResponse(tx, alert_id);
-      return upsertRecipientResponse(tx, { alert, alert_id, user_id, response });
+      const alert = await findAlertForResponse(tx, alert_id, organization_id);
+
+      await ensureUserBelongsToOrganization(tx, user_id, organization_id);
+
+      return updateRecipientResponse(tx, {
+        alert,
+        alert_id,
+        user_id,
+        response,
+      });
     });
+
     return recipient;
   } catch (error) {
     logger.error("recordEmployeeAlertResponse failed", {
       error,
-      meta: { alert_id, user_id },
+      meta: { alert_id, user_id, organization_id },
     });
     throw error;
   }
@@ -143,6 +213,7 @@ export async function recordEmployeeAlertResponse({
 export async function recordEmployeeAlertResponseWithLocation({
   alert_id,
   user_id,
+  organization_id,
   response,
   latitude,
   longitude,
@@ -155,7 +226,11 @@ export async function recordEmployeeAlertResponseWithLocation({
       typeof latitude === "number" && typeof longitude === "number";
 
     return await prisma.$transaction(async (tx) => {
-      const alert = await findAlertForResponse(tx, alert_id);
+      const alert = await findAlertForResponse(tx, alert_id, organization_id);
+
+      await ensureUserBelongsToOrganization(tx, user_id, organization_id);
+
+      await findExistingRecipientOrThrow(tx, alert_id, user_id);
 
       let saved_location = null;
       if (hasLocation) {
@@ -179,7 +254,7 @@ export async function recordEmployeeAlertResponseWithLocation({
         });
       }
 
-      const recipient = await upsertRecipientResponse(tx, {
+      const recipient = await updateRecipientResponse(tx, {
         alert,
         alert_id,
         user_id,
@@ -191,7 +266,7 @@ export async function recordEmployeeAlertResponseWithLocation({
   } catch (error) {
     logger.error("recordEmployeeAlertResponseWithLocation failed", {
       error,
-      meta: { alert_id, user_id },
+      meta: { alert_id, user_id, organization_id },
     });
     throw error;
   }

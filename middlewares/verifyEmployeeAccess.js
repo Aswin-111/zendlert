@@ -26,14 +26,20 @@ export default function verifyEmployeeAccess(req, res, next) {
   const token = parseBearerToken(header);
 
   if (!token) {
-    logger.warn("auth.verifyEmployeeAccess.missing_or_invalid_bearer", requestMeta);
+    logger.warn(
+      "auth.verifyEmployeeAccess.missing_or_invalid_bearer",
+      requestMeta
+    );
     return sendUnauthorized(res, AUTH_RESPONSE_MESSAGES.UNAUTHORIZED);
   }
 
   const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
   if (typeof accessTokenSecret !== "string" || !accessTokenSecret.trim()) {
     logger.error("auth.verifyEmployeeAccess.secret_missing", requestMeta);
-    return sendForbidden(res, AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN);
+    return sendForbidden(
+      res,
+      AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN
+    );
   }
 
   try {
@@ -41,7 +47,10 @@ export default function verifyEmployeeAccess(req, res, next) {
 
     if (!decoded || typeof decoded !== "object") {
       logger.warn("auth.verifyEmployeeAccess.invalid_token_payload", requestMeta);
-      return sendForbidden(res, AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN);
+      return sendForbidden(
+        res,
+        AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN
+      );
     }
 
     if (String(decoded?.role || "").toLowerCase() !== "employee") {
@@ -49,23 +58,28 @@ export default function verifyEmployeeAccess(req, res, next) {
         ...requestMeta,
         user_id: decoded?.user_id || null,
       });
-      return sendForbidden(res, AUTH_RESPONSE_MESSAGES.FORBIDDEN_EMPLOYEE_ONLY);
+      return sendForbidden(
+        res,
+        AUTH_RESPONSE_MESSAGES.FORBIDDEN_EMPLOYEE_ONLY
+      );
     }
 
     req.user = decoded;
     return next();
   } catch (err) {
     const isExpired = err?.name === "TokenExpiredError";
+
     logger.warn("auth.verifyEmployeeAccess.verify_failed", {
       ...requestMeta,
       reason: isExpired ? "token_expired" : "invalid_token",
       errorName: err?.name || "UnknownError",
     });
+
     return sendForbidden(
       res,
       isExpired
         ? AUTH_RESPONSE_MESSAGES.FORBIDDEN_EXPIRED_TOKEN
-        : AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN,
+        : AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN
     );
   }
 }

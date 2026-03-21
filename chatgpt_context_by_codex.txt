@@ -1,0 +1,179 @@
+Short context for ChatGPT: subscription wrapper design
+
+Tech stack
+- Node.js backend using Express 5.1 with ESM modules.
+- Prisma ORM with PostgreSQL.
+- Zod for request validation.
+- JWT bearer auth.
+- Stripe already exists for billing/subscriptions.
+
+Project structure
+- app.js mounts routers and middleware.
+- routes/ contains route definitions.
+- controllers/ contains most business logic.
+- middlewares/ contains auth and error middleware.
+- services/ exists, but HTTP controllers still mostly query Prisma directly.
+- helpers/ contains small reusable auth/org ownership helpers.
+- utils/prisma.js is the shared Prisma client singleton.
+
+Auth and request context
+- The app uses req.user, not req.admin or req.employee.
+- JWT payload shape comes from utils/token.js:
+  - user_id
+  - email
+  - role
+  - organization_id
+  - organization_name
+- Hard auth middleware:
+  - verifyAdminAccess
+  - verifyEmployeeAccess
+- Soft auth middleware:
+  - attachAuthContext
+  - This only decodes the JWT if present and sets req.user, but does not reject missing auth.
+
+Organization resolution
+- Most protected endpoints use req.user.organization_id from the JWT.
+- Some controllers still fall back to req.body.organization_id or req.query.organization_id.
+- Public employee registration resolves the org by email domain lookup in the DB.
+- There is no subdomain-based org resolution.
+
+Important routing detail
+- Fully protected routers:
+  - /api/v1/admin
+  - /api/v1/organizations
+  - /api/v1/employees
+  - /api/v1/settings
+  - /api/v1/analytics
+  - /api/v1/alert
+- Soft-auth-only routers:
+  - /api/v1/subscriptions
+  - /api/v1/plans
+  - /api/v1/users
+  - /api/v1/config
+
+Existing billing/subscription code
+- Prisma schema already has:
+  - Organizations
+  - Subscriptions
+  - Subscription_Plans
+  - Features
+  - Plan_Features
+- controllers/subscription.controller.js already handles:
+  - createSubscription
+  - getSubscriptionStatus
+  - previewInvoice
+  - handleWebhook
+- controllers/plan.controller.js already loads active plans, enabled features, and hard limits.
+- prisma/seed_plans.js seeds feature codes and limits.
+
+Current plan/feature model
+- Plans have hard limits:
+  - user_limit
+  - site_limit
+  - area_limit
+  - alert_limit
+- Features are linked through Plan_Features.
+- Seeded feature codes include:
+  - MOBILE_ACCESS
+  - EMAIL_SUPPORT
+  - PRIORITY_SUPPORT
+  - ADV_ANALYTICS
+  - CUSTOM_BRANDING
+  - SSO_LOGIN
+
+Best extension point
+- The best fit is an Express middleware factory, backed by a reusable service/helper.
+- This codebase is route/controller-driven, so middleware is cleaner than a controller HOF.
+- Recommended shape:
+
+  subscriptionGuard({
+    requireActiveSubscription: true,
+    feature: "ADV_ANALYTICS",
+    limitType: "user_limit",
+    resolveOrganizationId: async (req) => req.user?.organization_id,
+  })
+
+Recommended behavior
+- requireActiveSubscription:
+  - load latest usable subscription for the org
+  - reject if missing, inactive, payment failed, or expired
+- feature:
+  - check enabled Features.code for the org's current plan
+- limitType:
+  - user_limit -> count org users
+  - site_limit -> count org sites
+  - area_limit -> count org areas
+  - alert_limit -> count alerts in the current billing period
+
+Important design cautions
+- subscription.controller.createSubscription currently trusts req.body.organization_id; protected routes should not do that.
+- plans/subscriptions routes are only soft-auth attached today, so missing JWT can currently turn into 500s.
+- Response format is not fully standardized; most auth-style failures return:
+  - { message: "Unauthorized" }
+  - { message: "Forbidden ..." }
+- There is no existing reusable subscription service or quota-count service yet.
+
+High-value endpoints to guard first
+- POST /api/v1/admin/users -> user_limit
+- POST /api/v1/auth/employees/registrations -> user_limit with org resolved by domain
+- POST /api/v1/admin/sites -> site_limit
+- POST /api/v1/admin/areas -> area_limit
+- POST /api/v1/admin/alerts -> alert_limit
+- GET /api/v1/analytics/* -> likely feature gate for ADV_ANALYTICS
+
+Existing coding patterns to follow
+- Controllers usually use local try/catch instead of async wrapper middleware.
+- Validation is done inside controllers with Zod safeParse/parse.
+- Auth/ownership checks are usually done before Prisma writes.
+- Small reusable helpers already exist for org resolution and ownership checks.
+- Alert flows already use a service layer, so that is the best example for extracting subscription logic cleanly.
+
+Useful existing helper style
+- helpers/alert-controller.helper.js
+  - getOrganizationIdOrUnauthorized(req, res)
+  - respondWithKnownServiceError(res, error, allowedCodes)
+- helpers/ownership.helper.js
+  - findOrganizationById
+  - findSiteByOrganization
+  - findAreaByOrganization
+- middlewares/authResponse.js
+  - sendUnauthorized(res)
+  - sendForbidden(res)
+
+Response and error style
+- Common success patterns:
+  - { message, data }
+  - { success: true, data }
+  - raw payload via res.json(...)
+- Common auth failure patterns:
+  - 401 -> { message: "Unauthorized" }
+  - 403 -> { message: "Forbidden..." }
+- Common validation failure patterns:
+  - 400 -> { message: "...", errors: [...] }
+  - sometimes 400 -> { error: ... }
+- For a subscription guard, the safest style match is:
+  - 401/403/409 style response with { message: "..." }
+
+Suggested implementation split
+- middleware:
+  - middlewares/subscriptionGuard.js
+- service:
+  - services/subscription-access.service.js
+- request cache:
+  - attach loaded subscription/plan/features to req.subscriptionContext
+
+Main DB queries the wrapper will likely need
+- Load current subscription for org with related plan:
+  - prisma.subscriptions.findFirst(...)
+- Load enabled features through plan relation:
+  - plan -> Plan_Features -> feature
+- Count current usage only when needed:
+  - prisma.users.count(...)
+  - prisma.sites.count(...)
+  - prisma.areas.count(...)
+  - prisma.alerts.count(...)
+
+Risk notes for ChatGPT
+- Feature names in your desired API examples do not match current DB feature codes yet.
+- There is no canonical "active subscription" helper in the codebase yet.
+- Some routes are only soft-auth attached today, so adding a guard may also require tightening auth behavior on those routes.

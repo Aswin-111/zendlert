@@ -22,10 +22,23 @@ export const reportVisitorSchema = z.object({
 export const buildRespondToAlertSchema = (allowedResponses) =>
   z.object({
     alert_id: z.string().uuid("alert_id must be a valid UUID"),
-    response: z.enum(allowedResponses),
-    latitude: z.coerce.number().optional(),
-    longitude: z.coerce.number().optional(),
+    response: z.enum(allowedResponses, {
+      errorMap: () => ({ message: "Invalid response value" }),
+    }),
+    latitude: z.coerce.number().min(-90).max(90).optional(),
+    longitude: z.coerce.number().min(-180).max(180).optional(),
     location_name: z.string().trim().max(255).optional(),
+  }).superRefine((data, ctx) => {
+    const hasLatitude = data.latitude !== undefined;
+    const hasLongitude = data.longitude !== undefined;
+
+    if (hasLatitude !== hasLongitude) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "latitude and longitude must be provided together",
+        path: hasLatitude ? ["longitude"] : ["latitude"],
+      });
+    }
   });
 
 export const listLimitQuerySchema = z.object({

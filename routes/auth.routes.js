@@ -9,7 +9,7 @@ router.post("/sessions/password", EmployeeController.employeeLogin);
 router.post("/sessions/otp", OrganizationController.loginWithOtp);
 router.post("/sessions/logout", AuthController.logout);
 router.post("/tokens/refresh", AuthController.handleRefreshToken);
-
+router.get("/keys/server-public-key", AuthController.getServerPublicKey);
 router.post("/otp/requests", OrganizationController.sendOtp);
 router.post("/otp/verifications", OrganizationController.verifyOtp);
 

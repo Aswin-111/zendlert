@@ -3,99 +3,102 @@ package alert;
 
 import "google/protobuf/timestamp.proto";
 
-// The service definition for fetching and streaming alert data.
+// ================= CONTEXT =================
+message SubscriptionContext {
+  string subscription_id = 1; // issued by backend
+}
+
+// ================= SERVICE =================
 service AlertService {
   rpc GetAlertData (AlertDataRequest) returns (AlertDataResponse);
 
-  // Streams the full list of active alerts for an org, refreshed periodically.
-  rpc StreamActiveAlerts (StreamActiveAlertsRequest) returns (stream ActiveAlertsResponse);
+  rpc StreamActiveAlerts (StreamActiveAlertsRequest)
+      returns (stream ActiveAlertsResponse);
 
-  // Unary fetch for active alerts (optional but useful)
-  rpc GetActiveAlerts (GetActiveAlertsRequest) returns (ActiveAlertsResponse);
+  rpc GetActiveAlerts (GetActiveAlertsRequest)
+      returns (ActiveAlertsResponse);
 
-  // Employee response update (for gRPC clients)
-  rpc UpdateEmployeeResponse (UpdateEmployeeResponseRequest) returns (UpdateEmployeeResponseResponse);
+  rpc UpdateEmployeeResponse (UpdateEmployeeResponseRequest)
+      returns (UpdateEmployeeResponseResponse);
 }
 
-// === Messages for GetAlertData ===
+// ================= REQUESTS =================
 message AlertDataRequest {
   string alert_id = 1;
 }
 
+message StreamActiveAlertsRequest {
+  SubscriptionContext context = 1;
+}
+
+message GetActiveAlertsRequest {
+  SubscriptionContext context = 1;
+}
+
+message UpdateEmployeeResponseRequest {
+  string alert_id = 1;
+  EmployeeResponseStatus response = 2;
+}
+
+// ================= RESPONSE MODELS =================
 message EmployeeCounts {
-  int32 total_employees     = 1;
+  int32 total_employees = 1;
   int32 responded_employees = 2;
-  int32 safe_count          = 3;
-  int32 need_help_count     = 4;
+  int32 safe_count = 3;
+  int32 need_help_count = 4;
   int32 not_responded_count = 5;
-  int32 delivered_count     = 6;
+  int32 delivered_count = 6;
+  int32 emergency_help_needed_count = 7;
 }
 
 message AlertDataResponse {
-  string emergency_type                    = 1;
-  repeated string sites                    = 2;
-  repeated string areas                    = 3;
-  string message                           = 4;
-  EmployeeCounts employee_counts           = 5;
-  string status                            = 6;
-  string priority                          = 7;
+  string emergency_type = 1;
+  repeated string sites = 2;
+  repeated string areas = 3;
+  string message = 4;
+  EmployeeCounts employee_counts = 5;
+  string status = 6;
+  string priority = 7;
   google.protobuf.Timestamp delivered_time = 8;
 }
 
-// === Messages for the Stream ===
-message StreamActiveAlertsRequest {
-  string organization_id = 1;
-}
-
-// Latest location snapshot for a user for a specific alert
+// ================= STREAM =================
 message UserLocation {
   string user_id = 1;
-
-  // ✅ NEW: user identity + response status
-  string name = 6; // full name
-  EmployeeResponseStatus status = 7;
-
   double latitude = 2;
   double longitude = 3;
   string location_name = 4;
   google.protobuf.Timestamp timestamp = 5;
+  string name = 6;
+  EmployeeResponseStatus status = 7;
 }
 
-
-// Active alert row returned to admin clients
 message ActiveAlert {
-  string alert_id                      = 1;
-  string emergency_type                = 2;
-  string message                       = 3;
-  string severity                      = 4;
+  string alert_id = 1;
+  string emergency_type = 2;
+  string message = 3;
+  string severity = 4;
   google.protobuf.Timestamp start_time = 5;
 
-  // counts (keep old field numbers)
-  int32 safe_count            = 6;
-  int32 need_help_count       = 7;
-  int32 evacuated_count       = 8; // legacy
-  int32 seeking_shelter_count = 9; // legacy
-  int32 not_responded_count   = 10;
-  int32 total_recipients      = 11;
+  int32 safe_count = 6;
+  int32 need_help_count = 7;
+  int32 emergency_help_needed_count = 8;
+  int32 not_responded_count = 9;
+  int32 total_recipients = 10;
 
-  // Newer fields (safe for older clients)
-  repeated string locations                       = 12;
-  string status                                   = 13;
-  string report                                   = 14;
-  google.protobuf.Timestamp last_response_updated_at = 15;
+  repeated string locations = 11;
+  string status = 12;
+  string report = 13;
+  google.protobuf.Timestamp last_response_updated_at = 14;
 
-  // ✅ NEW: latest user locations for this alert
-  repeated UserLocation user_locations = 16;
+  repeated UserLocation user_locations = 15;
 }
 
 message ActiveAlertsResponse {
   repeated ActiveAlert active_alerts = 1;
 }
 
-message GetActiveAlertsRequest {
-  string organization_id = 1;
-}
-
+// ================= ENUM =================
 enum EmployeeResponseStatus {
   EMPLOYEE_RESPONSE_UNKNOWN = 0;
   SAFE = 1;
@@ -103,12 +106,7 @@ enum EmployeeResponseStatus {
   EMERGENCY_HELP_NEEDED = 3;
 }
 
-message UpdateEmployeeResponseRequest {
-  string alert_id = 1;
-  string user_id  = 2;
-  EmployeeResponseStatus response = 3;
-}
-
+// ================= RESPONSE =================
 message UpdateEmployeeResponseResponse {
   bool ok = 1;
   string message = 2;

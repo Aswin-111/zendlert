@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package subscription;
+
+// Generic subscription service
+service SubscriptionService {
+
+  // Client subscribes to a topic (server streaming)
+  rpc Subscribe (SubscribeRequest) returns (stream SubscribeResponse);
+
+  // Optional: health check / debug
+  rpc Ping (PingRequest) returns (PingResponse);
+}
+
+// 🔐 NO organization_id here
+// Identity comes from JWT metadata
+message SubscribeRequest {
+  string topic = 1;                 // e.g. "alerts", "dashboard"
+  map<string, string> filters = 2;  // optional filters (site_id, severity, etc.)
+}
+
+// Generic response wrapper
+message SubscribeResponse {
+  string topic = 1;
+  string event = 2;     // e.g. "INIT", "UPDATE"
+  string data = 3;      // JSON string payload (flexible)
+}
+
+message PingRequest {}
+message PingResponse {
+  string message = 1;
+}

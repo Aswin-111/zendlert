@@ -15,6 +15,7 @@ import app from "./app.js";
 import logger, { serializeError } from "./utils/logger.js";
 import prisma from "./utils/prisma.js";
 import { startChatService } from "./services/chat.service.js";
+import { startKeyManagementService } from "./services/key-management.service.js";
 import {
   processAlertNotificationJob,
   startAlertService,
@@ -68,6 +69,9 @@ function validateStartupEnv() {
     "JWT_SECRET",
     "ACCESS_TOKEN_SECRET",
     "REFRESH_TOKEN_SECRET",
+    "SERVER_SEAL_KEY",
+    "SERVER_RSA_PUBLIC_KEY",   // add this
+    "SERVER_RSA_PRIVATE_KEY",
   ];
   const missingEnvVars = requiredEnvVars.filter((key) => {
     const value = process.env[key];
@@ -237,7 +241,9 @@ async function main() {
 
   startAlertService(prisma);
   logger.info("startup.grpc_alert_started");
-
+  // add these two lines:
+  startKeyManagementService(prisma, admin);
+  logger.info("startup.grpc_key_management_started");
   startNotificationWorker(async (job) => {
     const alertId = job?.data?.alert_id ?? null;
     try {
@@ -262,7 +268,7 @@ async function main() {
 
 main().catch(async (error) => {
   logger.error("startup.fatal_error", { error: serializeError(error) });
-  await prisma.$disconnect().catch(() => {});
+  await prisma.$disconnect().catch(() => { });
   process.exit(1);
 });
 

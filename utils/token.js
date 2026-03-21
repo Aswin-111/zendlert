@@ -50,3 +50,16 @@ export const sendRefreshTokenCookie = (res, token) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
+
+export const verifyJwt = (token) => {
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET
+    );
+
+    return decoded;
+  } catch (err) {
+    throw new Error("Invalid or expired token");
+  }
+};

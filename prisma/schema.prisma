@@ -248,11 +248,83 @@ model Users {
   messagesSent     Chat_Messages[] @relation("MessageSender")
   messagesReceived Chat_Messages[] @relation("MessageReceiver")
 
-  incidentReports Incident_Reports[]
+  incidentReports        Incident_Reports[]
+  key_backup             User_Key_Backups?
+  devices                User_Devices[]
+  deviceKeyTransfers     Device_Key_Transfers[]
+  serverSealedKeyBackups Server_Sealed_Key_Backups?
 
   @@index([organization_id])
   @@index([site_id])
   @@index([area_id])
+}
+
+model Device_Key_Transfers {
+  id                          String   @id @default(uuid())
+  user_id                     String
+  requesting_device_id        String
+  ephemeral_public_key        String   @db.Text // new device's EC public key, plaintext
+  approving_device_public_key String?  @db.Text
+  wrapped_private_key         String?  @db.Text // set by approving device after ECDH
+  status                      String   @default("pending") // pending | approved | rejected | expired
+  expires_at                  DateTime
+  created_at                  DateTime @default(now())
+  updated_at                  DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([status])
+}
+
+model Server_Sealed_Key_Backups {
+  id          String   @id @default(uuid())
+  user_id     String   @unique
+  sealed_blob String   @db.Text // private key encrypted by server-side key
+  key_version String // identifies which server key was used, for rotation
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+}
+
+model User_Key_Backups {
+  id      String @id @default(uuid())
+  user_id String @unique // one active backup per account
+
+  // Ciphertext blob produced by AES-256-GCM on the client
+  encrypted_private_key String @db.Text // base64(iv || ciphertext || tag)
+  public_key            String @db.Text // plaintext EC/RSA public key (mirrors Users.e2ee_public_key)
+
+  // KDF params needed to re-derive the KEK on recovery
+  kdf_salt       String @db.VarChar(64) // base64, 32 random bytes
+  kdf_iterations Int    @default(310000) // PBKDF2-SHA256 NIST minimum
+  kdf_algorithm  String @default("PBKDF2-SHA256")
+
+  version    Int      @default(1) // bumped on every RotateKeyBackup
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model User_Devices {
+  id         String   @id @default(uuid())
+  user_id    String
+  device_id  String // stable UUID stored in device secure enclave / keychain
+  platform   String   @db.VarChar(20) // "ios" | "android" | "web"
+  fcm_token  String? // replaces Users.fcm_token — per-device push token
+  last_seen  DateTime @default(now())
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([user_id, device_id]) // one row per (account, device); account-scoped by design
+  @@index([user_id])
 }
 
 model Chat_Messages {

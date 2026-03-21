@@ -1,3 +1,4 @@
+//chat.service.js
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import grpc from '@grpc/grpc-js';

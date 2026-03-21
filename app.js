@@ -180,13 +180,13 @@ app.use(requestIdMiddleware);
 app.use(express.json({ limit: bodyLimit }));
 app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
-app.use(
-  authRateLimitedPaths,
-  createIpRateLimiter({
-    windowMs: authRateLimitWindowMs,
-    maxRequests: authRateLimitMaxRequests,
-  }),
-);
+// app.use(
+//   authRateLimitedPaths,
+//   createIpRateLimiter({
+//     windowMs: authRateLimitWindowMs,
+//     maxRequests: authRateLimitMaxRequests,
+//   }),
+// );
 
 // Debug route
 app.use("/test", (req, res) => {

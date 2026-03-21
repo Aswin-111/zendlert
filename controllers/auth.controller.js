@@ -91,6 +91,21 @@ const AuthController = {
     });
     res.sendStatus(204);
   },
+  getServerPublicKey: (req, res) => {
+    try {
+      const publicKey = process.env.SERVER_RSA_PUBLIC_KEY;
+      if (!publicKey) {
+        return res.status(500).json({ message: "Server public key not configured" });
+      }
+      return res.status(200).json({
+        public_key: publicKey.replace(/\\n/g, '\n'),
+      });
+    } catch (err) {
+      logger.error("getServerPublicKey error:", err);
+      return res.status(500).json({ message: "Server error", error: err.message });
+    }
+  },
+
 };
 
 export default AuthController;

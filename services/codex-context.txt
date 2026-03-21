@@ -1,0 +1,166 @@
+CODEX TASK — E2EE Chat & Key Management: Flutter Client Fix
+===========================================================
+
+## CONTEXT FILES TO READ FIRST (all in this file)
+Before writing any code, read and fully understand all four backend definitions
+in this file:
+
+1. chat.proto          — gRPC service contract for ChatService
+2. key_management.proto — gRPC service contract for KeyManagementService
+3. key_management.service.js — Node.js gRPC server implementation (source of truth
+   for exact field names, logic, and data shapes returned)
+4. chat.service.js     — Node.js gRPC server implementation for chat
+
+These are the authoritative sources. The Flutter code MUST match them exactly.
+Do not infer field names from memory — read them from the protos above.
+
+---
+
+## WHAT YOU ARE FIXING
+
+The Flutter app consumes both gRPC services. Your job is to audit and fix the
+Flutter-side generated stubs, service wrappers, and any manual gRPC call sites
+so they are fully aligned with the backend contracts above.
+
+---
+
+## SPECIFIC ISSUES TO FIND AND FIX
+
+### 1. Proto alignment (dart generated code / manual stubs)
+- Regenerate or correct any Dart gRPC stub that does not match the proto fields
+  exactly. Pay attention to:
+  - `encrypted_sym_key` (NOT `encrypted_key` or `sym_key`)
+  - `ephemeral_public_key` (NOT `ephemeralKey`)
+  - `approving_device_public_key`
+  - `wrapped_private_key`
+  - `sealed_blob` in UploadKeyBackupRequest
+  - `transfer_id` (string UUID, NOT int)
+  - `expires_at` / `created_at` as ISO-8601 strings (NOT DateTime objects
+    before serialization)
+  - `kdf_salt`, `kdf_iterations`, `kdf_algorithm` in KeyBackupResponse
+  - `status` values: must be exactly "pending" | "approved" | "rejected" |
+    "expired" — compare as lowercase strings
+  - `platform` must be exactly "ios" | "android" | "web"
+
+### 2. KeyManagementService — Flutter call sites
+Fix these specific RPC call sites:
+
+**UploadKeyBackup**
+- Must send: user_id, organization_id, public_key, device_id, platform,
+  fcm_token, sealed_blob
+- `sealed_blob` = the user's private key encrypted client-side using the
+  SERVER's RSA public key (RSA-OAEP SHA-256). If this field is missing from
+  the Flutter call, add it.
+- `encrypted_private_key`, `kdf_salt`, `kdf_iterations` should be empty/0
+  for OTP-only accounts.
+
+**RequestKeyTransfer**
+- Must send: user_id, organization_id, requesting_device_id,
+  ephemeral_public_key
+- The ephemeral key pair must be generated fresh (EC P-256) on the Flutter
+  side just for this transfer. Verify this is happening.
+- After calling RequestKeyTransfer, the app must poll PollKeyTransfer every
+  ~5 seconds.
+
+**PollKeyTransfer**
+- Must send: transfer_id (string), user_id
+- On status == "approved": extract wrapped_private_key and
+  approving_device_public_key from the response, then perform ECDH locally
+  to unwrap the private key.
+- On status == "expired" or "rejected": surface the correct error to the user.
+
+**ApproveKeyTransfer** (called by the TRUSTED device)
+- Must send all five fields: transfer_id, user_id, approving_device_id,
+  wrapped_private_key, approving_device_public_key
+- The wrapped_private_key must be produced by ECDH: use the approving device's
+  private key + the requesting device's ephemeral_public_key from the
+  PendingTransfer, derive a shared secret, then AES-GCM wrap the private key.
+
+**SealedKeyRecovery**
+- Must send: user_id, organization_id, device_id, device_public_key
+  (SPKI base64 of the NEW device's long-term public key)
+- The response wrapped_private_key is RSA-OAEP encrypted — unwrap it with
+  the device's RSA private key.
+
+**ListPendingTransfers**
+- Must send: user_id
+- Returns PendingTransferList.transfers[] — each item has transfer_id,
+  requesting_device_id, ephemeral_public_key, created_at, expires_at.
+- The trusted device UI should show an approval prompt for each item.
+
+### 3. ChatService — Flutter call sites
+Fix these:
+
+**SendMessage**
+- Must send: sender_id, receiver_id, organization_id, encrypted_message,
+  encrypted_sym_key
+- `encrypted_sym_key` is the AES symmetric key encrypted with the RECEIVER's
+  RSA/EC public key (read from Users.e2ee_public_key via GetContacts or a
+  separate user lookup).
+
+**ChatStream (duplex stream)**
+- Client sends ClientEvent { heartbeat: Heartbeat } — must include userId,
+  organization_id, and optionally activeChatWith.
+- Heartbeat must be sent on a timer (every ~15–30s) to keep the stream alive
+  AND immediately when the user opens/closes a conversation.
+- Server pushes ServerEvent with a oneof: message | presence.
+- The Flutter side must handle BOTH variants — do not assume it's always a
+  message.
+
+**ReceiveMessages**
+- Must send: userId, organization_id
+- Returns stream<Message> — collect all messages before rendering.
+
+**GetContacts**
+- Returns ContactList.contacts[] — each Contact has id, first_name,
+  last_name, last_message_encrypted, sent_at.
+
+**UpdateMessageStatus**
+- Must send: messageId, status ("delivered" | "read"), organization_id.
+- Call this with status="delivered" when the user opens the chat screen.
+- Call with status="read" when the user has read the message.
+
+### 4. Crypto layer
+Verify the Flutter crypto helpers match what the backend expects:
+
+- Key format: EC P-256, public keys in SPKI base64, private keys in PKCS#8
+  base64.
+- sealed_blob for UploadKeyBackup: RSA-OAEP (SHA-256) encrypt the raw private
+  key bytes using the SERVER's public RSA key. The server decrypts with
+  `unsealWithRsa()` (RSA_PKCS1_OAEP_PADDING, oaepHash sha256).
+- Device-to-device transfer wrapping: ECDH P-256 shared secret → HKDF-SHA256
+  → AES-256-GCM wrap. Both sides must use identical HKDF params (salt, info).
+  Document the chosen params as a constant in the Flutter code.
+- Chat encryption: AES-256-GCM for message body; encrypt the AES key with
+  receiver's public key (EC: ECDH ephemeral + AES-KW, or RSA-OAEP depending
+  on key type used). Must match whatever public key is stored in
+  Users.e2ee_public_key.
+
+### 5. Error handling
+- gRPC status NOT_FOUND on GetKeyBackup → first login, generate new key pair
+  and call UploadKeyBackup.
+- gRPC status RESOURCE_EXHAUSTED on SealedKeyRecovery → show "Recovery limit
+  reached, try again in 24 hours."
+- gRPC status DEADLINE_EXCEEDED on ApproveKeyTransfer → show "Transfer
+  expired."
+- Poll loop for PollKeyTransfer must stop on: approved, rejected, expired, or
+  after the expires_at timestamp is reached.
+
+### 6. Device registration flow
+After ANY successful key recovery (transfer approved OR sealed recovery done):
+- Call RegisterDevice with: user_id, organization_id, device_id, platform,
+  fcm_token.
+- Update local secure storage with the recovered private key.
+
+---
+
+## OUTPUT REQUIREMENTS
+
+1. List every file you changed and why.
+2. For each fix, quote the OLD code and show the NEW code.
+3. If you add new helper functions (e.g. ECDH wrap/unwrap), put them in a
+   dedicated `crypto_utils.dart` file and import from there.
+4. Do NOT change the backend files (chat.service.js, key_management.service.js,
+   the protos). Only fix Flutter/Dart code.
+5. After all fixes, write a brief "Remaining risks / assumptions" section
+   noting anything you could not verify from the provided context alone.
