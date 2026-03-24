@@ -454,7 +454,7 @@ export function startKeyManagementService(prisma, firebaseAdmin) {
     // The server decrypts the sealed blob using its own key, then re-wraps
     // the plaintext private key with the new device's public key.
     // This is the only point where the server momentarily holds the plaintext key.
-    // Rate-limited to 1 per user per 24h. Always logged to Audit_Logs.
+    // Always logged to Audit_Logs.
     // ──────────────────────────────────────────────────────────────────────────
     async function SealedKeyRecovery(call, callback) {
         try {
@@ -463,23 +463,6 @@ export function startKeyManagementService(prisma, firebaseAdmin) {
                 return callback({
                     code: grpc.status.INVALID_ARGUMENT,
                     message: 'user_id, organization_id, device_id, device_public_key are required',
-                });
-            }
-
-            // Rate limit: check Audit_Logs for a sealed recovery in the past 24 hours.
-            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-            const recentRecovery = await prisma.audit_Logs.findFirst({
-                where: {
-                    action_performed_by: user_id,
-                    action: 'sealed_key_recovery',
-                    action_timestamp: { gte: oneDayAgo },
-                },
-            });
-
-            if (recentRecovery) {
-                return callback({
-                    code: grpc.status.RESOURCE_EXHAUSTED,
-                    message: 'Sealed recovery already used in the past 24 hours. Try again later.',
                 });
             }
 

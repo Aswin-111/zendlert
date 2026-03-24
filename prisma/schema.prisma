@@ -189,7 +189,6 @@ model Areas {
   description String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-
   site        Sites         @relation(fields: [site_id], references: [id])
   Users       Users[]
   Alert_Areas Alert_Areas[]
@@ -216,7 +215,6 @@ model Users {
   role_id                     String
   profile_pic                 String?
   user_type                   UserTypes
-
   must_reset_password Boolean? @default(false)
   fcm_token           String?
   e2ee_public_key     String?  @db.Text

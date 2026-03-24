@@ -139,8 +139,8 @@ Verify the Flutter crypto helpers match what the backend expects:
 ### 5. Error handling
 - gRPC status NOT_FOUND on GetKeyBackup → first login, generate new key pair
   and call UploadKeyBackup.
-- gRPC status RESOURCE_EXHAUSTED on SealedKeyRecovery → show "Recovery limit
-  reached, try again in 24 hours."
+- SealedKeyRecovery is not rate-limited; handle only NOT_FOUND and INTERNAL
+  errors for the sealed recovery path.
 - gRPC status DEADLINE_EXCEEDED on ApproveKeyTransfer → show "Transfer
   expired."
 - Poll loop for PollKeyTransfer must stop on: approved, rejected, expired, or

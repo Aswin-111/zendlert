@@ -21,7 +21,7 @@ import {
   startAlertService,
 } from "./services/alert.service.js";
 import { startNotificationWorker } from "./services/queue.service.js";
-
+import { startSubscriptionService } from "./services/subscription.service.js";
 // ---------------------------------------------------------
 // CONFIGURATION
 // ---------------------------------------------------------
@@ -244,6 +244,10 @@ async function main() {
   // add these two lines:
   startKeyManagementService(prisma, admin);
   logger.info("startup.grpc_key_management_started");
+
+  startSubscriptionService();
+  logger.info("startup.grpc_subscription_started");
+  
   startNotificationWorker(async (job) => {
     const alertId = job?.data?.alert_id ?? null;
     try {

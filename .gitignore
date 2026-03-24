@@ -12,3 +12,8 @@ backend.env
 logs/
 VKACCOUNTANCY.pem
 ai-context.txt
+
+chatgpt_context_by_codex.txt
+codex-context.txt
+.md*
+ai-context.txt
