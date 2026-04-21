@@ -82,4 +82,18 @@ router.get("/general-settings", AdminController.getGeneralSettings);
 router.put("/general-settings", AdminController.updateGeneralSettings);
 router.get("/billing-history", AdminController.getBillingHistory);
 
+
+// Web routes
+router.get("/web/dashboard/cards", AdminController.getDashboardCards);
+router.get("/web/dashboard/me", AdminController.getMe);
+router.put("/web/personal-details", AdminController.updateAdminPersonalDetails);
+
+router.post("/web/personal-details/email/change/request", AdminController.requestAdminEmailChange);
+router.post("/web/personal-details/email/change/verify", AdminController.verifyAdminEmailChange);
+
+router.post("/web/personal-details/phone/change/request", AdminController.requestAdminPhoneChange);
+router.post("/web/personal-details/phone/change/verify", AdminController.verifyAdminPhoneChange);
+
+router.put("/web/organization-details", AdminController.updateOrganizationDetails);
+
 export default router;

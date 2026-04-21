@@ -183,12 +183,12 @@ model Sites {
 }
 
 model Areas {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   site_id     String
-  name        String   @db.VarChar(255)
+  name        String        @db.VarChar(255)
   description String?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
   site        Sites         @relation(fields: [site_id], references: [id])
   Users       Users[]
   Alert_Areas Alert_Areas[]
@@ -215,12 +215,12 @@ model Users {
   role_id                     String
   profile_pic                 String?
   user_type                   UserTypes
-  must_reset_password Boolean? @default(false)
-  fcm_token           String?
-  e2ee_public_key     String?  @db.Text
-  refresh_token       String?  @db.Text
-  created_at          DateTime @default(now())
-  updated_at          DateTime @updatedAt
+  must_reset_password         Boolean?  @default(false)
+  fcm_token                   String?
+  e2ee_public_key             String?   @db.Text
+  refresh_token               String?   @db.Text
+  created_at                  DateTime  @default(now())
+  updated_at                  DateTime  @updatedAt
 
   organization Organizations? @relation(fields: [organization_id], references: [organization_id])
   employee     Employees?
@@ -251,10 +251,28 @@ model Users {
   devices                User_Devices[]
   deviceKeyTransfers     Device_Key_Transfers[]
   serverSealedKeyBackups Server_Sealed_Key_Backups?
+  emailVerifications     Email_Verifications[]
 
   @@index([organization_id])
   @@index([site_id])
   @@index([area_id])
+}
+
+model Email_Verifications {
+  id                String    @id @default(uuid())
+  user_id           String
+  pending_email     String    @unique
+  verification_code String    @db.VarChar(6)
+  code_sent_at      DateTime
+  expires_at        DateTime
+  verified_at       DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([pending_email])
 }
 
 model Device_Key_Transfers {
@@ -717,9 +735,9 @@ model Subscriptions {
   organization_id      String
   subscription_plan_id String
 
-  stripe_customer_id     String @unique @db.Text
+  stripe_customer_id     String @db.Text
   stripe_subscription_id String @unique @db.Text
-  stripe_price_id        String @unique @db.Text
+  stripe_price_id        String @db.Text
 
   status         String  @default("inactive") @db.VarChar(50)
   payment_method String? @db.VarChar(50)
@@ -738,7 +756,9 @@ model Subscriptions {
 
   @@index([organization_id])
   @@index([subscription_plan_id])
-}
+  @@index([stripe_customer_id])
+  @@index([stripe_price_id])
+} 
 
 model Subscription_Plans {
   id String @id @default(uuid())

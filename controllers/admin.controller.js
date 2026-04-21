@@ -6,6 +6,7 @@ import { Resend } from "resend";
 import admin from "../config/firebase.auth.js";
 import logger from "../utils/logger.js"; // your Winston logger
 import prisma from "../utils/prisma.js";
+
 import {
     normalizeIncomingDateTimeToUtc,
     utcNow,
@@ -19,7 +20,7 @@ import {
 import createAlertSchema from "../validators/alert/create-alert.validator.js";
 import addEmployeeSchema from "../validators/admin/add-employee.validator.js";
 import {
-    createAlertForOrganization, getAlertDashboardPayload, resolveAlertForOrganization, getAlertTypesForOrganization, getSitesForOrganization,getAreasForOrganizationSite
+    createAlertForOrganization, getAlertDashboardPayload, resolveAlertForOrganization, getAlertTypesForOrganization, getSitesForOrganization, getAreasForOrganizationSite
 } from "../services/alert.service.js";
 
 import adminCreateAlertSchema from "../validators/admin/create-alert.validator.js";
@@ -89,6 +90,29 @@ const PUBLIC_EMAIL_DOMAINS = new Set([
     "fastmail.com",
     "hey.com",
 ]);
+
+import { sendEmailVerificationCode } from "../utils/sendEmailVerificationCode.js";
+
+const OTP_LENGTH = 6;
+const OTP_TTL_MINUTES = 10;
+
+const normalizeEmail = (value = "") => String(value).trim().toLowerCase();
+const normalizePhone = (value = "") => String(value).trim();
+
+const generateOtp = () =>
+    String(Math.floor(100000 + Math.random() * 900000));
+
+const addMinutes = (date, minutes) =>
+    new Date(date.getTime() + minutes * 60 * 1000);
+
+const isValidPhone = (phone) => /^\+?[1-9]\d{7,14}$/.test(phone);
+
+const isOrgAdminRole = (roleName = "") => {
+    const value = String(roleName).trim().toLowerCase();
+    return value === "admin" || value === "organization admin" || value === "org_admin";
+};
+
+
 const AdminController = {
     getAlertSummaryForOrg: async (req, res) => {
         const organizationId = req.user?.organization_id;
@@ -4163,6 +4187,752 @@ const AdminController = {
             return res.status(500).json({ message: "Something went wrong" });
         }
     },
+    getMe: async (req, res) => {
+        try {
+            const userId = req.user?.user_id;
+
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Unauthorized",
+                });
+            }
+
+            const user = await prisma.users.findUnique({
+                where: { user_id: userId },
+                select: {
+                    user_id: true,
+                    first_name: true,
+                    last_name: true,
+                    profile_pic: true,
+                },
+            });
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found",
+                });
+            }
+
+            const hasProfilePic = !!(user.profile_pic && user.profile_pic.trim() !== "");
+
+            const initials =
+                `${(user.first_name?.[0] || "").toUpperCase()}${(user.last_name?.[0] || "").toUpperCase()}`.trim();
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    user_id: user.user_id,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    profile_pic: hasProfilePic ? user.profile_pic : null,
+                    initials: hasProfilePic ? null : initials,
+                    display_type: hasProfilePic ? "image" : "initials",
+                },
+            });
+        } catch (error) {
+            logger.error("admin.getMe.failed", {
+                requestId: req?.requestId || null,
+                user_id: req?.user?.user_id || null,
+                errorName: error?.name || "UnknownError",
+                errorMessage: error?.message || null,
+            });
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+            });
+        }
+    },
+    // Web controllers
+    getDashboardCards: async (req, res) => {
+        try {
+            const organization_id = req.user?.organization_id;
+
+            if (!organization_id) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Unauthorized",
+                });
+            }
+
+            const [sitesCount, areasCount, teamMembersCount] = await Promise.all([
+                prisma.sites.count({
+                    where: {
+                        organization_id,
+                    },
+                }),
+
+                prisma.areas.count({
+                    where: {
+                        site: {
+                            organization_id,
+                        },
+                    },
+                }),
+
+                prisma.users.count({
+                    where: {
+                        organization_id,
+                        is_active: true, // remove this if you want all users
+                    },
+                }),
+            ]);
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    total_buildings: 0, // no Buildings model found in current schema
+                    sites: sitesCount,
+                    areas: areasCount,
+                    team_members: teamMembersCount,
+                },
+            });
+        } catch (error) {
+            logger.error("getDashboardCards error:", error);
+
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+
+
+    updateAdminPersonalDetails: async (req, res) => {
+        try {
+            const userId = req.user?.user_id;
+            const organizationId = req.user?.organization_id;
+
+            if (!userId || !organizationId) {
+                return res.status(401).json({ success: false, message: "Unauthorized" });
+            }
+
+            const { first_name, last_name } = req.body ?? {};
+            const updateData = {};
+
+            if (typeof first_name !== "undefined") {
+                const value = String(first_name).trim();
+                if (!value) {
+                    return res.status(400).json({ success: false, message: "First name is required" });
+                }
+                updateData.first_name = value;
+            }
+
+            if (typeof last_name !== "undefined") {
+                const value = String(last_name).trim();
+                if (!value) {
+                    return res.status(400).json({ success: false, message: "Last name is required" });
+                }
+                updateData.last_name = value;
+            }
+
+            if (!Object.keys(updateData).length) {
+                return res.status(400).json({ success: false, message: "Nothing to update" });
+            }
+
+            const existingUser = await prisma.users.findFirst({
+                where: {
+                    user_id: userId,
+                    organization_id: organizationId,
+                    is_active: true,
+                },
+            });
+
+            if (!existingUser) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+            const updatedUser = await prisma.users.update({
+                where: { user_id: userId },
+                data: updateData,
+                select: {
+                    user_id: true,
+                    first_name: true,
+                    last_name: true,
+                    email: true,
+                    email_verified: true,
+                    phone_number: true,
+                    phone_verified: true,
+                    updated_at: true,
+                },
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Personal details updated successfully",
+                data: updatedUser,
+            });
+        } catch (error) {
+            logger.error("updateAdminPersonalDetails error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+    requestAdminEmailChange: async (req, res) => {
+        try {
+            const userId = req.user?.user_id;
+            const organizationId = req.user?.organization_id;
+            const newEmail = normalizeEmail(req.body?.new_email);
+
+            if (!userId || !organizationId) {
+                return res.status(401).json({ success: false, message: "Unauthorized" });
+            }
+
+            if (!newEmail) {
+                return res.status(400).json({ success: false, message: "New email is required" });
+            }
+
+            const user = await prisma.users.findFirst({
+                where: {
+                    user_id: userId,
+                    organization_id: organizationId,
+                    is_active: true,
+                },
+                select: {
+                    user_id: true,
+                    email: true,
+                    first_name: true,
+                },
+            });
+
+            if (!user) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+            if (normalizeEmail(user.email) === newEmail) {
+                return res.status(400).json({
+                    success: false,
+                    message: "New email must be different from current email",
+                });
+            }
+
+            const organization = await prisma.organizations.findUnique({
+                where: { organization_id: organizationId },
+                select: {
+                    email_domain: true,
+                },
+            });
+
+            if (!organization) {
+                return res.status(404).json({ success: false, message: "Organization not found" });
+            }
+
+            const emailDomain = newEmail.split("@")[1]?.toLowerCase();
+            const orgDomain = String(organization.email_domain || "").trim().toLowerCase();
+
+            if (!emailDomain || emailDomain !== orgDomain) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Email must match your organization domain (${orgDomain})`,
+                });
+            }
+
+            const emailInUse = await prisma.users.findFirst({
+                where: {
+                    email: newEmail,
+                    user_id: { not: userId },
+                },
+                select: { user_id: true },
+            });
+
+            if (emailInUse) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Email is already used by another user",
+                });
+            }
+
+            const code = generateOtp();
+            const now = new Date();
+            const expiresAt = addMinutes(now, OTP_TTL_MINUTES);
+
+            await prisma.email_Verifications.deleteMany({
+                where: {
+                    OR: [{ user_id: userId }, { pending_email: newEmail }],
+                },
+            });
+
+            await prisma.email_Verifications.create({
+                data: {
+                    user_id: userId,
+                    pending_email: newEmail,
+                    verification_code: code,
+                    code_sent_at: now,
+                    expires_at: expiresAt,
+                },
+            });
+
+            await sendEmailVerificationCode({
+                to: newEmail,
+                code,
+                subject: "Verify your new email address",
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Verification code sent to new email address",
+                data: {
+                    pending_email: newEmail,
+                    expires_at: expiresAt,
+                },
+            });
+        } catch (error) {
+            logger.error("requestAdminEmailChange error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Failed to send email verification code",
+                error: error.message,
+            });
+        }
+    },
+
+
+    verifyAdminEmailChange: async (req, res) => {
+        try {
+            const userId = req.user?.user_id;
+            const organizationId = req.user?.organization_id;
+            const newEmail = normalizeEmail(req.body?.new_email);
+            const code = String(req.body?.code || "").trim();
+
+            if (!userId || !organizationId) {
+                return res.status(401).json({ success: false, message: "Unauthorized" });
+            }
+
+            if (!newEmail || !code) {
+                return res.status(400).json({
+                    success: false,
+                    message: "New email and verification code are required",
+                });
+            }
+
+            const verification = await prisma.email_Verifications.findFirst({
+                where: {
+                    user_id: userId,
+                    pending_email: newEmail,
+                    verification_code: code,
+                    verified_at: null,
+                },
+            });
+
+            if (!verification) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid verification code",
+                });
+            }
+
+            if (verification.expires_at < new Date()) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Verification code has expired",
+                });
+            }
+
+            const organization = await prisma.organizations.findUnique({
+                where: { organization_id: organizationId },
+                select: { email_domain: true },
+            });
+
+            const emailDomain = newEmail.split("@")[1]?.toLowerCase();
+            const orgDomain = String(organization?.email_domain || "").trim().toLowerCase();
+
+            if (!emailDomain || emailDomain !== orgDomain) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Email must match your organization domain (${orgDomain})`,
+                });
+            }
+
+            const emailInUse = await prisma.users.findFirst({
+                where: {
+                    email: newEmail,
+                    user_id: { not: userId },
+                },
+                select: { user_id: true },
+            });
+
+            if (emailInUse) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Email is already used by another user",
+                });
+            }
+
+            const now = new Date();
+
+            const updatedUser = await prisma.$transaction(async (tx) => {
+                await tx.users.update({
+                    where: { user_id: userId },
+                    data: {
+                        email: newEmail,
+                        email_verified: true,
+                    },
+                });
+
+                await tx.email_Verifications.update({
+                    where: { id: verification.id },
+                    data: { verified_at: now },
+                });
+
+                await tx.email_Verifications.deleteMany({
+                    where: {
+                        user_id: userId,
+                        id: { not: verification.id },
+                    },
+                });
+
+                return tx.users.findUnique({
+                    where: { user_id: userId },
+                    select: {
+                        user_id: true,
+                        first_name: true,
+                        last_name: true,
+                        email: true,
+                        email_verified: true,
+                        phone_number: true,
+                        phone_verified: true,
+                        updated_at: true,
+                    },
+                });
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Email updated successfully",
+                data: updatedUser,
+            });
+        } catch (error) {
+            logger.error("verifyAdminEmailChange error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+    requestAdminPhoneChange: async (req, res) => {
+        try {
+            const userId = req.user?.user_id;
+            const organizationId = req.user?.organization_id;
+            const newPhoneNumber = normalizePhone(req.body?.new_phone_number);
+
+            if (!userId || !organizationId) {
+                return res.status(401).json({ success: false, message: "Unauthorized" });
+            }
+
+            if (!newPhoneNumber) {
+                return res.status(400).json({ success: false, message: "New phone number is required" });
+            }
+
+            if (!isValidPhone(newPhoneNumber)) {
+                return res.status(400).json({ success: false, message: "Invalid phone number format" });
+            }
+
+            const user = await prisma.users.findFirst({
+                where: {
+                    user_id: userId,
+                    organization_id: organizationId,
+                    is_active: true,
+                },
+                select: {
+                    user_id: true,
+                    phone_number: true,
+                },
+            });
+
+            if (!user) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+            if (normalizePhone(user.phone_number) === newPhoneNumber) {
+                return res.status(400).json({
+                    success: false,
+                    message: "New phone number must be different from current phone number",
+                });
+            }
+
+            const phoneInUse = await prisma.users.findFirst({
+                where: {
+                    phone_number: newPhoneNumber,
+                    user_id: { not: userId },
+                },
+                select: { user_id: true },
+            });
+
+            if (phoneInUse) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Phone number is already used by another user",
+                });
+            }
+
+            const code = generateOtp();
+            const now = new Date();
+            const expiresAt = addMinutes(now, OTP_TTL_MINUTES);
+
+            await prisma.phone_Verifications.deleteMany({
+                where: {
+                    employee_id: userId,
+                },
+            });
+
+            await prisma.phone_Verifications.create({
+                data: {
+                    employee_id: userId,
+                    phone_number: newPhoneNumber,
+                    verification_code: code,
+                    code_sent_at: now,
+                    expires_at: expiresAt,
+                },
+            });
+
+            return res.status(200).json({
+                success: true,
+                message:
+                    process.env.NODE_ENV === "production"
+                        ? "Phone verification OTP generated. SMS provider is not configured yet."
+                        : "OTP generated successfully",
+                data: {
+                    phone_number: newPhoneNumber,
+                    expires_at: expiresAt,
+                    otp: process.env.NODE_ENV === "production" ? undefined : code,
+                },
+            });
+        } catch (error) {
+            logger.error("requestAdminPhoneChange error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+    verifyAdminPhoneChange: async (req, res) => {
+        try {
+            const userId = req.user?.user_id;
+            const organizationId = req.user?.organization_id;
+            const newPhoneNumber = normalizePhone(req.body?.new_phone_number);
+            const code = String(req.body?.code || "").trim();
+
+            if (!userId || !organizationId) {
+                return res.status(401).json({ success: false, message: "Unauthorized" });
+            }
+
+            if (!newPhoneNumber || !code) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Phone number and OTP are required",
+                });
+            }
+
+            const verification = await prisma.phone_Verifications.findFirst({
+                where: {
+                    employee_id: userId,
+                    phone_number: newPhoneNumber,
+                    verification_code: code,
+                    verified_at: null,
+                },
+            });
+
+            if (!verification) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid OTP",
+                });
+            }
+
+            if (verification.expires_at < new Date()) {
+                return res.status(400).json({
+                    success: false,
+                    message: "OTP has expired",
+                });
+            }
+
+            const phoneInUse = await prisma.users.findFirst({
+                where: {
+                    phone_number: newPhoneNumber,
+                    user_id: { not: userId },
+                },
+                select: { user_id: true },
+            });
+
+            if (phoneInUse) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Phone number is already used by another user",
+                });
+            }
+
+            const now = new Date();
+
+            const updatedUser = await prisma.$transaction(async (tx) => {
+                await tx.users.update({
+                    where: { user_id: userId },
+                    data: {
+                        phone_number: newPhoneNumber,
+                        phone_verified: true,
+                    },
+                });
+
+                await tx.phone_Verifications.update({
+                    where: { id: verification.id },
+                    data: { verified_at: now },
+                });
+
+                await tx.phone_Verifications.deleteMany({
+                    where: {
+                        employee_id: userId,
+                        id: { not: verification.id },
+                    },
+                });
+
+                return tx.users.findUnique({
+                    where: { user_id: userId },
+                    select: {
+                        user_id: true,
+                        first_name: true,
+                        last_name: true,
+                        email: true,
+                        email_verified: true,
+                        phone_number: true,
+                        phone_verified: true,
+                        updated_at: true,
+                    },
+                });
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Phone number updated successfully",
+                data: updatedUser,
+            });
+        } catch (error) {
+            logger.error("verifyAdminPhoneChange error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+    updateOrganizationDetails: async (req, res) => {
+        try {
+            const userId = req.user?.user_id;
+            const organizationId = req.user?.organization_id;
+
+            if (!userId || !organizationId) {
+                return res.status(401).json({ success: false, message: "Unauthorized" });
+            }
+
+            const adminUser = await prisma.users.findFirst({
+                where: {
+                    user_id: userId,
+                    organization_id: organizationId,
+                    is_active: true,
+                },
+                select: {
+                    role: {
+                        select: {
+                            role_name: true,
+                        },
+                    },
+                },
+            });
+
+            if (!adminUser) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+            if (!isOrgAdminRole(adminUser.role?.role_name)) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Only organization admins can update organization details",
+                });
+            }
+
+            const {
+                name,
+                main_contact_name,
+                main_contact_email,
+                main_contact_phone,
+                time_zone,
+            } = req.body ?? {};
+
+            const updateData = {};
+
+            if (typeof name !== "undefined") {
+                updateData.name = String(name).trim();
+            }
+
+            if (typeof main_contact_name !== "undefined") {
+                updateData.main_contact_name = String(main_contact_name).trim() || null;
+            }
+
+            if (typeof main_contact_email !== "undefined") {
+                updateData.main_contact_email = normalizeEmail(main_contact_email) || null;
+            }
+
+            if (typeof main_contact_phone !== "undefined") {
+                const phone = normalizePhone(main_contact_phone);
+                if (phone && !isValidPhone(phone)) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Invalid main contact phone number format",
+                    });
+                }
+                updateData.main_contact_phone = phone || null;
+            }
+
+            if (typeof time_zone !== "undefined") {
+                updateData.time_zone = String(time_zone).trim();
+            }
+
+            if (!Object.keys(updateData).length) {
+                return res.status(400).json({ success: false, message: "Nothing to update" });
+            }
+
+            const updatedOrg = await prisma.organizations.update({
+                where: { organization_id: organizationId },
+                data: updateData,
+                select: {
+                    organization_id: true,
+                    name: true,
+                    email_domain: true,
+                    main_contact_name: true,
+                    main_contact_email: true,
+                    main_contact_phone: true,
+                    time_zone: true,
+                    updated_at: true,
+                },
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Organization details updated successfully",
+                data: updatedOrg,
+            });
+        } catch (error) {
+            logger.error("updateOrganizationDetails error:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error",
+                error: error.message,
+            });
+        }
+    },
+
+
+
 }
 
 

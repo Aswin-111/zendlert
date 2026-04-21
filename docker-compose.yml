@@ -15,7 +15,6 @@ services:
         condition: service_healthy
     networks:
       - zendlert-network
-
   zendlert_db:
     image: postgres:16-alpine
     restart: always

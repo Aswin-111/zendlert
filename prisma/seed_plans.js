@@ -58,9 +58,9 @@ async function main() {
       // --- STARTER (Your Actual Data) ---
       plan_name: "Starter Daily",
       description: "Daily billing plan for small teams.",
-      stripe_price_id: "price_1SVPf3AZY0CusegXzDOgPJyg",
-      monthly_price: 30.0,
-      annual_price: 300.0,
+      stripe_price_id: "price_1TGWUAA4PLnQSuqgHZVLBTfx",
+      monthly_price: 99.99,
+      annual_price: 1199.88,
 
       // Hard Limits
       user_limit: 5,
@@ -75,9 +75,9 @@ async function main() {
       // --- PRO (Mid-Tier) ---
       plan_name: "Professional Plan",
       description: "Perfect for growing businesses.",
-      stripe_price_id: "price_1SVPgmAZY0CusegXolBApOMg", // <--- REPLACE
-      monthly_price: 599.0,
-      annual_price: 990.0,
+      stripe_price_id: "price_1TGWWSA4PLnQSuqgmanY07GI",
+      monthly_price: 249.99,
+      annual_price: 2999.88,
 
       // Hard Limits (Higher)
       user_limit: 20,
@@ -97,9 +97,9 @@ async function main() {
       // --- Growth plan (Top-Tier) ---
       plan_name: "Growth plan",
       description: "Full control for large organizations.",
-      stripe_price_id: "price_1SVPfwAZY0CusegXJufRLjgW", // <--- REPLACE
-      monthly_price: 299.99,
-      annual_price: 4990.0,
+      stripe_price_id: "price_1TGWY1A4PLnQSuqgXBbZDzOK", // <--- REPLACE
+      monthly_price: 599.99,
+      annual_price: 7199.88,
 
       // Hard Limits (Use 9999 for "Unlimited" logic in Controller)
       user_limit: 9999,
