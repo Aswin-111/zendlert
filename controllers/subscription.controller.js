@@ -217,7 +217,7 @@ const SubscriptionController = {
 
       const { user_id, email: userEmail } = req.user;
       const billingEmail = userEmail;
-      const STARTER_TRIAL_DAYS = 14;
+      const STARTER_TRIAL_DAYS = 30;
 
       if (!plan_id || !organization_id) {
         return res.status(400).json({
@@ -272,10 +272,12 @@ const SubscriptionController = {
 
       if (existingOpenSub) {
         if (["active", "trialing"].includes(existingOpenSub.status)) {
+          const isTrialingConflict = existingOpenSub.status === "trialing";
           return res.status(409).json({
             success: false,
-            message:
-              "An active or trial subscription already exists for this organization.",
+            message: isTrialingConflict
+              ? "Your free trial is still active. You will be automatically billed after it ends."
+              : "An active or trial subscription already exists for this organization.",
             data: {
               id: existingOpenSub.id,
               status: existingOpenSub.status,
@@ -1388,13 +1390,14 @@ getBillingPortalSession: async (req, res) => {
         });
       }
 
-      const cancelAt = new Date(
-        cancelledStripeSub.current_period_end * 1000
-      ).toISOString();
+      const periodEnd = cancelledStripeSub.current_period_end ?? existingStripeSub.current_period_end ?? null;
+      const cancelAt = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 
       return res.status(200).json({
         success: true,
-        message: `Subscription will be cancelled on ${cancelAt}. Access remains until then.`,
+        message: cancelAt
+          ? `Subscription will be cancelled on ${cancelAt}. Access remains until then.`
+          : "Subscription cancellation scheduled. Access remains until the billing period ends.",
         data: {
           subscription_id: updatedDbSubscription.id,
           stripe_subscription_id: subscription.stripe_subscription_id,
@@ -1468,6 +1471,151 @@ getBillingPortalSession: async (req, res) => {
     } catch (error) {
       logger.error("Invoice Preview Error:", error);
       return res.status(500).json({ error: error.message });
+    }
+  },
+
+  extendFreeTrial: async (req, res) => {
+    try {
+      const { organization_id, days } = req.body;
+      const { user_id } = req.user;
+
+      if (!organization_id || days == null) {
+        return res.status(400).json({ success: false, message: "organization_id and days are required." });
+      }
+
+      const daysNum = Number(days);
+      if (!Number.isInteger(daysNum) || daysNum < 1 || daysNum > 90) {
+        return res.status(400).json({ success: false, message: "days must be a positive integer between 1 and 90." });
+      }
+
+      const subscription = await prisma.subscriptions.findFirst({
+        where: { organization_id, status: "trialing" },
+        orderBy: { created_at: "desc" },
+      });
+
+      if (!subscription) {
+        return res.status(404).json({ success: false, message: "No active trial subscription found for this organization." });
+      }
+
+      const stripeSub = await stripe.subscriptions.retrieve(subscription.stripe_subscription_id);
+
+      if (stripeSub.status !== "trialing") {
+        return res.status(400).json({ success: false, message: "Stripe subscription is not in trial status." });
+      }
+
+      const oldTrialEnd = stripeSub.trial_end;
+      const newTrialEnd = oldTrialEnd + daysNum * 86400;
+
+      await stripe.subscriptions.update(subscription.stripe_subscription_id, { trial_end: newTrialEnd });
+
+      const now = new Date();
+      await prisma.audit_Logs.create({
+        data: {
+          action: "free_trial_extended",
+          action_performed_by: user_id,
+          action_target: subscription.id,
+          old_value: new Date(oldTrialEnd * 1000).toISOString(),
+          new_value: new Date(newTrialEnd * 1000).toISOString(),
+          action_timestamp: now,
+        },
+      }).catch((err) => logger.warn("Failed to write audit log for trial extension:", err.message));
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          new_trial_end: new Date(newTrialEnd * 1000).toISOString(),
+          days_added: daysNum,
+        },
+      });
+    } catch (error) {
+      logger.error("Extend Free Trial Error:", error);
+      return res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+    }
+  },
+
+  changePlan: async (req, res) => {
+    try {
+      const { new_plan_id, payment_method_id } = req.body;
+      const { organization_id, user_id } = req.user;
+
+      if (!new_plan_id) {
+        return res.status(400).json({ success: false, message: "new_plan_id is required." });
+      }
+
+      const newPlan = await prisma.subscription_Plans.findUnique({ where: { id: new_plan_id } });
+
+      if (!newPlan || !newPlan.stripe_price_id) {
+        return res.status(404).json({ success: false, message: "Plan not found or has no Stripe price." });
+      }
+
+      const currentSub = await prisma.subscriptions.findFirst({
+        where: { organization_id, status: { in: ["active", "trialing"] } },
+        orderBy: { created_at: "desc" },
+        include: { plan: true },
+      });
+
+      if (!currentSub) {
+        return res.status(404).json({ success: false, message: "No active subscription to change." });
+      }
+
+      if (currentSub.subscription_plan_id === new_plan_id) {
+        return res.status(400).json({ success: false, message: "Already on this plan." });
+      }
+
+      const stripeSub = await stripe.subscriptions.retrieve(currentSub.stripe_subscription_id);
+      const existingItemId = stripeSub.items.data[0]?.id;
+
+      if (!existingItemId) {
+        return res.status(500).json({ success: false, message: "Could not find existing subscription item on Stripe." });
+      }
+
+      if (payment_method_id) {
+        try {
+          await stripe.paymentMethods.attach(payment_method_id, { customer: currentSub.stripe_customer_id });
+        } catch (attachErr) {
+          if (!String(attachErr?.message || "").toLowerCase().includes("already attached")) {
+            return res.status(400).json({ success: false, message: "Failed to attach payment method.", error: attachErr.message });
+          }
+        }
+        await stripe.customers.update(currentSub.stripe_customer_id, {
+          invoice_settings: { default_payment_method: payment_method_id },
+        });
+      }
+
+      const updatedStripeSub = await stripe.subscriptions.update(currentSub.stripe_subscription_id, {
+        items: [{ id: existingItemId, price: newPlan.stripe_price_id }],
+        proration_behavior: "always_invoice",
+      });
+
+      const now = new Date();
+      await prisma.subscriptions.update({
+        where: { id: currentSub.id },
+        data: { subscription_plan_id: new_plan_id, stripe_price_id: newPlan.stripe_price_id, updated_at: now },
+      });
+
+      await prisma.audit_Logs.create({
+        data: {
+          action: "subscription_plan_changed",
+          action_performed_by: user_id,
+          action_target: currentSub.id,
+          old_value: currentSub.plan?.plan_name ?? currentSub.subscription_plan_id,
+          new_value: newPlan.plan_name,
+          action_timestamp: now,
+        },
+      }).catch((err) => logger.warn("Failed to write audit log for plan change:", err.message));
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          subscription_id: currentSub.id,
+          new_plan_name: newPlan.plan_name,
+          status: updatedStripeSub.status,
+          proration_note: "Proration invoice created immediately for plan difference.",
+        },
+      });
+    } catch (error) {
+      logger.error("Change Plan Error:", error);
+      return res.status(500).json({ success: false, message: "Internal server error", error: error.message });
     }
   },
 

@@ -12,6 +12,8 @@ router.get("/manage", SubscriptionController.getSubscriptionDetails);
 router.post("/cancel", SubscriptionController.cancelSubscription);
 router.post("/billing-portal", SubscriptionController.getBillingPortalSession);
 router.post("/preview", SubscriptionController.previewInvoice);
+router.post("/extend-trial", SubscriptionController.extendFreeTrial);
+router.post("/change-plan", SubscriptionController.changePlan);
 
 // Get details for Success Page
 router.get("/status", SubscriptionController.getSubscriptionStatus);
