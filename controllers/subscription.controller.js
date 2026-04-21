@@ -272,12 +272,25 @@ const SubscriptionController = {
 
       if (existingOpenSub) {
         if (["active", "trialing"].includes(existingOpenSub.status)) {
-          const isTrialingConflict = existingOpenSub.status === "trialing";
+          let conflictMessage = "An active or trial subscription already exists for this organization.";
+          if (existingOpenSub.status === "trialing") {
+            try {
+              const existingStripeSub = await stripe.subscriptions.retrieve(
+                existingOpenSub.stripe_subscription_id
+              );
+              const trialEndIso = existingStripeSub.trial_end
+                ? new Date(existingStripeSub.trial_end * 1000).toISOString()
+                : null;
+              conflictMessage = trialEndIso
+                ? `Your free trial is still active. You will be automatically charged on ${trialEndIso}.`
+                : "Your free trial is still active. You will be automatically charged when it ends.";
+            } catch {
+              conflictMessage = "Your free trial is still active. You will be automatically charged when it ends.";
+            }
+          }
           return res.status(409).json({
             success: false,
-            message: isTrialingConflict
-              ? "Your free trial is still active. You will be automatically billed after it ends."
-              : "An active or trial subscription already exists for this organization.",
+            message: conflictMessage,
             data: {
               id: existingOpenSub.id,
               status: existingOpenSub.status,
@@ -433,10 +446,10 @@ const SubscriptionController = {
       const normalizedPlanName = String(plan.plan_name || "").trim().toLowerCase();
       const isStarterPlan = normalizedPlanName === "starter";
 
-      if (!isStarterPlan && !payment_method_id) {
+      if (!payment_method_id) {
         return res.status(400).json({
           success: false,
-          message: "Payment method is required for non-trial subscriptions.",
+          message: "Payment method is required.",
         });
       }
 
@@ -479,9 +492,7 @@ const SubscriptionController = {
         subscriptionPayload.trial_settings = {
           end_behavior: { missing_payment_method: "cancel" },
         };
-        if (payment_method_id) {
-          subscriptionPayload.default_payment_method = payment_method_id;
-        }
+        subscriptionPayload.default_payment_method = payment_method_id;
       } else {
         // Let Stripe attempt the charge immediately.
         // default_payment_method was already set on the customer above.
@@ -616,8 +627,9 @@ const SubscriptionController = {
             subscriptionId: newDbSubscription.id,
             stripeId: subscription.id,
             status: "trialing",
-            trial_start: subscription.trial_start,
-            trial_end: subscription.trial_end,
+            trial_end: subscription.trial_end
+              ? new Date(subscription.trial_end * 1000).toISOString()
+              : null,
           },
         });
       }
