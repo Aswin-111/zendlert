@@ -10,6 +10,8 @@ generated/prisma/*.dll
 generated/prisma/*.wasm
 backend.env
 logs/
+uploads/profile-pics/*
+!uploads/profile-pics/.gitkeep
 VKACCOUNTANCY.pem
 ai-context.txt
 

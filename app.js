@@ -2,6 +2,8 @@
 import express from "express";
 import cors from "cors";
 import { createRequire } from "module";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import logger, { requestLogMeta } from "./utils/logger.js";
 import requestIdMiddleware from "./middlewares/requestId.js";
 import notFoundHandler from "./middlewares/notFound.js";
@@ -20,6 +22,9 @@ import subscriptionsRoutes from "./routes/subscription.routes.js";
 import plansRoutes from "./routes/plan.routes.js";
 import configRoutes from "./routes/config.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const bodyLimit = process.env.BODY_LIMIT || "1mb";
@@ -198,6 +203,8 @@ app.use(
   "/api/v1/subscriptions/webhook",
   express.raw({ type: "application/json", limit: bodyLimit }),
 );
+
+app.use("/uploads", express.static(join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/v1/config", attachAuthContext, configRoutes);

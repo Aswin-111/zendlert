@@ -2,6 +2,7 @@ import { DeliveryStatus, UserTypes, DeliveryMethod, AlertStatus } from "@prisma/
 import moment from "moment";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import fs from "fs";
 import { Resend } from "resend";
 import admin from "../config/firebase.auth.js";
 import logger from "../utils/logger.js"; // your Winston logger
@@ -4932,6 +4933,61 @@ const AdminController = {
     },
 
 
+
+  uploadProfilePic: async (req, res) => {
+    try {
+      const userId = req.user?.user_id;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: "No image file provided." });
+      }
+
+      const profilePicUrl = `/uploads/profile-pics/${req.file.filename}`;
+
+      const existingUser = await prisma.users.findUnique({
+        where: { user_id: userId },
+        select: { profile_pic: true },
+      });
+
+      if (
+        existingUser?.profile_pic &&
+        existingUser.profile_pic.startsWith("/uploads/profile-pics/")
+      ) {
+        const oldPath = existingUser.profile_pic.replace(/^\//, "");
+        try {
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        } catch (fsErr) {
+          logger.warn(`Could not delete old profile pic: ${fsErr.message}`);
+        }
+      }
+
+      const updatedUser = await prisma.users.update({
+        where: { user_id: userId },
+        data: { profile_pic: profilePicUrl },
+        select: { user_id: true, first_name: true, last_name: true, profile_pic: true },
+      });
+
+      logger.info(`admin.uploadProfilePic.success | user: ${userId}`);
+
+      return res.status(200).json({
+        success: true,
+        message: "Profile picture updated successfully.",
+        data: {
+          profile_pic: updatedUser.profile_pic,
+        },
+      });
+    } catch (error) {
+      logger.error("admin.uploadProfilePic.error", {
+        user_id: req?.user?.user_id || null,
+        errorMessage: error?.message || null,
+      });
+      return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  },
 
 }
 

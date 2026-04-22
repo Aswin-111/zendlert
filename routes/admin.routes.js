@@ -1,6 +1,7 @@
 import express from "express";
 import AdminController from "../controllers/admin.controller.js";
 import verifyAdminAccess from "../middlewares/verifyAdminAccess.js";
+import upload from "../middlewares/uploadProfilePic.js";
 const router = express.Router();
 
 // ✅ protect all routes below
@@ -95,5 +96,11 @@ router.post("/web/personal-details/phone/change/request", AdminController.reques
 router.post("/web/personal-details/phone/change/verify", AdminController.verifyAdminPhoneChange);
 
 router.put("/web/organization-details", AdminController.updateOrganizationDetails);
+
+router.post(
+  "/web/profile/upload-pic",
+  upload.single("profile_pic"),
+  AdminController.uploadProfilePic
+);
 
 export default router;
