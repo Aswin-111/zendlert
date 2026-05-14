@@ -640,6 +640,7 @@ const AdminController = {
             });
         }
     },
+
     createUser: async (req, res) => {
         const requestId = req.requestId || null;
         const actorUserId = req.user?.user_id;
@@ -824,37 +825,110 @@ const AdminController = {
             const { newUser, token, expiresAt } = result;
 
             const appBaseUrl = process.env.APP_BASE_URL || "";
-            const setupLink = `${appBaseUrl.replace(/\/$/, "")}/finish-profile-setup?token=${token}`;
+            const verifyLink = `${appBaseUrl.replace(/\/$/, "")}/web/verify-employee/?id=${token}`;
 
-            // Send email (same behavior: skip if missing key)
             if (!process.env.RESEND_KEY) {
                 logger.warn("RESEND_KEY missing. Skipping email send.", {
                     meta: { requestId, organizationId, actorUserId, to: normalizedEmail },
                 });
             } else {
-                const from = process.env.RESEND_FROM_EMAIL || "Your App <no-reply@yourdomain.com>";
+                const from =
+                    process.env.RESEND_FROM_EMAIL || "Zendlert <no-reply@zendlert.com>";
+                const expiresPretty = expiresAt.toUTCString();
 
                 await resend.emails.send({
                     from,
                     to: normalizedEmail,
-                    subject: `You’ve been added to ${org.name} — finish your setup`,
+                    subject: `Verify your email to join ${org.name} on Zendlert`,
                     html: `
-          <div style="font-family:Arial,sans-serif;line-height:1.5">
-            <p>Hi ${first_name || ""} ${last_name || ""},</p>
-            <p>You have been added by an admin to <b>${org.name}</b>.</p>
-            <p>Click the button below to finish your profile setup:</p>
-            <p>
-              <a href="${setupLink}"
-                 style="display:inline-block;padding:10px 14px;border-radius:8px;
-                        text-decoration:none;background:#111827;color:#fff">
-                Finish profile setup
-              </a>
-            </p>
-            <p>If the button doesn’t work, copy/paste this link:</p>
-            <p><a href="${setupLink}">${setupLink}</a></p>
-            <p>This link expires at: ${expiresAt.toISOString()}</p>
-          </div>
-        `,
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Verify your email</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#111827;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(17,24,39,0.08);">
+
+            <tr>
+              <td style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#334155 100%);padding:32px 40px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="vertical-align:middle;">
+                      <div style="display:inline-block;width:40px;height:40px;border-radius:10px;background:#4C8DFF;text-align:center;line-height:40px;color:#ffffff;font-weight:700;font-size:20px;">Z</div>
+                    </td>
+                    <td style="vertical-align:middle;padding-left:12px;">
+                      <span style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.2px;">zendlert</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:40px;">
+                <h1 style="margin:0 0 16px 0;font-size:26px;line-height:1.25;color:#111827;font-weight:700;">
+                  Welcome to ${org.name}, ${first_name || ""}! 👋
+                </h1>
+                <p style="margin:0 0 16px 0;font-size:16px;line-height:1.6;color:#374151;">
+                  You've been added to <strong>${org.name}</strong> on Zendlert — the emergency communication platform built for teams that take safety seriously.
+                </p>
+                <p style="margin:0 0 28px 0;font-size:16px;line-height:1.6;color:#374151;">
+                  To activate your account, please verify your email by clicking the button below.
+                </p>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px 0;">
+                  <tr>
+                    <td style="background:#4C8DFF;border-radius:10px;">
+                      <a href="${verifyLink}"
+                         style="display:inline-block;padding:14px 28px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;">
+                        Verify my email
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0 0 8px 0;font-size:14px;line-height:1.6;color:#6b7280;">
+                  If the button doesn't work, copy and paste this link into your browser:
+                </p>
+                <p style="margin:0 0 28px 0;font-size:14px;line-height:1.6;word-break:break-all;">
+                  <a href="${verifyLink}" style="color:#4C8DFF;text-decoration:underline;">${verifyLink}</a>
+                </p>
+
+                <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 16px;margin:0 0 24px 0;">
+                  <p style="margin:0;font-size:14px;line-height:1.5;color:#9a3412;">
+                    ⏱ This verification link expires on <strong>${expiresPretty}</strong>.
+                  </p>
+                </div>
+
+                <p style="margin:0;font-size:14px;line-height:1.6;color:#6b7280;">
+                  If you weren't expecting this invitation, you can safely ignore this email.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="background:#f9fafb;padding:24px 40px;border-top:1px solid #e5e7eb;text-align:center;">
+                <p style="margin:0 0 6px 0;font-size:13px;color:#6b7280;">
+                  © ${new Date().getFullYear()} Zendlert. Emergency communication, reimagined.
+                </p>
+                <p style="margin:0;font-size:12px;color:#9ca3af;">
+                  Need help? Email <a href="mailto:support@zendlert.com" style="color:#4C8DFF;text-decoration:none;">support@zendlert.com</a>
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+    `,
                 });
             }
 
@@ -870,7 +944,7 @@ const AdminController = {
             });
 
             return res.status(200).json({
-                message: "Employee created successfully. Setup email sent.",
+                message: "Employee created successfully. Verification email sent.",
                 user: {
                     id: newUser.user_id,
                     name: `${newUser.first_name} ${newUser.last_name}`,
@@ -4934,60 +5008,60 @@ const AdminController = {
 
 
 
-  uploadProfilePic: async (req, res) => {
-    try {
-      const userId = req.user?.user_id;
-
-      if (!userId) {
-        return res.status(401).json({ success: false, message: "Unauthorized" });
-      }
-
-      if (!req.file) {
-        return res.status(400).json({ success: false, message: "No image file provided." });
-      }
-
-      const profilePicUrl = `/uploads/profile-pics/${req.file.filename}`;
-
-      const existingUser = await prisma.users.findUnique({
-        where: { user_id: userId },
-        select: { profile_pic: true },
-      });
-
-      if (
-        existingUser?.profile_pic &&
-        existingUser.profile_pic.startsWith("/uploads/profile-pics/")
-      ) {
-        const oldPath = existingUser.profile_pic.replace(/^\//, "");
+    uploadProfilePic: async (req, res) => {
         try {
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        } catch (fsErr) {
-          logger.warn(`Could not delete old profile pic: ${fsErr.message}`);
+            const userId = req.user?.user_id;
+
+            if (!userId) {
+                return res.status(401).json({ success: false, message: "Unauthorized" });
+            }
+
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: "No image file provided." });
+            }
+
+            const profilePicUrl = `/uploads/profile-pics/${req.file.filename}`;
+
+            const existingUser = await prisma.users.findUnique({
+                where: { user_id: userId },
+                select: { profile_pic: true },
+            });
+
+            if (
+                existingUser?.profile_pic &&
+                existingUser.profile_pic.startsWith("/uploads/profile-pics/")
+            ) {
+                const oldPath = existingUser.profile_pic.replace(/^\//, "");
+                try {
+                    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+                } catch (fsErr) {
+                    logger.warn(`Could not delete old profile pic: ${fsErr.message}`);
+                }
+            }
+
+            const updatedUser = await prisma.users.update({
+                where: { user_id: userId },
+                data: { profile_pic: profilePicUrl },
+                select: { user_id: true, first_name: true, last_name: true, profile_pic: true },
+            });
+
+            logger.info(`admin.uploadProfilePic.success | user: ${userId}`);
+
+            return res.status(200).json({
+                success: true,
+                message: "Profile picture updated successfully.",
+                data: {
+                    profile_pic: updatedUser.profile_pic,
+                },
+            });
+        } catch (error) {
+            logger.error("admin.uploadProfilePic.error", {
+                user_id: req?.user?.user_id || null,
+                errorMessage: error?.message || null,
+            });
+            return res.status(500).json({ success: false, message: "Internal server error" });
         }
-      }
-
-      const updatedUser = await prisma.users.update({
-        where: { user_id: userId },
-        data: { profile_pic: profilePicUrl },
-        select: { user_id: true, first_name: true, last_name: true, profile_pic: true },
-      });
-
-      logger.info(`admin.uploadProfilePic.success | user: ${userId}`);
-
-      return res.status(200).json({
-        success: true,
-        message: "Profile picture updated successfully.",
-        data: {
-          profile_pic: updatedUser.profile_pic,
-        },
-      });
-    } catch (error) {
-      logger.error("admin.uploadProfilePic.error", {
-        user_id: req?.user?.user_id || null,
-        errorMessage: error?.message || null,
-      });
-      return res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  },
+    },
 
 }
 

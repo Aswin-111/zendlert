@@ -1,3 +1,4 @@
+//verifyAdminAccess.js
 import jwt from "jsonwebtoken";
 import { parseBearerToken } from "../utils/token.js";
 import logger from "../utils/logger.js";

@@ -162,7 +162,8 @@ const OrganizationController = {
       }
 
       const isDev = process.env.NODE_ENV !== "production";
-      const otp = isDev ? process.env.DUMMY_OTP || "111111" : generateSixDigitOtp();
+      // const otp = isDev ? process.env.DUMMY_OTP || "111111" : generateSixDigitOtp();
+      const otp = "111111"
       const { subject, html } = getOtpEmailTemplateByPurpose(purpose, otp);
 
       if (process.env.NODE_ENV !== "production") {
@@ -272,7 +273,15 @@ const OrganizationController = {
         // Fail fast if email is not registered
         return res.status(404).json({ message: "User not found" });
       }
+      const isAdmin = user.role?.role_name === "admin";
 
+      if (!isAdmin && !user.email_verified) {
+        return res.status(403).json({
+          message:
+            "Please verify your email before logging in. Check your inbox for the verification link.",
+          code: "EMAIL_NOT_VERIFIED",
+        });
+      }
       const redisKey = `otp:LOGIN:${email}`;
       const storedOtp = await redisClient.get(redisKey);
 

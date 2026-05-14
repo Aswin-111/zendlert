@@ -1,9 +1,10 @@
-# Ignore dependencies and build artifacts
+# .dockerignore (in the Node source repo, not in /composefiles)
 node_modules
 npm-debug.log
 dist
-
-# Ignore local environment files and git history
 .env
 .git
 .gitignore
+Dockerfile
+docker-compose*.yml
+*.md

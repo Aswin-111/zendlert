@@ -14,7 +14,7 @@ uploads/profile-pics/*
 !uploads/profile-pics/.gitkeep
 VKACCOUNTANCY.pem
 ai-context.txt
-
+com.txt
 chatgpt_context_by_codex.txt
 codex-context.txt
 .md*

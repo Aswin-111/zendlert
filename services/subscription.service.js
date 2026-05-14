@@ -132,7 +132,7 @@ async function getOrganizationSubscriptionPayload(organizationId) {
       INNER JOIN "Subscription_Plans" p
         ON p.id = s.subscription_plan_id
       WHERE s.organization_id = $1
-        AND s.status = 'active'
+        AND s.status IN ('active', 'trialing')
       ORDER BY s.created_at DESC
       LIMIT 1
     `,
@@ -346,8 +346,7 @@ export function startSubscriptionService() {
         Ping: ping,
     });
 
-    server.bindAsync(
-        "0.0.0.0:50052",
+    server.bindAsync('127.0.0.1:5053',
         grpc.ServerCredentials.createInsecure(),
         (error, port) => {
             if (error) {

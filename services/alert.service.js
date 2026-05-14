@@ -284,6 +284,15 @@ export async function createRecipientsForAlert(prisma, alert_id, organization_id
       is_active: true,
       send_emergency_notification: true,
       area_id: { in: areaIds },
+
+      // 🔐 Verification gate:
+      //   Employees must have a verified email before receiving alerts.
+      //   Contractors are notified regardless — they don't go through the
+      //   same email-verification login gate.
+      OR: [
+        { user_type: "contractor" },
+        { user_type: "employee", email_verified: true },
+      ],
     },
     select: { user_id: true },
   });
@@ -479,6 +488,13 @@ export async function processAlertNotificationJob(prisma, jobData) {
       is_active: true,
       send_emergency_notification: true,
       area_id: { in: finalAreaIdsArray },
+
+      // 🔐 Verification gate: only notify employees with verified emails.
+      //   Contractors are notified regardless.
+      OR: [
+        { user_type: "contractor" },
+        { user_type: "employee", email_verified: true },
+      ],
     },
     select: { user_id: true, fcm_token: true, phone_number: true },
   });

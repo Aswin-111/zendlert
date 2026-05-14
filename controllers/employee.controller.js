@@ -24,6 +24,105 @@ import {
 } from "../helpers/employee.helper.js";
 import { generateTokens, sendRefreshTokenCookie } from "../utils/token.js";
 const EmployeeController = {
+  verifyEmployee: async (req, res) => {
+    const requestId = req.requestId || null;
+    const { token } = req.body || {};
+
+    try {
+      if (!token || typeof token !== "string" || token.length < 32) {
+        logger.warn("verifyEmployee: invalid token format", {
+          meta: { requestId },
+        });
+        return res.status(400).json({ message: "Invalid verification link." });
+      }
+
+      const invitation = await prisma.invitations.findUnique({
+        where: { token },
+        include: {
+          user: {
+            select: {
+              user_id: true,
+              email: true,
+              first_name: true,
+              last_name: true,
+              email_verified: true,
+              is_active: true,
+            },
+          },
+          organization: { select: { name: true } },
+        },
+      });
+
+      if (!invitation) {
+        return res.status(404).json({ message: "Verification link not found." });
+      }
+
+      if (!invitation.user) {
+        return res
+          .status(404)
+          .json({ message: "Associated user no longer exists." });
+      }
+
+      // Idempotent success — re-clicks shouldn't look broken
+      if (invitation.user.email_verified) {
+        return res.status(200).json({
+          message: "Email already verified. You can log in.",
+          already_verified: true,
+          email: invitation.user.email,
+          organization_name: invitation.organization?.name || null,
+        });
+      }
+
+      if (invitation.is_used) {
+        return res.status(410).json({
+          message: "This verification link has already been used.",
+        });
+      }
+
+      if (invitation.expires_at && invitation.expires_at < new Date()) {
+        return res.status(410).json({
+          message:
+            "This verification link has expired. Please contact your admin.",
+        });
+      }
+
+      if (!invitation.user.is_active) {
+        return res.status(403).json({ message: "This account is inactive." });
+      }
+
+      await prisma.$transaction(async (tx) => {
+        await tx.users.update({
+          where: { user_id: invitation.user.user_id },
+          data: { email_verified: true },
+        });
+        await tx.invitations.update({
+          where: { invitation_id: invitation.invitation_id },
+          data: { is_used: true },
+        });
+      });
+
+      logger.info("Employee email verified", {
+        meta: {
+          requestId,
+          user_id: invitation.user.user_id,
+          invitation_id: invitation.invitation_id,
+        },
+      });
+
+      return res.status(200).json({
+        message: "Email verified successfully. You can now log in.",
+        already_verified: false,
+        email: invitation.user.email,
+        organization_name: invitation.organization?.name || null,
+      });
+    } catch (error) {
+      logger.error("verifyEmployee error", {
+        error,
+        meta: { requestId },
+      });
+      return res.status(500).json({ message: "Server error" });
+    }
+  },
   employeeLogin: async (req, res) => {
     try {
       const parsed = loginSchema.safeParse(req.body);

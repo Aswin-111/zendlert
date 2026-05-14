@@ -4,7 +4,7 @@ import OrganizationController from "../controllers/organization.controller.js";
 import AuthController from "../controllers/auth.controller.js";
 
 const router = express.Router();
-
+router.post("/employees/verify", EmployeeController.verifyEmployee);
 router.post("/sessions/password", EmployeeController.employeeLogin);
 router.post("/sessions/otp", OrganizationController.loginWithOtp);
 router.post("/sessions/logout", AuthController.logout);
