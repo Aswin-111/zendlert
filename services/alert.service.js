@@ -16,7 +16,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 function handleGrpcError(callback, error, context = "gRPC") {
-  // ✅ handle custom service errors
   if (error instanceof AlertServiceError) {
     return callback({
       code: toGrpcErrorCode(error.statusCode),
@@ -24,7 +23,6 @@ function handleGrpcError(callback, error, context = "gRPC") {
     });
   }
 
-  // ✅ handle already-formed gRPC errors (like from verifyJwt)
   if (error.code && error.message) {
     return callback(error);
   }
@@ -39,7 +37,6 @@ function handleGrpcError(callback, error, context = "gRPC") {
 
 function getAuthContext(call) {
   const authHeader = call.metadata.get("authorization");
-
   const token = parseBearerToken(authHeader);
 
   if (!token) {
@@ -144,7 +141,12 @@ export async function getAlertDataPayload(prisma, alert_id, organization_id) {
       organization_id,
     },
     include: {
-      emergency_type: { select: { name: true } },
+      emergency_type: {
+        select: {
+          name: true,
+          icon: { select: { name: true, image_url: true } },
+        },
+      },
       Alert_Sites: { include: { site: { select: { name: true } } } },
       Alert_Areas: { include: { area: { select: { name: true } } } },
       Notification_Recipients: true,
@@ -158,8 +160,12 @@ export async function getAlertDataPayload(prisma, alert_id, organization_id) {
     throw new AlertServiceError(`Alert with ID '${alert_id}' not found.`, 404);
   }
 
+  const typeIcon = alert.emergency_type?.icon ?? null;
+
   return {
     emergency_type: alert.emergency_type?.name ?? "",
+    icon_name: typeIcon?.name ?? "",
+    icon_url: typeIcon?.image_url ?? "",
     sites: alert.Alert_Sites.map((as) => as.site.name),
     areas: alert.Alert_Areas.map((aa) => aa.area.name),
     message: alert.message,
@@ -167,6 +173,176 @@ export async function getAlertDataPayload(prisma, alert_id, organization_id) {
     status: alert.status,
     priority: alert.severity,
     delivered_time: toProtoTimestamp(alert.start_time),
+    can_respond: alert.can_respond ?? false,   // ← add this line
+  };
+}
+
+
+
+
+
+
+export async function getAlertRecipientCountsPayload(
+  prisma,
+  organization_id,
+  siteSelections,
+) {
+  if (!Array.isArray(siteSelections) || siteSelections.length === 0) {
+    throw new AlertServiceError(
+      "site_selections must be a non-empty array.",
+      400,
+    );
+  }
+
+  const normalized = siteSelections.map((s) => ({
+    site_id: s.site_id ?? s.siteid,
+    area_ids: s.area_ids ?? s.areaids ?? [],
+  }));
+
+  for (const sel of normalized) {
+    if (!sel.site_id) {
+      throw new AlertServiceError(
+        "Each selection must include site_id.",
+        400,
+      );
+    }
+    if (!Array.isArray(sel.area_ids)) {
+      throw new AlertServiceError("area_ids must be an array.", 400);
+    }
+  }
+
+  const incomingSiteIds = normalized.map((s) => s.site_id);
+  const validSites = await prisma.sites.findMany({
+    where: { id: { in: incomingSiteIds }, organization_id },
+    select: { id: true, name: true },
+  });
+
+  if (validSites.length !== new Set(incomingSiteIds).size) {
+    const validSet = new Set(validSites.map((s) => s.id));
+    const invalid = incomingSiteIds.filter((id) => !validSet.has(id));
+    throw new AlertServiceError(
+      "One or more site IDs are invalid or do not belong to the organization.",
+      400,
+      { invalid_site_ids: invalid },
+    );
+  }
+
+  const siteNameById = new Map(validSites.map((s) => [s.id, s.name]));
+
+  const recipientFilter = (areaIds) => ({
+    organization_id,
+    is_active: true,
+    send_emergency_notification: true,
+    area_id: { in: areaIds },
+    OR: [
+      { user_type: "contractor" },
+      { user_type: "employee", email_verified: true },
+    ],
+  });
+
+  const per_site = await Promise.all(
+    normalized.map(async (sel) => {
+      let resolvedAreaIds;
+      const wholeSite = sel.area_ids.length === 0;
+
+      if (wholeSite) {
+        const allAreas = await prisma.areas.findMany({
+          where: { site_id: sel.site_id, site: { organization_id } },
+          select: { id: true },
+        });
+        resolvedAreaIds = allAreas.map((a) => a.id);
+      } else {
+        const pickedAreas = await prisma.areas.findMany({
+          where: {
+            site_id: sel.site_id,
+            id: { in: sel.area_ids },
+            site: { organization_id },
+          },
+          select: { id: true },
+        });
+
+        if (pickedAreas.length !== sel.area_ids.length) {
+          const pickedSet = new Set(pickedAreas.map((a) => a.id));
+          const invalidAreas = sel.area_ids.filter((id) => !pickedSet.has(id));
+          throw new AlertServiceError(
+            `One or more area IDs are invalid for site '${sel.site_id}'.`,
+            400,
+            { invalid_area_ids: invalidAreas },
+          );
+        }
+        resolvedAreaIds = pickedAreas.map((a) => a.id);
+      }
+
+      let employee_count = 0;
+      let contractor_count = 0;
+
+      if (resolvedAreaIds.length > 0) {
+        const [employees, contractors] = await Promise.all([
+          prisma.users.count({
+            where: {
+              ...recipientFilter(resolvedAreaIds),
+              user_type: "employee",
+              email_verified: true,
+            },
+          }),
+          prisma.users.count({
+            where: {
+              ...recipientFilter(resolvedAreaIds),
+              user_type: "contractor",
+            },
+          }),
+        ]);
+        employee_count = employees;
+        contractor_count = contractors;
+      }
+
+      return {
+        site_id: sel.site_id,
+        site_name: siteNameById.get(sel.site_id) ?? null,
+        scope: wholeSite ? "site" : "areas",
+        area_ids: resolvedAreaIds,
+        total_areas: resolvedAreaIds.length,
+        employee_count,
+        contractor_count,
+        total: employee_count + contractor_count,
+      };
+    }),
+  );
+
+  const allAreaIds = Array.from(
+    new Set(per_site.flatMap((p) => p.area_ids)),
+  );
+
+  let totals = { employee_count: 0, contractor_count: 0, total: 0 };
+
+  if (allAreaIds.length > 0) {
+    const [employees, contractors] = await Promise.all([
+      prisma.users.count({
+        where: {
+          ...recipientFilter(allAreaIds),
+          user_type: "employee",
+          email_verified: true,
+        },
+      }),
+      prisma.users.count({
+        where: {
+          ...recipientFilter(allAreaIds),
+          user_type: "contractor",
+        },
+      }),
+    ]);
+    totals = {
+      employee_count: employees,
+      contractor_count: contractors,
+      total: employees + contractors,
+    };
+  }
+
+  return {
+    per_site,
+    totals,
+    total_sites: per_site.length,
+    total_areas: allAreaIds.length,
   };
 }
 
@@ -237,6 +413,7 @@ export async function createAlertWithTargets(prisma, params) {
     severity_level,
     alert_message,
     response_required,
+    can_respond,
     status,
     start_time,
     scheduled_time,
@@ -253,6 +430,7 @@ export async function createAlertWithTargets(prisma, params) {
         severity: severity_level,
         message: alert_message,
         response_required,
+        can_respond,
         status,
         start_time,
         scheduled_time,
@@ -284,11 +462,6 @@ export async function createRecipientsForAlert(prisma, alert_id, organization_id
       is_active: true,
       send_emergency_notification: true,
       area_id: { in: areaIds },
-
-      // 🔐 Verification gate:
-      //   Employees must have a verified email before receiving alerts.
-      //   Contractors are notified regardless — they don't go through the
-      //   same email-verification login gate.
       OR: [
         { user_type: "contractor" },
         { user_type: "employee", email_verified: true },
@@ -324,6 +497,7 @@ export async function createAlertForOrganization(
     alert_message,
     send_sms,
     response_required,
+    can_respond,
     timing_details,
     selected_area_details,
   } = params;
@@ -393,6 +567,7 @@ export async function createAlertForOrganization(
     severity_level,
     alert_message,
     response_required,
+    can_respond,
     status,
     start_time,
     scheduled_time,
@@ -446,7 +621,15 @@ export async function processAlertNotificationJob(prisma, jobData) {
 
   const alert = await prisma.alerts.findUnique({
     where: { id: alert_id },
-    include: { Alert_Areas: { select: { area_id: true } } },
+    include: {
+      Alert_Areas: { select: { area_id: true } },
+      emergency_type: {
+        select: {
+          name: true,
+          icon: { select: { name: true, image_url: true } },
+        },
+      },
+    },
   });
 
   if (!alert) {
@@ -488,9 +671,6 @@ export async function processAlertNotificationJob(prisma, jobData) {
       is_active: true,
       send_emergency_notification: true,
       area_id: { in: finalAreaIdsArray },
-
-      // 🔐 Verification gate: only notify employees with verified emails.
-      //   Contractors are notified regardless.
       OR: [
         { user_type: "contractor" },
         { user_type: "employee", email_verified: true },
@@ -513,11 +693,35 @@ export async function processAlertNotificationJob(prisma, jobData) {
     skipDuplicates: true,
   });
 
-  const recipientsWithFcmTokens = recipients.filter((recipient) => !!recipient.fcm_token);
+  const recipientsWithFcmTokens = recipients.filter((r) => !!r.fcm_token);
+
   if (recipientsWithFcmTokens.length > 0) {
-    const tokens = recipientsWithFcmTokens.map((recipient) => recipient.fcm_token);
+    const tokens = recipientsWithFcmTokens.map((r) => r.fcm_token);
+    const typeIcon = alert.emergency_type?.icon ?? null;
+
+    const pushPayload = {
+      notification: {
+        title: alert.emergency_type?.name ?? "Alert",
+        body: alert.message ?? "",
+      },
+      data: {
+        alert_id,
+        icon_name: typeIcon?.name ?? "",
+        icon_url: typeIcon?.image_url ?? "",
+        severity: String(alert.severity ?? ""),
+      },
+      tokens,
+    };
+
     logger.info(
       `[FCM WORKER] Placeholder: Would send ${tokens.length} push notifications for alert ${alert_id}.`,
+      {
+        meta: {
+          title: pushPayload.notification.title,
+          icon_name: pushPayload.data.icon_name,
+          icon_url: pushPayload.data.icon_url,
+        },
+      },
     );
   }
 
@@ -582,7 +786,10 @@ export async function getAlertDashboardPayload(
         severity: true,
         status: true,
         emergency_type: {
-          select: { name: true },
+          select: {
+            name: true,
+            icon: { select: { name: true, image_url: true } },
+          },
         },
         Alert_Sites: {
           select: {
@@ -679,29 +886,19 @@ export async function getDashboardStatsPayload(prisma, organization_id) {
     delivered_recipients,
   ] = await Promise.all([
     prisma.alerts.count({
-      where: {
-        organization_id,
-        status: AlertStatus.active,
-      },
+      where: { organization_id, status: AlertStatus.active },
+    }),
+    prisma.alerts.count({
+      where: { organization_id, status: AlertStatus.scheduled },
     }),
     prisma.alerts.count({
       where: {
         organization_id,
-        status: AlertStatus.scheduled,
-      },
-    }),
-    prisma.alerts.count({
-      where: {
-        organization_id,
-        status: {
-          notIn: [AlertStatus.active, AlertStatus.scheduled],
-        },
+        status: { notIn: [AlertStatus.active, AlertStatus.scheduled] },
       },
     }),
     prisma.notification_Recipients.count({
-      where: {
-        alert: { organization_id },
-      },
+      where: { alert: { organization_id } },
     }),
     prisma.notification_Recipients.count({
       where: {
@@ -729,7 +926,17 @@ export async function getAlertTypesForOrganization(prisma, organization_id) {
       id: true,
       organization_id: true,
       name: true,
+      description: true,
+      icon: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          image_url: true,
+        },
+      },
     },
+    orderBy: { created_at: "desc" },
   });
 }
 
@@ -787,9 +994,7 @@ export async function getRecipientCountsByAreaPayload(
   const validAreas = await prisma.areas.findMany({
     where: {
       id: { in: areaIdArray },
-      site: {
-        organization_id,
-      },
+      site: { organization_id },
     },
     select: { id: true },
   });
@@ -929,8 +1134,27 @@ async function buildActiveAlertsPayload(prisma, organization_id) {
   const activeAlerts = await prisma.alerts.findMany({
     where: { organization_id, status: AlertStatus.active },
     orderBy: { created_at: "desc" },
-    include: { emergency_type: { select: { name: true } } },
+    include: {
+      emergency_type: {
+        select: {
+          name: true,
+          icon: { select: { name: true, image_url: true } },
+        },
+      },
+    },
   });
+  // TEMP debug
+logger.info("[debug] active alerts raw", {
+  meta: JSON.stringify(
+    activeAlerts.map((a) => ({
+      id: a.id,
+      type: a.emergency_type?.name,
+      icon: a.emergency_type?.icon,
+    })),
+    null,
+    2,
+  ),
+});
 
   if (!activeAlerts.length) return [];
 
@@ -1034,15 +1258,17 @@ async function buildActiveAlertsPayload(prisma, organization_id) {
     };
 
     const responded =
-      s.safe +
-      s.need_help +
-      s.emergency_help_needed;
+      s.safe + s.need_help + s.emergency_help_needed;
 
     const notResponded = Math.max(totalsForAlert - responded, 0);
+
+    const typeIcon = alert.emergency_type?.icon ?? null;
 
     return {
       alert_id: alert.id,
       emergency_type: alert.emergency_type?.name ?? "",
+      icon_name: typeIcon?.name ?? "",
+      icon_url: typeIcon?.image_url ?? "",
       message: alert.message ?? "",
       severity: String(alert.severity ?? ""),
       start_time: toProtoTimestamp(alert.start_time ?? alert.created_at),
@@ -1058,6 +1284,7 @@ async function buildActiveAlertsPayload(prisma, organization_id) {
         lastUpdatedMap.get(alert.id) ?? null,
       ),
       user_locations: respondedUserLocationsByAlertId.get(alert.id) ?? [],
+      can_respond: alert.can_respond ?? false,
     };
   });
 }
@@ -1078,13 +1305,11 @@ export function startAlertService(prisma) {
   const getAlertDataHandler = async (call, callback) => {
     try {
       const { organization_id } = getAuthContext(call);
-
       const payload = await getAlertDataPayload(
         prisma,
         call.request?.alert_id,
         organization_id,
       );
-
       return callback(null, payload);
     } catch (e) {
       return handleGrpcError(callback, e, "GetAlertData");
@@ -1094,12 +1319,7 @@ export function startAlertService(prisma) {
   const getActiveAlertsUnary = async (call, callback) => {
     try {
       const { organization_id } = getAuthContext(call);
-
-      const payload = await buildActiveAlertsPayload(
-        prisma,
-        organization_id,
-      );
-
+      const payload = await buildActiveAlertsPayload(prisma, organization_id);
       return callback(null, { active_alerts: payload });
     } catch (e) {
       return handleGrpcError(callback, e, "GetActiveAlerts");
@@ -1122,11 +1342,7 @@ export function startAlertService(prisma) {
       if (call.cancelled) return;
 
       try {
-        const payload = await buildActiveAlertsPayload(
-          prisma,
-          organization_id,
-        );
-
+        const payload = await buildActiveAlertsPayload(prisma, organization_id);
         call.write({ active_alerts: payload });
       } catch (err) {
         logger.error("[StreamActiveAlerts] error", err);
@@ -1152,7 +1368,6 @@ export function startAlertService(prisma) {
       }
 
       const { user_id, organization_id } = getAuthContext(call);
-
       const dbResponse = mapProtoResponseToDbEnum(response);
 
       if (!dbResponse) {
@@ -1169,9 +1384,7 @@ export function startAlertService(prisma) {
       return callback(null, {
         ok: true,
         message: "Response updated",
-        response_updated_at: toProtoTimestamp(
-          result.response_updated_at,
-        ),
+        response_updated_at: toProtoTimestamp(result.response_updated_at),
       });
     } catch (e) {
       return handleGrpcError(callback, e, "UpdateEmployeeResponse");

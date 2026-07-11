@@ -474,13 +474,13 @@ model Alerts {
   id                String @id @default(uuid())
   organization_id   String
   user_id           String
-  emergency_type_id String
-
+  emergency_type_id String 
   severity          SeverityLevel?
   message           String
   action_required   String?
   status            AlertStatus    @default(active)
   response_required Boolean        @default(true)
+  can_respond       Boolean        @default(true)
 
   scheduled_time       DateTime?
   start_time           DateTime?
@@ -516,6 +516,18 @@ model Alerts {
   @@index([severity])
 }
 
+model Icons {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  slug       String   @unique
+  image_url  String
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Emergency_Types Emergency_Types[] 
+}
+
+
 model Alert_Sites {
   alert_id String
   site_id  String
@@ -541,15 +553,17 @@ model Emergency_Types {
   organization_id String
   name            String
   description     String?
-  image_url       String?
+  icon_id         String?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
   organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+  icon         Icons?        @relation(fields: [icon_id], references: [id])
   Alerts       Alerts[]
 
   @@unique([organization_id, name])
   @@index([organization_id])
+  @@index([icon_id])
 }
 
 // Dynamic severity catalog per org

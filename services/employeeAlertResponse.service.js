@@ -33,6 +33,7 @@ async function findAlertForResponse(tx, alert_id, organization_id) {
       organization_id: true,
       status: true,
       scheduled_time: true,
+      can_respond: true,                            // ← add
     },
     take: 1,
   });
@@ -41,6 +42,13 @@ async function findAlertForResponse(tx, alert_id, organization_id) {
 
   if (!alert) {
     throw new EmployeeAlertResponseServiceError("Alert not found", 404);
+  }
+
+  if (!alert.can_respond) {                         // ← add
+    throw new EmployeeAlertResponseServiceError(
+      "Responses are disabled for this alert",
+      403,
+    );
   }
 
   if (alert.status !== "active" && alert.status !== "scheduled") {

@@ -12,7 +12,11 @@ router.get("/alerts/summary", AdminController.getAlertSummaryForOrg);
 router.get("/alerts/history", AdminController.getAlertHistory);
 router.get("/alerts/scheduled", AdminController.getScheduledAlerts);
 // router.post("/alerts", AdminController.createAlert);
+router.post("/alerts/recipient-count", AdminController.getAlertRecipientCount);
+router.patch("/alerts/:alertId/response-permission", AdminController.updateAlertResponsePermission);
+router.get("/icons", AdminController.listIcons);
 router.post("/alerts", AdminController.createAlert);
+
 router.get("/alerts", AdminController.getAlertDashboard);
 router.put("/alerts/:alertId/resolve", AdminController.resolveAlert);
 router.get("/alerts/types", AdminController.getAlertTypes);

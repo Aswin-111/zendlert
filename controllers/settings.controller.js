@@ -72,61 +72,70 @@ const SettingsController = {
  * GET /api/v1/settings/get-alert-types?organization_id=UUID
  * Returns all emergency types for the specified organization
  */
-  getAlertTypes: async (req, res) => {
-    try {
-      const queryInput = {
-        ...(req.query ?? {}),
-        organization_id: req.user?.organization_id ?? req.query?.organization_id,
-      };
-      const parsedQuery = alertTypeListQuerySchema.safeParse(queryInput);
-      if (!parsedQuery.success) {
-        return res
-          .status(400)
-          .json({ message: "organization_id is required" });
-      }
-      const { organization_id, page, limit } = parsedQuery.data;
-      const usePagination = page !== undefined || limit !== undefined;
-      const pageNum = page ?? 1;
-      const limitNum = limit ?? 20;
-
-      const queryOptions = {
-        where: { organization_id: String(organization_id) },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          created_at: true,
-        },
-        orderBy: { created_at: "desc" },
-      };
-
-      if (usePagination) {
-        queryOptions.skip = (pageNum - 1) * limitNum;
-        queryOptions.take = limitNum;
-      }
-
-      const emergencyTypes = await prisma.emergency_Types.findMany({
-        ...queryOptions,
-      });
-
-      if (!emergencyTypes || emergencyTypes.length === 0) {
-        return res.status(404).json({
-          message: "No emergency types found for this organization.",
-        });
-      }
-
-      return res.status(200).json({
-        organization_id,
-        total: emergencyTypes.length,
-        emergency_types: emergencyTypes,
-      });
-    } catch (error) {
-      logger.error("getAlertTypes error:", error);
+getAlertTypes: async (req, res) => {
+  try {
+    const queryInput = {
+      ...(req.query ?? {}),
+      organization_id: req.user?.organization_id ?? req.query?.organization_id,
+    };
+    const parsedQuery = alertTypeListQuerySchema.safeParse(queryInput);
+    if (!parsedQuery.success) {
       return res
-        .status(500)
-        .json({ message: "Server error", error: error.message });
+        .status(400)
+        .json({ message: "organization_id is required" });
     }
-  },
+    const { organization_id, page, limit } = parsedQuery.data;
+    const usePagination = page !== undefined || limit !== undefined;
+    const pageNum = page ?? 1;
+    const limitNum = limit ?? 20;
+
+    const whereClause = { organization_id: String(organization_id) };
+
+    const queryOptions = {
+      where: whereClause,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        created_at: true,
+        icon: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            image_url: true,
+          },
+        },
+      },
+      orderBy: { created_at: "desc" },
+    };
+
+    if (usePagination) {
+      queryOptions.skip = (pageNum - 1) * limitNum;
+      queryOptions.take = limitNum;
+    }
+
+    const [emergencyTypes, total] = await Promise.all([
+      prisma.emergency_Types.findMany(queryOptions),
+      usePagination
+        ? prisma.emergency_Types.count({ where: whereClause })
+        : Promise.resolve(null),
+    ]);
+
+    return res.status(200).json({
+      organization_id,
+      total: total ?? emergencyTypes.length,
+      page: usePagination ? pageNum : undefined,
+      limit: usePagination ? limitNum : undefined,
+      emergency_types: emergencyTypes,
+    });
+  } catch (error) {
+    logger.error("getAlertTypes error:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+},
 
   /**
  * POST /api/v1/settings/alert-type
@@ -137,61 +146,93 @@ const SettingsController = {
  *   "description": "Fire or explosion incidents"
  * }
  */
-  createAlertType: async (req, res) => {
-    try {
-      const bodyInput = {
-        ...(req.body ?? {}),
-        organization_id: req.user?.organization_id ?? req.body?.organization_id,
-      };
-      const parsedBody = createAlertTypeBodySchema.safeParse(bodyInput);
-      if (!parsedBody.success) {
+createAlertType: async (req, res) => {
+  try {
+    const bodyInput = {
+      ...(req.body ?? {}),
+      organization_id: req.user?.organization_id ?? req.body?.organization_id,
+    };
+    const parsedBody = createAlertTypeBodySchema.safeParse(bodyInput);
+    if (!parsedBody.success) {
+      return res.status(400).json({
+        message: "Invalid request body",
+        errors: parsedBody.error.flatten().fieldErrors,
+      });
+    }
+    const { organization_id, name, description, icon_id } = parsedBody.data;
+
+    // Check if organization exists
+    const orgExists = await findOrganizationById(prisma, organization_id);
+    if (!orgExists) {
+      return res.status(404).json({ message: "Organization not found" });
+    }
+
+    // If an icon_id was provided, validate it exists and is active
+    if (icon_id) {
+      const icon = await prisma.icons.findUnique({
+        where: { id: icon_id },
+        select: { id: true, is_active: true },
+      });
+
+      if (!icon || !icon.is_active) {
         return res
           .status(400)
-          .json({ message: "organization_id and name are required" });
+          .json({ message: "Invalid or inactive icon_id" });
       }
-      const { organization_id, name, description } = parsedBody.data;
-
-      // Check if organization exists
-      const orgExists = await findOrganizationById(prisma, organization_id);
-
-      if (!orgExists) {
-        return res.status(404).json({ message: "Organization not found" });
-      }
-
-      // Check if the emergency type already exists in this organization
-      const existingType = await prisma.emergency_Types.findFirst({
-        where: {
-          organization_id: String(organization_id),
-          name: name.trim(),
-        },
-      });
-
-      if (existingType) {
-        return res.status(409).json({
-          message: "An emergency type with this name already exists for this organization",
-        });
-      }
-
-      // Create the new emergency type
-      const newType = await prisma.emergency_Types.create({
-        data: {
-          organization_id: String(organization_id),
-          name: name.trim(),
-          description: description || null,
-        },
-      });
-
-      return res.status(201).json({
-        message: "Emergency type created successfully",
-        emergency_type: newType,
-      });
-    } catch (error) {
-      logger.error("createAlertType error:", error);
-      return res
-        .status(500)
-        .json({ message: "Server error", error: error.message });
     }
-  },
+
+    // Check if the emergency type already exists in this organization
+    const existingType = await prisma.emergency_Types.findFirst({
+      where: {
+        organization_id: String(organization_id),
+        name: name.trim(),
+      },
+    });
+
+    if (existingType) {
+      return res.status(409).json({
+        message:
+          "An emergency type with this name already exists for this organization",
+      });
+    }
+
+    // Create the new emergency type
+    const newType = await prisma.emergency_Types.create({
+      data: {
+        organization_id: String(organization_id),
+        name: name.trim(),
+        description: description || null,
+        icon_id: icon_id || null,
+      },
+      select: {
+        id: true,
+        organization_id: true,
+        name: true,
+        description: true,
+        created_at: true,
+        updated_at: true,
+        icon: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            image_url: true,
+          },
+        },
+      },
+    });
+
+    return res.status(201).json({
+      message: "Emergency type created successfully",
+      emergency_type: newType,
+    });
+  } catch (error) {
+    logger.error("createAlertType error:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+},
 
   /**
    * PUT /api/v1/settings/alert-type?organization_id=UUID&alert_type_id=UUID

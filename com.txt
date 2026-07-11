@@ -1,6 +1,0 @@
-docker exec -it zendlert-zendlert_db-1 psql -U zendlertuser -d zendlert_db
-access token hash phrase - zendlertbackend_express@_access_token
-long token hash phrase - zendlertbackend_express@_long_token
-ssh -i ~/.ssh/zendlert-key.pem ubuntu@98.93.3.139
-upload tar
-scp -i ~/.ssh/zendlert-key.pem ./zendlert_latest.tar ubuntu@98.93.3.139:/tmp/

@@ -19,7 +19,7 @@ router.put("/sites/:siteId", OrganizationController.updateSite);
 router.post("/areas", OrganizationController.createArea);
 router.put("/areas/:areaId", OrganizationController.updateArea);
 
-router.get("/sites/areas", OrganizationController.getSitesAndAreasByOrganizationId);
-router.put("/users/:userId/site-area", OrganizationController.assignSiteAndAreaToUser);
+// router.get("/sites/areas", OrganizationController.getSitesAndAreasByOrganizationId);
+// router.put("/users/:userId/site-area", OrganizationController.assignSiteAndAreaToUser);
 
 export default router;

@@ -205,7 +205,14 @@ app.use(
 );
 
 app.use("/uploads", express.static(join(__dirname, "uploads")));
-
+app.use(
+  "/assets",
+  express.static(join(__dirname, "assets"), {
+    maxAge: "30d",
+    fallthrough: false,
+    index: false,
+  })
+);
 // Routes
 app.use("/api/v1/config", attachAuthContext, configRoutes);
 app.use("/api/v1/auth", authRoutes);

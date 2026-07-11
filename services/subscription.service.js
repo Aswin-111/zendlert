@@ -346,7 +346,8 @@ export function startSubscriptionService() {
         Ping: ping,
     });
 
-    server.bindAsync('127.0.0.1:5053',
+    const addr = '0.0.0.0:5053';
+    server.bindAsync(addr,
         grpc.ServerCredentials.createInsecure(),
         (error, port) => {
             if (error) {
@@ -355,7 +356,7 @@ export function startSubscriptionService() {
             }
 
             server.start();
-            console.log(`Subscription gRPC running on ${port}`);
+            console.log(`Subscription gRPC running on ${addr} (port ${port})`);
         }
     );
 

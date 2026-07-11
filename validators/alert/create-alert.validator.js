@@ -7,6 +7,7 @@ const createAlertSchema = z.object({
   alert_message: z.string().trim().min(1, "Alert message is required."),
   send_sms: z.boolean(),
   response_required: z.boolean(),
+  icon_id: z.string().uuid().optional(),
   timing_details: z
     .object({
       timing: z.enum(["send_now", "scheduled"]),
@@ -16,6 +17,7 @@ const createAlertSchema = z.object({
       message: "scheduled_time is required for scheduled alerts.",
       path: ["scheduled_time"],
     }),
+    can_respond: z.boolean().optional().default(true),
   selected_area_details: z.object({
     site_selections: z
       .array(

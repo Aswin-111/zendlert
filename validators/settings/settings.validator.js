@@ -27,7 +27,9 @@ export const createAlertTypeBodySchema = z.object({
   organization_id: nonEmptyId,
   name: nonEmptyName,
   description: optionalDescription,
+  icon_id: z.string().uuid().optional(),
 });
+
 
 export const updateAlertTypeBodySchema = z.object({
   name: nonEmptyName.optional(),

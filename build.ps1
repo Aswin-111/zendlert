@@ -1,15 +1,22 @@
 # build-and-save.ps1
 
-$ImageName="zendlert"
-$Tag = "latest"
+$ImageName  = "zendlert"
+$Tag        = "latest"
 $OutputPath = ".\docker-tars"
+
 # Stop the script immediately if any command fails
 $ErrorActionPreference = "Stop"
 
+# Helper: throw if the last native command failed
+function Assert-LastExitOk($what) {
+    if ($LASTEXITCODE -ne 0) {
+        throw "$what failed with exit code $LASTEXITCODE"
+    }
+}
+
 # ---- Configuration ----
-$fullImageName = "${ImageName}:${Tag}"
-# Create a safe filename by replacing characters that are invalid in paths
-$safeFileName = ($fullImageName -replace ':', '_') + ".tar"
+$fullImageName  = "${ImageName}:${Tag}"
+$safeFileName   = ($fullImageName -replace ':', '_') + ".tar"
 $outputFilePath = Join-Path -Path $OutputPath -ChildPath $safeFileName
 
 Write-Host "--- Starting Docker Build & Save ---" -ForegroundColor Cyan
@@ -21,6 +28,7 @@ Write-Host "------------------------------------" -ForegroundColor Cyan
 try {
     Write-Host "[STEP 1/2] Building Docker image..."
     docker build -t $fullImageName .
+    Assert-LastExitOk "docker build"
     Write-Host "SUCCESS: Image '$fullImageName' built successfully!" -ForegroundColor Green
 }
 catch {
@@ -35,13 +43,13 @@ try {
     Write-Host ""
     Write-Host "[STEP 2/2] Saving image to TAR file..."
 
-    # Ensure the output directory exists
     if (-not (Test-Path -Path $OutputPath)) {
         Write-Host "Output directory not found. Creating '$OutputPath'..."
         New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
     }
 
     docker save -o $outputFilePath $fullImageName
+    Assert-LastExitOk "docker save"
     Write-Host "SUCCESS: Image saved to '$outputFilePath'" -ForegroundColor Green
 }
 catch {

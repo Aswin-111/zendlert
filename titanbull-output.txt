@@ -1,0 +1,4332 @@
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\grpc\alert.proto ===
+syntax = "proto3";
+package alert;
+
+import "google/protobuf/timestamp.proto";
+
+// ================= CONTEXT =================
+message SubscriptionContext {
+  string subscription_id = 1; // issued by backend
+}
+
+// ================= SERVICE =================
+service AlertService {
+  rpc GetAlertData (AlertDataRequest) returns (AlertDataResponse);
+
+  rpc StreamActiveAlerts (StreamActiveAlertsRequest)
+      returns (stream ActiveAlertsResponse);
+
+  rpc GetActiveAlerts (GetActiveAlertsRequest)
+      returns (ActiveAlertsResponse);
+
+  rpc UpdateEmployeeResponse (UpdateEmployeeResponseRequest)
+      returns (UpdateEmployeeResponseResponse);
+}
+
+// ================= REQUESTS =================
+message AlertDataRequest {
+  string alert_id = 1;
+}
+
+message StreamActiveAlertsRequest {
+  SubscriptionContext context = 1;
+}
+
+message GetActiveAlertsRequest {
+  SubscriptionContext context = 1;
+}
+
+message UpdateEmployeeResponseRequest {
+  string alert_id = 1;
+  EmployeeResponseStatus response = 2;
+}
+
+// ================= RESPONSE MODELS =================
+message EmployeeCounts {
+  int32 total_employees = 1;
+  int32 responded_employees = 2;
+  int32 safe_count = 3;
+  int32 need_help_count = 4;
+  int32 not_responded_count = 5;
+  int32 delivered_count = 6;
+  int32 emergency_help_needed_count = 7;
+}
+
+message AlertDataResponse {
+  string emergency_type = 1;
+  repeated string sites = 2;
+  repeated string areas = 3;
+  string message = 4;
+  EmployeeCounts employee_counts = 5;
+  string status = 6;
+  string priority = 7;
+  google.protobuf.Timestamp delivered_time = 8;
+  string icon_name = 9;     // ← new ("Air Contamination")
+  string icon_url  = 10;    // ← new ("assets/air_contamination.png")
+  bool can_respond = 11;
+}
+
+// ================= STREAM =================
+message UserLocation {
+  string user_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  string location_name = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  string name = 6;
+  EmployeeResponseStatus status = 7;
+}
+
+message ActiveAlert {
+  string alert_id = 1;
+  string emergency_type = 2;
+  string message = 3;
+  string severity = 4;
+  google.protobuf.Timestamp start_time = 5;
+
+  int32 safe_count = 6;
+  int32 need_help_count = 7;
+  int32 emergency_help_needed_count = 8;
+  int32 not_responded_count = 9;
+  int32 total_recipients = 10;
+
+  repeated string locations = 11;
+  string status = 12;
+  string report = 13;
+  google.protobuf.Timestamp last_response_updated_at = 14;
+
+  repeated UserLocation user_locations = 15;
+  string icon_name = 16;    // ← new
+  string icon_url  = 17;    // ← new
+  bool can_respond = 18;
+}
+
+message ActiveAlertsResponse {
+  repeated ActiveAlert active_alerts = 1;
+}
+
+// ================= ENUM =================
+enum EmployeeResponseStatus {
+  EMPLOYEE_RESPONSE_UNKNOWN = 0;
+  SAFE = 1;
+  NEED_HELP = 2;
+  EMERGENCY_HELP_NEEDED = 3;
+}
+
+// ================= RESPONSE =================
+message UpdateEmployeeResponseResponse {
+  bool ok = 1;
+  string message = 2;
+  google.protobuf.Timestamp response_updated_at = 3;
+}
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\grpc\chat.proto ===
+// chat.proto
+
+syntax = "proto3";
+package chat;
+import "google/protobuf/empty.proto";
+
+service ChatService {
+  rpc SendMessage (SendMessageRequest) returns (google.protobuf.Empty);
+  rpc ReceiveMessages (ReceiveMessagesRequest) returns (stream Message);
+  rpc UpdateMessageStatus (UpdateStatusRequest) returns (google.protobuf.Empty);
+  rpc ChatStream (stream ClientEvent) returns (stream ServerEvent);
+  rpc GetContacts (ContactRequest) returns (ContactList);
+}
+
+// === REQUESTS ===
+
+message SendMessageRequest {
+  string sender_id = 1;         // UUID
+  string receiver_id = 2;       // UUID
+  string organization_id = 3;   // UUID
+  string encrypted_message = 4; // base64 ciphertext (nonce.cipher.tag)
+  string encrypted_sym_key = 5; // base64 encrypted symmetric key
+}
+
+message ReceiveMessagesRequest {
+  string userId = 1;            // UUID of the person requesting history
+  string organization_id = 2;   // UUID for tenant isolation
+}
+
+message UpdateStatusRequest {
+  string messageId = 1;         // UUID
+  string status = 2;            // "sent" | "delivered" | "read"
+  string organization_id = 3;   // UUID for scoping the update
+}
+
+
+// === STREAMING & RESPONSES ===
+
+message Message {
+  string id = 1;                      // UUID
+  string sender_id = 2;               // UUID
+  string receiver_id = 3;             // UUID
+  string organization_id = 4;         // UUID
+  string encrypted_message = 5;
+  string encrypted_sym_key = 6;
+  string sent_at = 7;                 // ISO-8601
+  string status = 8;
+}
+
+message Heartbeat {
+  string userId = 1;                 // UUID
+  string organization_id = 2;        // UUID
+  optional string activeChatWith = 3; // UUID of chat partner
+}
+
+message ClientEvent {
+  Heartbeat heartbeat = 1;
+}
+
+message ServerEvent {
+  oneof event {
+    Message message = 1;
+    PresenceUpdate presence = 2;
+  }
+}
+
+// === CONTACTS & PRESENCE ===
+
+message User {
+  string id = 1;           // UUID
+  string first_name = 2;
+  string last_name = 3;
+}
+
+message PresenceUpdate {
+  repeated User users = 1;
+}
+
+message ContactRequest {
+  string userId = 1;          // UUID
+  string organization_id = 2; // UUID
+}
+
+message Contact {
+  string id = 1;              // UUID
+  string first_name = 2;
+  string last_name = 3;
+  string last_message_encrypted = 4; // Ciphertext
+  string sent_at = 5;           // ISO-8601
+}
+
+message ContactList {
+  repeated Contact contacts = 1;
+}
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\grpc\key_management.proto ===
+syntax = "proto3";
+package keymanagement;
+import "google/protobuf/empty.proto";
+
+service KeyManagementService {
+
+  // Called on first device after key pair is generated locally.
+  rpc UploadKeyBackup     (UploadKeyBackupRequest)    returns (google.protobuf.Empty);
+
+  // Called on reinstall/new device to get the encrypted backup blob.
+  rpc GetKeyBackup        (GetKeyBackupRequest)       returns (KeyBackupResponse);
+
+  // Called after key is successfully recovered, to register the device as active.
+  rpc RegisterDevice      (RegisterDeviceRequest)     returns (google.protobuf.Empty);
+
+  // New device posts its ephemeral public key here to begin transfer.
+  rpc RequestKeyTransfer  (KeyTransferRequest)        returns (KeyTransferResponse);
+
+  // New device polls this until status becomes "approved" or "rejected".
+  rpc PollKeyTransfer     (PollTransferRequest)       returns (KeyTransferStatusResponse);
+
+  // Trusted old device calls this to deliver the ECDH-wrapped private key.
+  rpc ApproveKeyTransfer  (ApproveTransferRequest)    returns (google.protobuf.Empty);
+
+  // Trusted device rejects the request (user denied it).
+  rpc RejectKeyTransfer   (RejectTransferRequest)     returns (google.protobuf.Empty);
+
+  // Returns all pending transfer requests for the authenticated user.
+  // Called on app open on trusted devices so they can show an approval prompt.
+  rpc ListPendingTransfers(ListTransfersRequest)      returns (PendingTransferList);
+
+  // Fallback: server re-wraps sealed key for new device. Requires OTP auth.
+  // Logs to Audit_Logs. Warns user that server briefly accessed key material.
+  rpc SealedKeyRecovery   (SealedRecoveryRequest)     returns (SealedRecoveryResponse);
+
+  // Lists all active devices for the authenticated user.
+  rpc ListDevices         (ListDevicesRequest)        returns (DeviceList);
+
+  // Marks a device as inactive (revoke access from security settings).
+  rpc RevokeDevice        (RevokeDeviceRequest)       returns (google.protobuf.Empty);
+}
+
+// ─── Upload / Get backup ──────────────────────────────────────────────────────
+
+message UploadKeyBackupRequest {
+  string user_id               = 1;
+  string organization_id       = 2;
+  string encrypted_private_key = 3; // base64 — only used if password backup path added later
+  string public_key            = 4; // plaintext SPKI base64
+  string kdf_salt              = 5; // leave empty for OTP-only accounts
+  int32  kdf_iterations        = 6; // leave 0 for OTP-only accounts
+  string device_id             = 7;
+  string platform              = 8; // "ios" | "android" | "web"
+  string fcm_token             = 9;
+  string sealed_blob           = 10; // server-sealed backup, produced client-side using server's public key
+}
+
+message GetKeyBackupRequest {
+  string user_id         = 1;
+  string organization_id = 2;
+}
+
+message KeyBackupResponse {
+  string encrypted_private_key = 1;
+  string public_key            = 2;
+  string kdf_salt              = 3;
+  int32  kdf_iterations        = 4;
+  string kdf_algorithm         = 5;
+  int32  version               = 6;
+}
+
+// ─── Device registration ──────────────────────────────────────────────────────
+
+message RegisterDeviceRequest {
+  string user_id         = 1;
+  string organization_id = 2;
+  string device_id       = 3;
+  string platform        = 4;
+  string fcm_token       = 5;
+}
+
+// ─── Device-to-device key transfer ───────────────────────────────────────────
+
+message KeyTransferRequest {
+  string user_id               = 1;
+  string organization_id       = 2;
+  string requesting_device_id  = 3;
+  string ephemeral_public_key  = 4; // base64 SPKI — EC P-256 key generated just for this transfer
+}
+
+message KeyTransferResponse {
+  string transfer_id = 1;
+  string expires_at  = 2; // ISO-8601 — tell the client how long to poll before giving up
+}
+
+message PollTransferRequest {
+  string transfer_id = 1;
+  string user_id     = 2;
+}
+
+message KeyTransferStatusResponse {
+  string status                       = 1; // "pending" | "approved" | "rejected" | "expired"
+  string wrapped_private_key          = 2; // populated only when approved
+  string approving_device_public_key  = 3; // the approving device's identity public key, needed for ECDH
+}
+
+message ApproveTransferRequest {
+  string transfer_id                  = 1;
+  string user_id                      = 2;
+  string approving_device_id          = 3;
+  string wrapped_private_key          = 4; // ECDH result: private key wrapped for the new device
+  string approving_device_public_key  = 5; // identity public key of approving device
+}
+
+message RejectTransferRequest {
+  string transfer_id = 1;
+  string user_id     = 2;
+}
+
+message ListTransfersRequest {
+  string user_id = 1;
+}
+
+message PendingTransferList {
+  repeated PendingTransfer transfers = 1;
+}
+
+message PendingTransfer {
+  string transfer_id          = 1;
+  string requesting_device_id = 2;
+  string ephemeral_public_key = 3;
+  string created_at           = 4;
+  string expires_at           = 5;
+}
+
+// ─── Sealed fallback recovery ─────────────────────────────────────────────────
+
+message SealedRecoveryRequest {
+  string user_id           = 1; 
+  string organization_id   = 2;
+  string device_id         = 3;
+  string device_public_key = 4; // new device's long-term public key (SPKI base64)
+}
+
+message SealedRecoveryResponse {
+  string wrapped_private_key = 1; // server decrypted sealed blob, re-wrapped for device's public key
+}
+
+// ─── Device management ────────────────────────────────────────────────────────
+
+message ListDevicesRequest {
+  string user_id = 1;
+}
+
+message DeviceList {
+  repeated DeviceInfo devices = 1;
+}
+
+message DeviceInfo {
+  string device_id  = 1;
+  string platform   = 2;
+  string last_seen  = 3; // ISO-8601
+  bool   is_active  = 4;
+}
+
+message RevokeDeviceRequest {
+  string user_id   = 1;
+  string device_id = 2;
+}
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\grpc\subscription.proto ===
+syntax = "proto3";
+
+package subscription;
+
+// Generic subscription service
+service SubscriptionService {
+
+  // Client subscribes to a topic (server streaming)
+  rpc Subscribe (SubscribeRequest) returns (stream SubscribeResponse);
+
+  // Optional: health check / debug
+  rpc Ping (PingRequest) returns (PingResponse);
+}
+
+// 🔐 NO organization_id here
+// Identity comes from JWT metadata
+message SubscribeRequest {
+  string topic = 1;                 // e.g. "alerts", "dashboard"
+  map<string, string> filters = 2;  // optional filters (site_id, severity, etc.)
+}
+
+// Generic response wrapper
+message SubscribeResponse {
+  string topic = 1;
+  string event = 2;     // e.g. "INIT", "UPDATE"
+  string data = 3;      // JSON string payload (flexible)
+}
+
+message PingRequest {}
+message PingResponse {
+  string message = 1;
+}
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\prisma\schema.prisma ===
+// ----------------------
+// Prisma boilerplate
+// ----------------------
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------
+// Enums
+// ----------------------
+
+enum OrgStatus {
+  pending
+  active
+  archived
+  suspended
+  payment_failed
+  terminated
+}
+
+enum UserTypes {
+  employee
+  contractor
+}
+
+enum MessageType {
+  text
+  image
+  file
+}
+
+enum MessageStatus {
+  sent
+  delivered
+  read
+  failed
+}
+
+enum DeliveryMethod {
+  email
+  sms
+  both
+}
+
+enum SeverityLevel {
+  critical
+  high
+  medium
+  low
+}
+
+enum AlertStatus {
+  draft
+  scheduled
+  active
+  resolved
+  ended
+  cancelled
+}
+
+enum DeliveryStatus {
+  pending
+  send
+  delivered
+  failed
+}
+
+// enum UserResponse {
+//   safe
+//   not_safe
+//   evacuated
+//   seeking_shelter
+// }
+
+enum UserResponse {
+  safe
+  need_help
+  emergency_help_needed
+}
+
+enum IncidentSeverity {
+  low
+  high
+}
+
+enum IncidentStatus {
+  open
+  resolved
+}
+
+enum IncidentType {
+  fire
+  chemical_spill
+  medical
+  security
+  equipment_failure
+  other
+}
+
+enum NotificationChannel {
+  sms
+  push
+  in_app
+}
+
+// ----------------------
+// Core org models
+// ----------------------
+
+model Organizations {
+  organization_id    String  @id @default(uuid()) // PK
+  name               String  @unique // org name
+  email_domain       String  @unique @db.VarChar(255)
+  stripe_customer_id String? @unique
+
+  main_contact_name  String? @unique @db.VarChar(255)
+  main_contact_email String? @unique @db.VarChar(255)
+  main_contact_phone String? @unique @db.VarChar(255)
+
+  is_active        Boolean   @default(true)
+  industry_type_id String?
+  status_id        String?
+  time_zone        String    @db.VarChar(100) // e.g. "America/Chicago"
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  last_activity_at DateTime?
+
+  // Relations
+  industry_type Industry_Types?        @relation(fields: [industry_type_id], references: [id])
+  status        Organization_Statuses? @relation(fields: [status_id], references: [id])
+
+  Sites                 Sites[]
+  Users                 Users[]
+  Alerts                Alerts[]
+  Subscriptions         Subscriptions[]
+  Invitations           Invitations[]
+  Chat_Messages         Chat_Messages[]
+  Emergency_Types       Emergency_Types[]
+  Severity_Levels       Severity_Levels[]
+  Contracting_Companies Contracting_Companies[]
+  Incident_Reports      Incident_Reports[]
+  visitors              Visitors[]
+}
+
+model Organization_Statuses {
+  id            String          @id @default(uuid())
+  name          String          @unique
+  description   String?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  Organizations Organizations[]
+  Alerts        Alerts[]
+}
+
+// ----------------------
+// Sites & Areas
+// ----------------------
+
+model Sites {
+  id              String   @id @default(uuid())
+  organization_id String?
+  name            String   @db.VarChar(255)
+  address_line_1  String
+  address_line_2  String?
+  city            String
+  state           String
+  zip_code        String
+  contact_name    String
+  contact_email   String   @unique
+  contact_phone   String?  @unique
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+
+  organization Organizations? @relation(fields: [organization_id], references: [organization_id])
+  Areas        Areas[]
+  Users        Users[]
+  Alert_Sites  Alert_Sites[]
+}
+
+model Areas {
+  id          String        @id @default(uuid())
+  site_id     String
+  name        String        @db.VarChar(255)
+  description String?
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+  site        Sites         @relation(fields: [site_id], references: [id])
+  Users       Users[]
+  Alert_Areas Alert_Areas[]
+}
+
+// ----------------------
+// Users & auth-ish
+// ----------------------
+
+model Users {
+  user_id                     String    @id @default(uuid())
+  organization_id             String?
+  site_id                     String?
+  area_id                     String?
+  email                       String    @unique
+  email_verified              Boolean   @default(false)
+  password_hash               String?
+  first_name                  String
+  last_name                   String
+  phone_number                String
+  phone_verified              Boolean   @default(false)
+  send_emergency_notification Boolean   @default(true)
+  is_active                   Boolean   @default(true)
+  role_id                     String
+  profile_pic                 String?
+  user_type                   UserTypes
+  must_reset_password         Boolean?  @default(false)
+  fcm_token                   String?
+  e2ee_public_key             String?   @db.Text
+  refresh_token               String?   @db.Text
+  created_at                  DateTime  @default(now())
+  updated_at                  DateTime  @updatedAt
+
+  organization Organizations? @relation(fields: [organization_id], references: [organization_id])
+  employee     Employees?
+  site         Sites?         @relation(fields: [site_id], references: [id])
+  area         Areas?         @relation(fields: [area_id], references: [id])
+  role         Roles          @relation(fields: [role_id], references: [id])
+
+  Phone_Verifications Phone_Verifications[]
+
+  // Alerts relations
+  alertsCreated  Alerts[] @relation("AlertCreator")
+  alertsResolved Alerts[] @relation("AlertResolvedBy")
+
+  Visitor_Status          Visitor_Status[]
+  Notification_Recipients Notification_Recipients[]
+  User_Locations          User_Locations[]
+  Audit_Logs              Audit_Logs[]
+  contractors             Contractors[]
+
+  invitationsReceived Invitations[] @relation("InvitedUser")
+  invitationsSent     Invitations[] @relation("InvitationCreator")
+
+  messagesSent     Chat_Messages[] @relation("MessageSender")
+  messagesReceived Chat_Messages[] @relation("MessageReceiver")
+
+  incidentReports        Incident_Reports[]
+  key_backup             User_Key_Backups?
+  devices                User_Devices[]
+  deviceKeyTransfers     Device_Key_Transfers[]
+  serverSealedKeyBackups Server_Sealed_Key_Backups?
+  emailVerifications     Email_Verifications[]
+
+  @@index([organization_id])
+  @@index([site_id])
+  @@index([area_id])
+}
+
+model Email_Verifications {
+  id                String    @id @default(uuid())
+  user_id           String
+  pending_email     String    @unique
+  verification_code String    @db.VarChar(6)
+  code_sent_at      DateTime
+  expires_at        DateTime
+  verified_at       DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([pending_email])
+}
+
+model Device_Key_Transfers {
+  id                          String   @id @default(uuid())
+  user_id                     String
+  requesting_device_id        String
+  ephemeral_public_key        String   @db.Text // new device's EC public key, plaintext
+  approving_device_public_key String?  @db.Text
+  wrapped_private_key         String?  @db.Text // set by approving device after ECDH
+  status                      String   @default("pending") // pending | approved | rejected | expired
+  expires_at                  DateTime
+  created_at                  DateTime @default(now())
+  updated_at                  DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([status])
+}
+
+model Server_Sealed_Key_Backups {
+  id          String   @id @default(uuid())
+  user_id     String   @unique
+  sealed_blob String   @db.Text // private key encrypted by server-side key
+  key_version String // identifies which server key was used, for rotation
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+}
+
+model User_Key_Backups {
+  id      String @id @default(uuid())
+  user_id String @unique // one active backup per account
+
+  // Ciphertext blob produced by AES-256-GCM on the client
+  encrypted_private_key String @db.Text // base64(iv || ciphertext || tag)
+  public_key            String @db.Text // plaintext EC/RSA public key (mirrors Users.e2ee_public_key)
+
+  // KDF params needed to re-derive the KEK on recovery
+  kdf_salt       String @db.VarChar(64) // base64, 32 random bytes
+  kdf_iterations Int    @default(310000) // PBKDF2-SHA256 NIST minimum
+  kdf_algorithm  String @default("PBKDF2-SHA256")
+
+  version    Int      @default(1) // bumped on every RotateKeyBackup
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model User_Devices {
+  id         String   @id @default(uuid())
+  user_id    String
+  device_id  String // stable UUID stored in device secure enclave / keychain
+  platform   String   @db.VarChar(20) // "ios" | "android" | "web"
+  fcm_token  String? // replaces Users.fcm_token — per-device push token
+  last_seen  DateTime @default(now())
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([user_id, device_id]) // one row per (account, device); account-scoped by design
+  @@index([user_id])
+}
+
+model Chat_Messages {
+  id              String @id @default(uuid())
+  organization_id String
+  sender_id       String
+  receiver_id     String
+
+  encrypted_message String @db.Text
+  encrypted_sym_key String @db.Text
+
+  message_type MessageType   @default(text)
+  sent_at      DateTime      @default(now())
+  status       MessageStatus @default(sent)
+  read_at      DateTime?
+
+  deleted_by_sender   Boolean @default(false)
+  deleted_by_receiver Boolean @default(false)
+
+  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade)
+  sender       Users         @relation("MessageSender", fields: [sender_id], references: [user_id], onDelete: Cascade)
+  receiver     Users         @relation("MessageReceiver", fields: [receiver_id], references: [user_id], onDelete: Cascade)
+
+  @@index([organization_id])
+  @@index([sender_id])
+  @@index([receiver_id])
+}
+
+model Employees {
+  user_id String @id
+  user    Users  @relation(fields: [user_id], references: [user_id])
+}
+
+model Contractors {
+  user_id                String
+  contracting_company_id String
+
+  user                Users                 @relation(fields: [user_id], references: [user_id])
+  contracting_company Contracting_Companies @relation(fields: [contracting_company_id], references: [id])
+
+  @@id([user_id, contracting_company_id])
+}
+
+model Contracting_Companies {
+  id              String  @id @default(uuid())
+  organization_id String
+  name            String
+  contact_email   String?
+  phone           String?
+  address         String?
+
+  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+  contractors  Contractors[]
+}
+
+model Invitations {
+  invitation_id   String         @id @default(uuid())
+  organization_id String
+  user_id         String
+  token           String         @unique @db.VarChar(255)
+  expires_at      DateTime
+  is_used         Boolean        @default(false)
+  created_by      String?
+  delivery_method DeliveryMethod
+  sent_at         DateTime?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+  user         Users         @relation("InvitedUser", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  createdBy    Users?        @relation("InvitationCreator", fields: [created_by], references: [user_id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([organization_id])
+  @@index([user_id])
+  @@index([expires_at])
+  @@index([is_used, expires_at])
+}
+
+model Phone_Verifications {
+  id                String    @id @default(uuid())
+  employee_id       String
+  phone_number      String
+  verification_code String    @db.VarChar(6)
+  code_sent_at      DateTime
+  expires_at        DateTime
+  verified_at       DateTime?
+
+  employee Users @relation(fields: [employee_id], references: [user_id])
+}
+
+// ----------------------
+// Roles / Permissions
+// ----------------------
+
+model Roles {
+  id          String   @id @default(uuid())
+  role_name   String   @unique
+  description String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  Users            Users[]
+  Role_Permissions Role_Permissions[]
+}
+
+model Permissions {
+  id                     String             @id @default(uuid())
+  permission_name        String             @unique
+  permission_description String?
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @updatedAt
+  Role_Permissions       Role_Permissions[]
+}
+
+model Role_Permissions {
+  role_id       String
+  permission_id String
+  assigned_at   DateTime @default(now())
+
+  role       Roles       @relation(fields: [role_id], references: [id])
+  permission Permissions @relation(fields: [permission_id], references: [id])
+
+  @@id([role_id, permission_id])
+}
+
+// ----------------------
+// Alerts & related
+// ----------------------
+
+model Alerts {
+  id                String @id @default(uuid())
+  organization_id   String
+  user_id           String
+  emergency_type_id String 
+  severity          SeverityLevel?
+  message           String
+  action_required   String?
+  status            AlertStatus    @default(active)
+  response_required Boolean        @default(true)
+  can_respond       Boolean        @default(true)
+
+  scheduled_time       DateTime?
+  start_time           DateTime?
+  end_time             DateTime?
+  resolved_by          String?
+  resolved_at          DateTime?
+  resolution_reason_id Int?
+  resolution_notes     String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user           Users           @relation("AlertCreator", fields: [user_id], references: [user_id])
+  organization   Organizations   @relation(fields: [organization_id], references: [organization_id])
+  emergency_type Emergency_Types @relation(fields: [emergency_type_id], references: [id])
+
+  resolvedByUser    Users?              @relation("AlertResolvedBy", fields: [resolved_by], references: [user_id])
+  resolution_reason Resolution_Reasons? @relation(fields: [resolution_reason_id], references: [reason_id])
+
+  Organization_Statuses   Organization_Statuses? @relation(fields: [organization_StatusesId], references: [id])
+  organization_StatusesId String?
+
+  Alert_Sites             Alert_Sites[]
+  Alert_Areas             Alert_Areas[]
+  Visitor_Status          Visitor_Status[]
+  Notification_Recipients Notification_Recipients[]
+  User_Locations          User_Locations[]
+
+  @@index([organization_id])
+  @@index([user_id])
+  @@index([emergency_type_id])
+  @@index([status])
+  @@index([severity])
+}
+
+model Icons {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  slug       String   @unique
+  image_url  String
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Emergency_Types Emergency_Types[] 
+}
+
+
+model Alert_Sites {
+  alert_id String
+  site_id  String
+
+  alert Alerts @relation(fields: [alert_id], references: [id])
+  site  Sites  @relation(fields: [site_id], references: [id])
+
+  @@id([alert_id, site_id])
+}
+
+model Alert_Areas {
+  alert_id String
+  area_id  String
+
+  alert Alerts @relation(fields: [alert_id], references: [id])
+  area  Areas  @relation(fields: [area_id], references: [id])
+
+  @@id([alert_id, area_id])
+}
+
+model Emergency_Types {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String
+  description     String?
+  icon_id         String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+  icon         Icons?        @relation(fields: [icon_id], references: [id])
+  Alerts       Alerts[]
+
+  @@unique([organization_id, name])
+  @@index([organization_id])
+  @@index([icon_id])
+}
+
+// Dynamic severity catalog per org
+model Severity_Levels {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String   @unique @db.VarChar(255)
+  description     String?  @db.Text
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([organization_id])
+}
+
+// Resolution reasons for alerts
+model Resolution_Reasons {
+  reason_id          Int     @id @default(autoincrement())
+  reason_code        String  @unique @db.VarChar(50)
+  reason_description String  @db.Text
+  is_active          Boolean @default(true)
+
+  Alerts Alerts[]
+}
+
+// ----------------------
+// Visitors & companies
+// ----------------------
+
+model Industry_Types {
+  id            String          @id @default(uuid())
+  name          String          @unique
+  description   String?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  Organizations Organizations[]
+}
+
+model Companies {
+  id         String   @id @default(uuid())
+  name       String
+  address    String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  Visitors Visitors[]
+}
+
+model Visitors {
+  id              String   @id @default(uuid())
+  organization_id String
+  first_name      String
+  last_name       String?
+  email           String?
+  phone           String?
+  company_id      String
+  created_at      DateTime @default(now())
+  is_active       Boolean  @default(true)
+
+  organization   Organizations    @relation(fields: [organization_id], references: [organization_id])
+  company        Companies        @relation(fields: [company_id], references: [id])
+  Visitor_Status Visitor_Status[]
+
+  @@index([organization_id])
+}
+
+model Visitor_Status {
+  id                  String   @id @default(uuid())
+  alert_id            String
+  reported_by_user_id String
+  visitor_id          String
+  status              String
+  location            String?
+  notes               String?
+  reported_at         DateTime @default(now())
+
+  alert       Alerts   @relation(fields: [alert_id], references: [id])
+  reported_by Users    @relation(fields: [reported_by_user_id], references: [user_id])
+  visitor     Visitors @relation(fields: [visitor_id], references: [id])
+}
+
+// ----------------------
+// Notification & tracking
+// ----------------------
+
+model Notification_Recipients {
+  id                  String              @id @default(uuid())
+  alert_id            String
+  user_id             String
+  delivery_status     DeliveryStatus      @default(pending)
+  delivered_at        DateTime?
+  acknowledged_at     DateTime?
+  response            UserResponse?
+  response_updated_at DateTime?
+  response_history    Json?
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  channel             NotificationChannel @default(in_app)
+
+  alert Alerts @relation(fields: [alert_id], references: [id])
+  user  Users  @relation(fields: [user_id], references: [user_id])
+
+  @@unique([alert_id, user_id])
+  @@index([alert_id])
+  @@index([user_id])
+}
+
+model User_Locations {
+  id            String   @id @default(uuid())
+  user_id       String
+  alert_id      String
+  latitude      Decimal  @db.Decimal(10, 6)
+  longitude     Decimal  @db.Decimal(10, 6)
+  location_name String?
+  timestamp     DateTime @default(now())
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user  Users  @relation(fields: [user_id], references: [user_id])
+  alert Alerts @relation(fields: [alert_id], references: [id])
+
+  @@index([user_id])
+  @@index([alert_id])
+}
+
+// ----------------------
+// Audit logs
+// ----------------------
+
+model Audit_Logs {
+  id                  String   @id @default(uuid())
+  action              String
+  action_performed_by String
+  action_target       String?
+  action_timestamp    DateTime @default(now())
+  old_value           String?
+  new_value           String?
+  ip_address          String?
+  user_agent          String?
+
+  performed_by_user Users @relation(fields: [action_performed_by], references: [user_id])
+}
+
+// ----------------------
+// Incident reports
+// ----------------------
+
+model Incident_Reports {
+  incident_id         String @id @default(uuid())
+  organization_id     String
+  reported_by_user_id String
+
+  incident_type IncidentType
+  severity      IncidentSeverity
+  location      String?          @db.Text
+  description   String?          @db.Text
+  actions_taken String?          @db.Text
+  status        IncidentStatus
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  organization     Organizations @relation(fields: [organization_id], references: [organization_id], onDelete: Cascade, onUpdate: Cascade)
+  reported_by_user Users         @relation(fields: [reported_by_user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([organization_id])
+  @@index([reported_by_user_id])
+  @@index([status])
+  @@index([severity])
+}
+
+// ----------------------
+// Subscriptions / Plans
+// ----------------------
+// ----------------------
+// Subscriptions / Plans
+// ----------------------
+
+model Subscriptions {
+  id String @id @default(uuid())
+
+  organization_id      String
+  subscription_plan_id String
+
+  stripe_customer_id     String @db.Text
+  stripe_subscription_id String @unique @db.Text
+  stripe_price_id        String @db.Text
+
+  status         String  @default("inactive") @db.VarChar(50)
+  payment_method String? @db.VarChar(50)
+  payment_status String  @default("unpaid") @db.VarChar(50)
+
+  current_period_start DateTime @db.Date
+  current_period_end   DateTime @db.Date
+
+  auto_renew Boolean @default(false)
+
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @db.Timestamp(6)
+
+  organization Organizations      @relation(fields: [organization_id], references: [organization_id])
+  plan         Subscription_Plans @relation(fields: [subscription_plan_id], references: [id])
+
+  @@index([organization_id])
+  @@index([subscription_plan_id])
+  @@index([stripe_customer_id])
+  @@index([stripe_price_id])
+} 
+
+model Subscription_Plans {
+  id String @id @default(uuid())
+
+  plan_name       String  @unique @db.VarChar(50)
+  description     String?
+  stripe_price_id String  @unique
+
+  monthly_price Decimal @default(0.00) @db.Decimal(10, 2)
+  annual_price  Decimal @default(0.00) @db.Decimal(10, 2)
+
+  user_limit  Int @default(0)
+  site_limit  Int @default(0)
+  area_limit  Int @default(0)
+  alert_limit Int @default(0)
+
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  Subscriptions Subscriptions[]
+  Plan_Features Plan_Features[]
+}
+
+model Features {
+  id String @id @default(uuid())
+
+  name        String
+  code        String   @unique
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  Plan_Features Plan_Features[]
+}
+
+model Plan_Features {
+  id String @id @default(uuid())
+
+  plan_id    String
+  feature_id String
+  is_enabled Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  plan    Subscription_Plans @relation(fields: [plan_id], references: [id])
+  feature Features           @relation(fields: [feature_id], references: [id])
+
+  @@index([plan_id])
+  @@index([feature_id])
+}
+
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\services\alert.service.js ===
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+import grpc from "@grpc/grpc-js";
+import protoLoader from "@grpc/proto-loader";
+import { AlertStatus } from "@prisma/client";
+import { verifyJwt, parseBearerToken } from "../utils/token.js";
+import logger from "../utils/logger.js";
+import { toGrpcErrorCode } from "../helpers/grpc-error.helper.js";
+import { recordEmployeeAlertResponse } from "./employeeAlertResponse.service.js";
+import {
+  normalizeIncomingDateTimeToUtc,
+  utcNow,
+} from "../utils/datetime.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+function handleGrpcError(callback, error, context = "gRPC") {
+  if (error instanceof AlertServiceError) {
+    return callback({
+      code: toGrpcErrorCode(error.statusCode),
+      message: error.message,
+    });
+  }
+
+  if (error.code && error.message) {
+    return callback(error);
+  }
+
+  logger.error(`[${context}] error`, { error });
+
+  return callback({
+    code: grpc.status.INTERNAL,
+    message: "Internal server error",
+  });
+}
+
+function getAuthContext(call) {
+  const authHeader = call.metadata.get("authorization");
+  const token = parseBearerToken(authHeader);
+
+  if (!token) {
+    throw {
+      code: grpc.status.UNAUTHENTICATED,
+      message: "Missing or invalid auth token",
+    };
+  }
+
+  let decoded;
+  try {
+    decoded = verifyJwt(token);
+  } catch (err) {
+    throw {
+      code: grpc.status.UNAUTHENTICATED,
+      message: "Invalid or expired token",
+    };
+  }
+
+  return {
+    user_id: decoded.user_id,
+    organization_id: decoded.organization_id,
+  };
+}
+
+function toProtoTimestamp(date) {
+  if (!date) return null;
+  const ms = date.getTime();
+  return { seconds: Math.floor(ms / 1000), nanos: (ms % 1000) * 1e6 };
+}
+
+class AlertServiceError extends Error {
+  constructor(message, statusCode = 500, details = {}) {
+    super(message);
+    this.name = "AlertServiceError";
+    this.statusCode = statusCode;
+    this.details = details;
+    Object.assign(this, details);
+  }
+}
+
+function mapProtoResponseToDbEnum(protoEnumValue) {
+  if (protoEnumValue === 1) return "safe";
+  if (protoEnumValue === 2) return "need_help";
+  if (protoEnumValue === 3) return "emergency_help_needed";
+  return null;
+}
+
+function mapDbResponseToProtoEnum(dbResponse) {
+  if (dbResponse === "safe") return 1;
+  if (dbResponse === "need_help") return 2;
+  if (dbResponse === "emergency_help_needed") return 3;
+  return 0;
+}
+
+function buildGrpcAlertRecipientCounts(recipients) {
+  const total_employees = recipients.length;
+  const responded_recipients = recipients.filter((r) => r.response !== null);
+  const responded_employees = responded_recipients.length;
+
+  const safe_count = responded_recipients.filter(
+    (r) => r.response === "safe",
+  ).length;
+
+  const need_help_count = responded_recipients.filter(
+    (r) => r.response === "need_help",
+  ).length;
+
+  const emergency_help_needed_count = responded_recipients.filter(
+    (r) => r.response === "emergency_help_needed",
+  ).length;
+
+  const not_responded_count = total_employees - responded_employees;
+
+  const delivered_count = recipients.filter(
+    (r) => r.delivery_status === "delivered",
+  ).length;
+
+  return {
+    total_employees,
+    responded_employees,
+    safe_count,
+    need_help_count,
+    emergency_help_needed_count,
+    not_responded_count,
+    delivered_count,
+  };
+}
+
+export async function getAlertDataPayload(prisma, alert_id, organization_id) {
+  if (!alert_id) {
+    throw new AlertServiceError("alert_id is a required field.", 400);
+  }
+
+  if (!organization_id) {
+    throw new AlertServiceError("organization_id is required.", 400);
+  }
+
+  const alerts = await prisma.alerts.findMany({
+    where: {
+      id: alert_id,
+      organization_id,
+    },
+    include: {
+      emergency_type: {
+        select: {
+          name: true,
+          icon: { select: { name: true, image_url: true } },
+        },
+      },
+      Alert_Sites: { include: { site: { select: { name: true } } } },
+      Alert_Areas: { include: { area: { select: { name: true } } } },
+      Notification_Recipients: true,
+    },
+    take: 1,
+  });
+
+  const alert = alerts[0];
+
+  if (!alert) {
+    throw new AlertServiceError(`Alert with ID '${alert_id}' not found.`, 404);
+  }
+
+  const typeIcon = alert.emergency_type?.icon ?? null;
+
+  return {
+    emergency_type: alert.emergency_type?.name ?? "",
+    icon_name: typeIcon?.name ?? "",
+    icon_url: typeIcon?.image_url ?? "",
+    sites: alert.Alert_Sites.map((as) => as.site.name),
+    areas: alert.Alert_Areas.map((aa) => aa.area.name),
+    message: alert.message,
+    employee_counts: buildGrpcAlertRecipientCounts(alert.Notification_Recipients),
+    status: alert.status,
+    priority: alert.severity,
+    delivered_time: toProtoTimestamp(alert.start_time),
+    can_respond: alert.can_respond ?? false,   // ← add this line
+  };
+}
+
+
+
+
+
+
+export async function getAlertRecipientCountsPayload(
+  prisma,
+  organization_id,
+  siteSelections,
+) {
+  if (!Array.isArray(siteSelections) || siteSelections.length === 0) {
+    throw new AlertServiceError(
+      "site_selections must be a non-empty array.",
+      400,
+    );
+  }
+
+  const normalized = siteSelections.map((s) => ({
+    site_id: s.site_id ?? s.siteid,
+    area_ids: s.area_ids ?? s.areaids ?? [],
+  }));
+
+  for (const sel of normalized) {
+    if (!sel.site_id) {
+      throw new AlertServiceError(
+        "Each selection must include site_id.",
+        400,
+      );
+    }
+    if (!Array.isArray(sel.area_ids)) {
+      throw new AlertServiceError("area_ids must be an array.", 400);
+    }
+  }
+
+  const incomingSiteIds = normalized.map((s) => s.site_id);
+  const validSites = await prisma.sites.findMany({
+    where: { id: { in: incomingSiteIds }, organization_id },
+    select: { id: true, name: true },
+  });
+
+  if (validSites.length !== new Set(incomingSiteIds).size) {
+    const validSet = new Set(validSites.map((s) => s.id));
+    const invalid = incomingSiteIds.filter((id) => !validSet.has(id));
+    throw new AlertServiceError(
+      "One or more site IDs are invalid or do not belong to the organization.",
+      400,
+      { invalid_site_ids: invalid },
+    );
+  }
+
+  const siteNameById = new Map(validSites.map((s) => [s.id, s.name]));
+
+  const recipientFilter = (areaIds) => ({
+    organization_id,
+    is_active: true,
+    send_emergency_notification: true,
+    area_id: { in: areaIds },
+    OR: [
+      { user_type: "contractor" },
+      { user_type: "employee", email_verified: true },
+    ],
+  });
+
+  const per_site = await Promise.all(
+    normalized.map(async (sel) => {
+      let resolvedAreaIds;
+      const wholeSite = sel.area_ids.length === 0;
+
+      if (wholeSite) {
+        const allAreas = await prisma.areas.findMany({
+          where: { site_id: sel.site_id, site: { organization_id } },
+          select: { id: true },
+        });
+        resolvedAreaIds = allAreas.map((a) => a.id);
+      } else {
+        const pickedAreas = await prisma.areas.findMany({
+          where: {
+            site_id: sel.site_id,
+            id: { in: sel.area_ids },
+            site: { organization_id },
+          },
+          select: { id: true },
+        });
+
+        if (pickedAreas.length !== sel.area_ids.length) {
+          const pickedSet = new Set(pickedAreas.map((a) => a.id));
+          const invalidAreas = sel.area_ids.filter((id) => !pickedSet.has(id));
+          throw new AlertServiceError(
+            `One or more area IDs are invalid for site '${sel.site_id}'.`,
+            400,
+            { invalid_area_ids: invalidAreas },
+          );
+        }
+        resolvedAreaIds = pickedAreas.map((a) => a.id);
+      }
+
+      let employee_count = 0;
+      let contractor_count = 0;
+
+      if (resolvedAreaIds.length > 0) {
+        const [employees, contractors] = await Promise.all([
+          prisma.users.count({
+            where: {
+              ...recipientFilter(resolvedAreaIds),
+              user_type: "employee",
+              email_verified: true,
+            },
+          }),
+          prisma.users.count({
+            where: {
+              ...recipientFilter(resolvedAreaIds),
+              user_type: "contractor",
+            },
+          }),
+        ]);
+        employee_count = employees;
+        contractor_count = contractors;
+      }
+
+      return {
+        site_id: sel.site_id,
+        site_name: siteNameById.get(sel.site_id) ?? null,
+        scope: wholeSite ? "site" : "areas",
+        area_ids: resolvedAreaIds,
+        total_areas: resolvedAreaIds.length,
+        employee_count,
+        contractor_count,
+        total: employee_count + contractor_count,
+      };
+    }),
+  );
+
+  const allAreaIds = Array.from(
+    new Set(per_site.flatMap((p) => p.area_ids)),
+  );
+
+  let totals = { employee_count: 0, contractor_count: 0, total: 0 };
+
+  if (allAreaIds.length > 0) {
+    const [employees, contractors] = await Promise.all([
+      prisma.users.count({
+        where: {
+          ...recipientFilter(allAreaIds),
+          user_type: "employee",
+          email_verified: true,
+        },
+      }),
+      prisma.users.count({
+        where: {
+          ...recipientFilter(allAreaIds),
+          user_type: "contractor",
+        },
+      }),
+    ]);
+    totals = {
+      employee_count: employees,
+      contractor_count: contractors,
+      total: employees + contractors,
+    };
+  }
+
+  return {
+    per_site,
+    totals,
+    total_sites: per_site.length,
+    total_areas: allAreaIds.length,
+  };
+}
+
+export async function resolveSiteAreaTargets(prisma, organization_id, siteSelections) {
+  const incomingSiteIds = siteSelections.map((s) => s.site_id);
+
+  const validSites = await prisma.sites.findMany({
+    where: { id: { in: incomingSiteIds }, organization_id },
+    select: { id: true },
+  });
+
+  if (validSites.length !== incomingSiteIds.length) {
+    const validSet = new Set(validSites.map((s) => s.id));
+    const invalid = incomingSiteIds.filter((id) => !validSet.has(id));
+    throw new AlertServiceError(
+      "One or more site IDs are invalid or do not belong to the organization.",
+      400,
+      { invalid_site_ids: invalid },
+    );
+  }
+
+  const perSiteAreaIds = await Promise.all(
+    siteSelections.map(async (sel) => {
+      if (!sel.area_ids || sel.area_ids.length === 0) {
+        const allAreas = await prisma.areas.findMany({
+          where: {
+            site_id: sel.site_id,
+            site: { organization_id },
+          },
+          select: { id: true },
+        });
+        return allAreas.map((a) => a.id);
+      }
+
+      const pickedAreas = await prisma.areas.findMany({
+        where: {
+          site_id: sel.site_id,
+          id: { in: sel.area_ids },
+          site: { organization_id },
+        },
+        select: { id: true },
+      });
+
+      if (pickedAreas.length !== sel.area_ids.length) {
+        const pickedSet = new Set(pickedAreas.map((a) => a.id));
+        const invalidAreas = sel.area_ids.filter((id) => !pickedSet.has(id));
+        throw new AlertServiceError(
+          `One or more area IDs are invalid for site '${sel.site_id}'.`,
+          400,
+          { invalid_area_ids: invalidAreas },
+        );
+      }
+
+      return pickedAreas.map((a) => a.id);
+    }),
+  );
+
+  const finalAreaIdsSet = new Set(perSiteAreaIds.flat());
+  const finalAreaIdsArray = Array.from(finalAreaIdsSet);
+  return { incomingSiteIds, finalAreaIdsArray };
+}
+
+export async function createAlertWithTargets(prisma, params) {
+  const {
+    user_id,
+    organization_id,
+    emergency_type_id,
+    severity_level,
+    alert_message,
+    response_required,
+    can_respond,
+    status,
+    start_time,
+    scheduled_time,
+    incomingSiteIds,
+    finalAreaIdsArray,
+  } = params;
+
+  return prisma.$transaction(async (tx) => {
+    const createdAlert = await tx.alerts.create({
+      data: {
+        user_id,
+        organization_id,
+        emergency_type_id,
+        severity: severity_level,
+        message: alert_message,
+        response_required,
+        can_respond,
+        status,
+        start_time,
+        scheduled_time,
+      },
+    });
+
+    await tx.alert_Sites.createMany({
+      data: incomingSiteIds.map((site_id) => ({
+        alert_id: createdAlert.id,
+        site_id,
+      })),
+    });
+
+    await tx.alert_Areas.createMany({
+      data: finalAreaIdsArray.map((area_id) => ({
+        alert_id: createdAlert.id,
+        area_id,
+      })),
+    });
+
+    return createdAlert;
+  });
+}
+
+export async function createRecipientsForAlert(prisma, alert_id, organization_id, areaIds) {
+  const targetUsers = await prisma.users.findMany({
+    where: {
+      organization_id,
+      is_active: true,
+      send_emergency_notification: true,
+      area_id: { in: areaIds },
+      OR: [
+        { user_type: "contractor" },
+        { user_type: "employee", email_verified: true },
+      ],
+    },
+    select: { user_id: true },
+  });
+
+  if (targetUsers.length > 0) {
+    await prisma.notification_Recipients.createMany({
+      data: targetUsers.map((u) => ({
+        alert_id,
+        user_id: u.user_id,
+        channel: "in_app",
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  return targetUsers;
+}
+
+export async function createAlertForOrganization(
+  prisma,
+  notificationQueue,
+  params,
+) {
+  const {
+    user_id,
+    organization_id,
+    alert_type,
+    severity_level,
+    alert_message,
+    send_sms,
+    response_required,
+    can_respond,
+    timing_details,
+    selected_area_details,
+  } = params;
+
+  const [user, organization, emergencyType] = await Promise.all([
+    prisma.users.findFirst({ where: { user_id, organization_id } }),
+    prisma.organizations.findUnique({ where: { organization_id } }),
+    prisma.emergency_Types.findFirst({
+      where: { name: alert_type, organization_id },
+    }),
+  ]);
+
+  if (!user) {
+    throw new AlertServiceError("User not found.", 404);
+  }
+  if (!organization) {
+    throw new AlertServiceError("Organization not found.", 404);
+  }
+  if (user.organization_id !== organization_id) {
+    throw new AlertServiceError(
+      "Forbidden: User does not belong to the organization.",
+      403,
+    );
+  }
+  if (!emergencyType) {
+    throw new AlertServiceError(
+      `Alert type '${alert_type}' not found for this organization.`,
+      404,
+    );
+  }
+
+  const siteSelections = selected_area_details.site_selections;
+  const { incomingSiteIds, finalAreaIdsArray } = await resolveSiteAreaTargets(
+    prisma,
+    organization_id,
+    siteSelections,
+  );
+
+  if (finalAreaIdsArray.length === 0) {
+    throw new AlertServiceError("No areas found to send alert to.", 400);
+  }
+
+  const { timing, scheduled_time: scheduledTimeStr } = timing_details;
+  const now = utcNow();
+
+  const status =
+    timing === "send_now" ? AlertStatus.active : AlertStatus.scheduled;
+  const start_time = timing === "send_now" ? now : null;
+  const scheduled_time =
+    timing === "scheduled"
+      ? normalizeIncomingDateTimeToUtc(scheduledTimeStr)
+      : null;
+
+  if (status === AlertStatus.scheduled) {
+    if (!scheduled_time || Number.isNaN(scheduled_time.getTime())) {
+      throw new AlertServiceError("Invalid scheduled_time.", 400);
+    }
+    if (scheduled_time <= now) {
+      throw new AlertServiceError("Scheduled time must be in the future.", 400);
+    }
+  }
+
+  const newAlert = await createAlertWithTargets(prisma, {
+    user_id,
+    organization_id,
+    emergency_type_id: emergencyType.id,
+    severity_level,
+    alert_message,
+    response_required,
+    can_respond,
+    status,
+    start_time,
+    scheduled_time,
+    incomingSiteIds,
+    finalAreaIdsArray,
+  });
+
+  await enqueueAlertNotificationJob(notificationQueue, newAlert, send_sms);
+
+  return { newAlert };
+}
+
+export async function enqueueAlertNotificationJob(notificationQueue, alert, send_sms) {
+  if (alert.status === AlertStatus.active) {
+    await notificationQueue.add("send-alert-notifications", {
+      alert_id: alert.id,
+      send_sms,
+    });
+    logger.info(`[API] Job added to queue for active alert ${alert.id}`);
+    return;
+  }
+
+  if (alert.status === AlertStatus.scheduled && alert.scheduled_time) {
+    const delay = alert.scheduled_time.getTime() - Date.now();
+    if (delay > 0) {
+      await notificationQueue.add(
+        "send-alert-notifications",
+        { alert_id: alert.id, send_sms },
+        { delay },
+      );
+      logger.info(
+        `[API] Job scheduled for alert ${alert.id} delay=${Math.round(delay / 1000)}s`,
+      );
+    }
+  }
+}
+
+async function sendSmsBatch(recipients) {
+  logger.info(
+    `[SMS WORKER] Placeholder: Simulating sending of ${recipients.length} SMS messages.`,
+  );
+}
+
+export async function processAlertNotificationJob(prisma, jobData) {
+  const { alert_id, send_sms } = jobData || {};
+  const now = utcNow();
+
+  if (!alert_id) {
+    throw new AlertServiceError("Alert job payload missing alert_id.", 400);
+  }
+
+  const alert = await prisma.alerts.findUnique({
+    where: { id: alert_id },
+    include: {
+      Alert_Areas: { select: { area_id: true } },
+      emergency_type: {
+        select: {
+          name: true,
+          icon: { select: { name: true, image_url: true } },
+        },
+      },
+    },
+  });
+
+  if (!alert) {
+    throw new AlertServiceError(`Alert ${alert_id} not found.`, 404);
+  }
+
+  if (alert.status === AlertStatus.scheduled) {
+    await prisma.alerts.update({
+      where: { id: alert_id },
+      data: {
+        status: AlertStatus.active,
+        start_time: alert.start_time ?? alert.scheduled_time ?? now,
+      },
+    });
+    logger.info(`[WORKER] Alert ${alert_id} activated from scheduled.`);
+  } else if (alert.status === AlertStatus.active) {
+    if (!alert.start_time) {
+      await prisma.alerts.update({
+        where: { id: alert_id },
+        data: { start_time: now },
+      });
+    }
+  } else {
+    logger.warn(
+      `[WORKER] Alert ${alert_id} status=${alert.status}. Skipping dispatch.`,
+    );
+    return;
+  }
+
+  const finalAreaIdsArray = (alert.Alert_Areas || []).map((area) => area.area_id);
+  if (finalAreaIdsArray.length === 0) {
+    logger.info(`[WORKER] Alert ${alert_id} has no target areas. Done.`);
+    return;
+  }
+
+  const recipients = await prisma.users.findMany({
+    where: {
+      organization_id: alert.organization_id,
+      is_active: true,
+      send_emergency_notification: true,
+      area_id: { in: finalAreaIdsArray },
+      OR: [
+        { user_type: "contractor" },
+        { user_type: "employee", email_verified: true },
+      ],
+    },
+    select: { user_id: true, fcm_token: true, phone_number: true },
+  });
+
+  if (recipients.length === 0) {
+    logger.info(`[WORKER] No recipients for alert ${alert_id}. Job complete.`);
+    return;
+  }
+
+  await prisma.notification_Recipients.createMany({
+    data: recipients.map((user) => ({
+      alert_id,
+      user_id: user.user_id,
+      channel: "in_app",
+    })),
+    skipDuplicates: true,
+  });
+
+  const recipientsWithFcmTokens = recipients.filter((r) => !!r.fcm_token);
+
+  if (recipientsWithFcmTokens.length > 0) {
+    const tokens = recipientsWithFcmTokens.map((r) => r.fcm_token);
+    const typeIcon = alert.emergency_type?.icon ?? null;
+
+    const pushPayload = {
+      notification: {
+        title: alert.emergency_type?.name ?? "Alert",
+        body: alert.message ?? "",
+      },
+      data: {
+        alert_id,
+        icon_name: typeIcon?.name ?? "",
+        icon_url: typeIcon?.image_url ?? "",
+        severity: String(alert.severity ?? ""),
+      },
+      tokens,
+    };
+
+    logger.info(
+      `[FCM WORKER] Placeholder: Would send ${tokens.length} push notifications for alert ${alert_id}.`,
+      {
+        meta: {
+          title: pushPayload.notification.title,
+          icon_name: pushPayload.data.icon_name,
+          icon_url: pushPayload.data.icon_url,
+        },
+      },
+    );
+  }
+
+  if (send_sms) {
+    const recipientsWithPhone = recipients.filter((recipient) => !!recipient.phone_number);
+    if (recipientsWithPhone.length > 0) {
+      await sendSmsBatch(
+        recipientsWithPhone.map((recipient) => ({
+          phone_number: recipient.phone_number,
+          message: alert.message,
+        })),
+      );
+    }
+  }
+}
+
+export async function getAlertDashboardPayload(
+  prisma,
+  { organization_id, filter, page, limit },
+) {
+  const skip = (page - 1) * limit;
+  const alertListWhereClause = { organization_id };
+
+  if (filter === "active") {
+    alertListWhereClause.status = "active";
+  } else if (filter === "scheduled") {
+    alertListWhereClause.scheduled_time = { gt: new Date() };
+  } else if (filter === "history") {
+    alertListWhereClause.OR = [{ status: "resolved" }, { status: "ended" }];
+  }
+
+  const [
+    activeAlertCount,
+    alertHistoryCount,
+    scheduledAlertCount,
+    totalAlerts,
+    alertDetails,
+    totalEmployees,
+    deliveryStatusCounts,
+    responseStatusCounts,
+  ] = await Promise.all([
+    prisma.alerts.count({
+      where: { organization_id, status: "active" },
+    }),
+    prisma.alerts.count({
+      where: { organization_id, status: "resolved" },
+    }),
+    prisma.alerts.count({
+      where: { organization_id, scheduled_time: { gt: new Date() } },
+    }),
+    prisma.alerts.count({
+      where: alertListWhereClause,
+    }),
+    prisma.alerts.findMany({
+      where: alertListWhereClause,
+      skip,
+      take: limit,
+      orderBy: { start_time: "desc" },
+      select: {
+        id: true,
+        message: true,
+        severity: true,
+        status: true,
+        emergency_type: {
+          select: {
+            name: true,
+            icon: { select: { name: true, image_url: true } },
+          },
+        },
+        Alert_Sites: {
+          select: {
+            site: {
+              select: { name: true },
+            },
+          },
+        },
+        Alert_Areas: {
+          select: {
+            area: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+    }),
+    prisma.users.count({
+      where: { organization_id },
+    }),
+    prisma.notification_Recipients.groupBy({
+      by: ["delivery_status"],
+      where: { alert: { organization_id } },
+      _count: { delivery_status: true },
+    }),
+    prisma.notification_Recipients.groupBy({
+      by: ["response"],
+      where: { alert: { organization_id } },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const totalDeliveries = deliveryStatusCounts.reduce(
+    (sum, row) => sum + Number(row?._count?.delivery_status ?? 0),
+    0,
+  );
+  const deliveredCount = deliveryStatusCounts.reduce(
+    (sum, row) =>
+      row.delivery_status === "delivered"
+        ? sum + Number(row?._count?.delivery_status ?? 0)
+        : sum,
+    0,
+  );
+
+  let safeCount = 0;
+  let needHelpCount = 0;
+  let emergencyHelpNeededCount = 0;
+  let notRespondedCount = 0;
+
+  responseStatusCounts.forEach((row) => {
+    const count = Number(row?._count?._all ?? 0);
+    if (row.response === "safe") safeCount += count;
+    else if (row.response === "need_help") needHelpCount += count;
+    else if (row.response === "emergency_help_needed") {
+      emergencyHelpNeededCount += count;
+    } else if (row.response == null) {
+      notRespondedCount += count;
+    }
+  });
+
+  const deliveryAverage = totalDeliveries
+    ? (deliveredCount / totalDeliveries) * 100
+    : 0;
+
+  return {
+    active_alerts: activeAlertCount,
+    alert_history: alertHistoryCount,
+    scheduled_alerts: scheduledAlertCount,
+    delivery_average: deliveryAverage,
+    alerts: alertDetails,
+    employee_status: {
+      safe: safeCount,
+      need_help: needHelpCount,
+      emergency_help_needed: emergencyHelpNeededCount,
+      not_responded: notRespondedCount,
+    },
+    delivery_status: deliveryStatusCounts,
+    total_employees: totalEmployees,
+    pagination: {
+      page,
+      limit,
+      totalAlerts,
+      totalPages: Math.ceil(totalAlerts / limit),
+    },
+  };
+}
+
+export async function getDashboardStatsPayload(prisma, organization_id) {
+  const [
+    active_count,
+    scheduled_count,
+    history_count,
+    total_recipients,
+    delivered_recipients,
+  ] = await Promise.all([
+    prisma.alerts.count({
+      where: { organization_id, status: AlertStatus.active },
+    }),
+    prisma.alerts.count({
+      where: { organization_id, status: AlertStatus.scheduled },
+    }),
+    prisma.alerts.count({
+      where: {
+        organization_id,
+        status: { notIn: [AlertStatus.active, AlertStatus.scheduled] },
+      },
+    }),
+    prisma.notification_Recipients.count({
+      where: { alert: { organization_id } },
+    }),
+    prisma.notification_Recipients.count({
+      where: {
+        alert: { organization_id },
+        delivery_status: "delivered",
+      },
+    }),
+  ]);
+
+  const delivery_rate =
+    total_recipients > 0 ? (delivered_recipients / total_recipients) * 100 : 0;
+
+  return {
+    active_count,
+    history_count,
+    scheduled_count,
+    delivery_rate: parseFloat(delivery_rate.toFixed(2)),
+  };
+}
+
+export async function getAlertTypesForOrganization(prisma, organization_id) {
+  return prisma.emergency_Types.findMany({
+    where: { organization_id },
+    select: {
+      id: true,
+      organization_id: true,
+      name: true,
+      description: true,
+      icon: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          image_url: true,
+        },
+      },
+    },
+    orderBy: { created_at: "desc" },
+  });
+}
+
+export async function getSitesForOrganization(prisma, organization_id) {
+  return prisma.sites.findMany({ where: { organization_id } });
+}
+
+export async function getAreasForOrganizationSite(prisma, organization_id, site_id) {
+  const site = await prisma.sites.findFirst({
+    where: {
+      id: site_id,
+      organization_id,
+    },
+  });
+
+  if (!site) {
+    throw new AlertServiceError("site doesnt exists", 401);
+  }
+
+  return prisma.areas.findMany({
+    where: {
+      site_id,
+      site: { organization_id },
+    },
+  });
+}
+
+export async function getRecipientCountsByAreaPayload(
+  prisma,
+  organization_id,
+  area_ids,
+) {
+  if (!area_ids) {
+    throw new AlertServiceError(
+      "organization_id and area_ids are required in the request body.",
+      400,
+    );
+  }
+
+  if (!Array.isArray(area_ids) || area_ids.length === 0) {
+    throw new AlertServiceError("area_ids must be a non-empty array.", 400);
+  }
+
+  const areaIdArray = area_ids;
+
+  const organization = await prisma.organizations.findUnique({
+    where: { organization_id },
+    select: { organization_id: true },
+  });
+
+  if (!organization) {
+    throw new AlertServiceError("Organization not found.", 404);
+  }
+
+  const validAreas = await prisma.areas.findMany({
+    where: {
+      id: { in: areaIdArray },
+      site: { organization_id },
+    },
+    select: { id: true },
+  });
+
+  if (validAreas.length !== areaIdArray.length) {
+    const validAreaIdSet = new Set(validAreas.map((a) => a.id));
+    const invalidIds = areaIdArray.filter((id) => !validAreaIdSet.has(id));
+    throw new AlertServiceError(
+      "One or more area IDs are invalid or do not belong to the specified organization.",
+      400,
+      { invalid_ids: invalidIds },
+    );
+  }
+
+  const [employee_count, contractor_count] = await Promise.all([
+    prisma.users.count({
+      where: {
+        organization_id,
+        area_id: { in: areaIdArray },
+        user_type: "employee",
+        is_active: true,
+      },
+    }),
+    prisma.users.count({
+      where: {
+        organization_id,
+        area_id: { in: areaIdArray },
+        user_type: "contractor",
+        is_active: true,
+      },
+    }),
+  ]);
+
+  return {
+    employee_count,
+    contractor_count,
+    total_recipients: employee_count + contractor_count,
+  };
+}
+
+export async function resolveAlertForOrganization(
+  prisma,
+  { organization_id, alert_id, message, resolvedByUserId },
+) {
+  if (!alert_id || !message) {
+    throw new AlertServiceError(
+      "organization_id, alert_id, and resolution message are required.",
+      400,
+    );
+  }
+
+  const alerts = await prisma.alerts.findMany({
+    where: {
+      id: alert_id,
+      organization_id,
+    },
+    take: 1,
+  });
+
+  const alert = alerts[0];
+
+  if (!alert) {
+    throw new AlertServiceError("Alert not found.", 404);
+  }
+
+  if (alert.status !== "active") {
+    throw new AlertServiceError(
+      `Cannot resolve alert with status '${alert.status}'.`,
+      409,
+    );
+  }
+
+  const now = utcNow();
+  await prisma.alerts.update({
+    where: { id: alert_id },
+    data: {
+      status: "resolved",
+      end_time: now,
+      resolved_at: now,
+      resolved_by: resolvedByUserId ?? null,
+      resolution_notes: message,
+    },
+  });
+}
+
+async function buildLatestRespondedUserLocationsByAlert(prisma, alertIds) {
+  if (!alertIds?.length) return new Map();
+
+  const rows = await prisma.$queryRaw`
+    SELECT DISTINCT ON (ul.alert_id::uuid, ul.user_id::uuid)
+      ul.alert_id::uuid        AS alert_id,
+      ul.user_id::uuid         AS user_id,
+      ul.latitude              AS latitude,
+      ul.longitude             AS longitude,
+      ul.location_name         AS location_name,
+      ul."timestamp"           AS "timestamp",
+      nr.response              AS response,
+      u.first_name             AS first_name,
+      u.last_name              AS last_name
+    FROM "User_Locations" ul
+    INNER JOIN "Notification_Recipients" nr
+      ON nr.alert_id::uuid = ul.alert_id::uuid
+     AND nr.user_id::uuid  = ul.user_id::uuid
+    INNER JOIN "Users" u
+      ON u.user_id::uuid   = ul.user_id::uuid
+    WHERE ul.alert_id::uuid = ANY(${alertIds}::uuid[])
+      AND nr.response IS NOT NULL
+    ORDER BY ul.alert_id::uuid, ul.user_id::uuid, ul."timestamp" DESC;
+  `;
+
+  const map = new Map();
+  for (const id of alertIds) map.set(id, []);
+
+  for (const r of rows) {
+    const arr = map.get(r.alert_id);
+    if (!arr) continue;
+
+    const lat = Number(r.latitude);
+    const lng = Number(r.longitude);
+    const fullName = `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim();
+
+    arr.push({
+      user_id: r.user_id,
+      name: fullName,
+      status: mapDbResponseToProtoEnum(String(r.response ?? "")),
+      latitude: Number.isFinite(lat) ? lat : 0,
+      longitude: Number.isFinite(lng) ? lng : 0,
+      location_name: r.location_name ?? "",
+      timestamp: toProtoTimestamp(r.timestamp ? new Date(r.timestamp) : null),
+    });
+  }
+
+  return map;
+}
+
+async function buildActiveAlertsPayload(prisma, organization_id) {
+  const activeAlerts = await prisma.alerts.findMany({
+    where: { organization_id, status: AlertStatus.active },
+    orderBy: { created_at: "desc" },
+    include: {
+      emergency_type: {
+        select: {
+          name: true,
+          icon: { select: { name: true, image_url: true } },
+        },
+      },
+    },
+  });
+  // TEMP debug
+logger.info("[debug] active alerts raw", {
+  meta: JSON.stringify(
+    activeAlerts.map((a) => ({
+      id: a.id,
+      type: a.emergency_type?.name,
+      icon: a.emergency_type?.icon,
+    })),
+    null,
+    2,
+  ),
+});
+
+  if (!activeAlerts.length) return [];
+
+  const alertIds = activeAlerts.map((a) => a.id);
+
+  const totals = await prisma.notification_Recipients.groupBy({
+    by: ["alert_id"],
+    where: { alert_id: { in: alertIds } },
+    _count: { _all: true },
+  });
+  const totalMap = new Map(totals.map((t) => [t.alert_id, t._count._all]));
+
+  const responseGroups = await prisma.notification_Recipients.groupBy({
+    by: ["alert_id", "response"],
+    where: { alert_id: { in: alertIds } },
+    _count: { _all: true },
+  });
+
+  const maxUpdated = await prisma.notification_Recipients.groupBy({
+    by: ["alert_id"],
+    where: { alert_id: { in: alertIds }, response_updated_at: { not: null } },
+    _max: { response_updated_at: true },
+  });
+  const lastUpdatedMap = new Map(
+    maxUpdated.map((m) => [m.alert_id, m._max.response_updated_at]),
+  );
+
+  const [alertSites, alertAreas] = await Promise.all([
+    prisma.alert_Sites.findMany({
+      where: { alert_id: { in: alertIds } },
+      include: { site: { select: { name: true, city: true, state: true } } },
+    }),
+    prisma.alert_Areas.findMany({
+      where: { alert_id: { in: alertIds } },
+      include: { area: { select: { name: true, site_id: true } } },
+    }),
+  ]);
+
+  const siteIdsFromAreas = Array.from(
+    new Set(alertAreas.map((x) => x.area?.site_id).filter(Boolean)),
+  );
+
+  const sitesForAreas = siteIdsFromAreas.length
+    ? await prisma.sites.findMany({
+      where: { id: { in: siteIdsFromAreas }, organization_id },
+      select: { id: true, name: true },
+    })
+    : [];
+
+  const siteNameById = new Map(sitesForAreas.map((s) => [s.id, s.name]));
+  const locationsByAlertId = new Map();
+  for (const id of alertIds) locationsByAlertId.set(id, []);
+
+  for (const row of alertSites) {
+    const arr = locationsByAlertId.get(row.alert_id);
+    if (!arr) continue;
+    const s = row.site;
+    if (!s?.name) continue;
+    const extra = [s.city, s.state].filter(Boolean).join(", ");
+    arr.push(extra ? `${s.name} (${extra})` : s.name);
+  }
+
+  for (const row of alertAreas) {
+    const arr = locationsByAlertId.get(row.alert_id);
+    if (!arr) continue;
+    const a = row.area;
+    if (!a?.name) continue;
+    const siteName = siteNameById.get(a.site_id);
+    arr.push(siteName ? `${siteName} - ${a.name}` : a.name);
+  }
+
+  const statsByAlert = new Map();
+  for (const id of alertIds) {
+    statsByAlert.set(id, {
+      safe: 0,
+      need_help: 0,
+      emergency_help_needed: 0,
+    });
+  }
+
+  for (const row of responseGroups) {
+    const s = statsByAlert.get(row.alert_id);
+    if (!s) continue;
+
+    if (row.response === "safe") s.safe += row._count._all;
+    else if (row.response === "need_help") s.need_help += row._count._all;
+    else if (row.response === "emergency_help_needed") {
+      s.emergency_help_needed += row._count._all;
+    }
+  }
+
+  const respondedUserLocationsByAlertId =
+    await buildLatestRespondedUserLocationsByAlert(prisma, alertIds);
+
+  return activeAlerts.map((alert) => {
+    const totalsForAlert = totalMap.get(alert.id) ?? 0;
+    const s = statsByAlert.get(alert.id) ?? {
+      safe: 0,
+      need_help: 0,
+      emergency_help_needed: 0,
+    };
+
+    const responded =
+      s.safe + s.need_help + s.emergency_help_needed;
+
+    const notResponded = Math.max(totalsForAlert - responded, 0);
+
+    const typeIcon = alert.emergency_type?.icon ?? null;
+
+    return {
+      alert_id: alert.id,
+      emergency_type: alert.emergency_type?.name ?? "",
+      icon_name: typeIcon?.name ?? "",
+      icon_url: typeIcon?.image_url ?? "",
+      message: alert.message ?? "",
+      severity: String(alert.severity ?? ""),
+      start_time: toProtoTimestamp(alert.start_time ?? alert.created_at),
+      safe_count: s.safe,
+      need_help_count: s.need_help,
+      emergency_help_needed_count: s.emergency_help_needed,
+      not_responded_count: notResponded,
+      total_recipients: totalsForAlert,
+      locations: locationsByAlertId.get(alert.id) ?? [],
+      status: String(alert.status ?? ""),
+      report: alert.action_required ?? "",
+      last_response_updated_at: toProtoTimestamp(
+        lastUpdatedMap.get(alert.id) ?? null,
+      ),
+      user_locations: respondedUserLocationsByAlertId.get(alert.id) ?? [],
+      can_respond: alert.can_respond ?? false,
+    };
+  });
+}
+
+export function startAlertService(prisma) {
+  logger.info("[gRPC Alert] Initializing gRPC Alert Service");
+
+  const protoPath = path.join(__dirname, "../grpc/alert.proto");
+  const packageDefinition = protoLoader.loadSync(protoPath, {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true,
+  });
+  const proto = grpc.loadPackageDefinition(packageDefinition).alert;
+
+  const getAlertDataHandler = async (call, callback) => {
+    try {
+      const { organization_id } = getAuthContext(call);
+      const payload = await getAlertDataPayload(
+        prisma,
+        call.request?.alert_id,
+        organization_id,
+      );
+      return callback(null, payload);
+    } catch (e) {
+      return handleGrpcError(callback, e, "GetAlertData");
+    }
+  };
+
+  const getActiveAlertsUnary = async (call, callback) => {
+    try {
+      const { organization_id } = getAuthContext(call);
+      const payload = await buildActiveAlertsPayload(prisma, organization_id);
+      return callback(null, { active_alerts: payload });
+    } catch (e) {
+      return handleGrpcError(callback, e, "GetActiveAlerts");
+    }
+  };
+
+  const streamActiveAlerts = (call) => {
+    let context;
+
+    try {
+      context = getAuthContext(call);
+    } catch (err) {
+      call.emit("error", err);
+      return;
+    }
+
+    const { organization_id } = context;
+
+    const sendUpdates = async () => {
+      if (call.cancelled) return;
+
+      try {
+        const payload = await buildActiveAlertsPayload(prisma, organization_id);
+        call.write({ active_alerts: payload });
+      } catch (err) {
+        logger.error("[StreamActiveAlerts] error", err);
+      }
+    };
+
+    sendUpdates();
+
+    const interval = setInterval(sendUpdates, 15000);
+
+    call.on("cancelled", () => {
+      clearInterval(interval);
+      call.end();
+    });
+  };
+
+  const updateEmployeeResponse = async (call, callback) => {
+    try {
+      const { alert_id, response } = call.request;
+
+      if (!alert_id || response === undefined) {
+        throw new AlertServiceError("Invalid request payload", 400);
+      }
+
+      const { user_id, organization_id } = getAuthContext(call);
+      const dbResponse = mapProtoResponseToDbEnum(response);
+
+      if (!dbResponse) {
+        throw new AlertServiceError("Invalid response type", 400);
+      }
+
+      const result = await recordEmployeeAlertResponse({
+        alert_id,
+        user_id,
+        organization_id,
+        response: dbResponse,
+      });
+
+      return callback(null, {
+        ok: true,
+        message: "Response updated",
+        response_updated_at: toProtoTimestamp(result.response_updated_at),
+      });
+    } catch (e) {
+      return handleGrpcError(callback, e, "UpdateEmployeeResponse");
+    }
+  };
+
+  const server = new grpc.Server();
+
+  server.addService(proto.AlertService.service, {
+    GetAlertData: getAlertDataHandler,
+    StreamActiveAlerts: streamActiveAlerts,
+    GetActiveAlerts: getActiveAlertsUnary,
+    UpdateEmployeeResponse: updateEmployeeResponse,
+  });
+
+  const addr = "0.0.0.0:5051";
+  server.bindAsync(addr, grpc.ServerCredentials.createInsecure(), (err) => {
+    if (err) {
+      logger.error("[gRPC Alert] bind error", { error: err });
+      return;
+    }
+    logger.info(`[gRPC Alert] Service running at ${addr}`);
+  });
+} 
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\services\chat.service.js ===
+//chat.service.js
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import grpc from '@grpc/grpc-js';
+import protoLoader from '@grpc/proto-loader';
+import logger from '../utils/logger.js';
+import { utcNow } from '../utils/datetime.js';
+
+// Helper to get __dirname in ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export function startChatService(prisma, redisPublisher, redisSubscriber, firebaseAdmin) {
+    logger.info('chat.grpc.initializing');
+
+    const protoPath = path.join(__dirname, '../grpc/chat.proto');
+    const packageDefinition = protoLoader.loadSync(protoPath, {
+        keepCase: true,
+        longs: String,
+        enums: String,
+        defaults: true,
+        oneofs: true,
+    });
+    const proto = grpc.loadPackageDefinition(packageDefinition).chat;
+
+    const clients = new Map(); // key: 'orgId:userId', value: gRPC call stream
+    const activeConversations = new Map(); // key: 'orgId:userId', value: 'activeChatWithId'
+
+    // =========================================================
+    // =============== gRPC Method Implementations ===============
+    // =========================================================
+
+    /**
+     * @param {grpc.ServerUnaryCall} call
+     * @param {grpc.sendUnaryData} callback
+     */
+    async function SendMessage(call, callback) {
+        try {
+            // In a real app, you would get sender_id & organization_id from authenticated metadata
+            const data = call.request;
+
+            // 1. Validation
+            if (!data.sender_id || !data.receiver_id || !data.organization_id) {
+                return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'sender_id, receiver_id, and organization_id are required' });
+            }
+            if (!data.encrypted_message || !data.encrypted_sym_key) {
+                return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'encrypted_message and encrypted_sym_key are required' });
+            }
+
+            // 2. Persist to DB
+            const message = await prisma.chat_Messages.create({
+                data: {
+                    sender_id: data.sender_id,
+                    receiver_id: data.receiver_id,
+                    organization_id: data.organization_id,
+                    encrypted_message: data.encrypted_message,
+                    encrypted_sym_key: data.encrypted_sym_key,
+                    status: 'sent',
+                },
+            });
+
+            // 3. Publish to Redis for real-time delivery
+            const channel = `org:${data.organization_id}:user:${data.receiver_id}`;
+            await redisPublisher.publish(channel, JSON.stringify({
+                ...message,
+                sent_at: message.sent_at.toISOString(),
+            }));
+
+            // 4. Send Push Notification if receiver is not actively chatting with sender
+            const receiverKey = `${data.organization_id}:${data.receiver_id}`;
+            const isChattingWithSender = activeConversations.get(receiverKey) === data.sender_id;
+
+            if (!isChattingWithSender && data.sender_id !== data.receiver_id) {
+                const sender = await prisma.users.findUnique({
+                    where: { user_id: data.sender_id },
+                    select: { first_name: true, last_name: true, e2ee_public_key: true },
+                });
+
+                if (sender) {
+                    const title = `${sender.first_name} ${sender.last_name}`;
+                    await sendNotification(
+                        data.receiver_id,
+                        title,
+                        data.encrypted_message, {
+                        organizationId: data.organization_id,
+                        senderId: data.sender_id,
+                        chatPartnerId: data.sender_id,
+                        messageId: message.id,
+                        peerPublicKey: sender.e2ee_public_key ?? '',
+                    }
+                    );
+                }
+            }
+
+            callback(null, {});
+        } catch (err) {
+            logger.error('chat.grpc.send_message_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to send message' });
+        }
+    }
+
+    /**
+     * @param {grpc.ServerWritableStream} call
+     */
+    async function ReceiveMessages(call) {
+        try {
+            const { userId, organization_id } = call.request;
+            if (!userId || !organization_id) {
+                call.emit('error', { code: grpc.status.INVALID_ARGUMENT, message: 'userId and organization_id are required' });
+                return;
+            }
+
+            const messages = await prisma.chat_Messages.findMany({
+                where: {
+                    organization_id: organization_id,
+                    OR: [
+                        { sender_id: userId, deleted_by_sender: false },
+                        { receiver_id: userId, deleted_by_receiver: false },
+                    ],
+                },
+                orderBy: { sent_at: 'asc' },
+            });
+
+            for (const msg of messages) {
+                call.write({
+                    ...msg,
+                    sent_at: msg.sent_at.toISOString()
+                });
+            }
+        } catch (err) {
+            logger.error('chat.grpc.receive_messages_failed', { error: err, meta: { userId: call.request.userId ?? null } });
+            call.emit('error', { code: grpc.status.INTERNAL, message: 'Failed to retrieve messages' });
+        } finally {
+            call.end();
+        }
+    }
+
+    /**
+     * @param {grpc.ServerUnaryCall} call
+     * @param {grpc.sendUnaryData} callback
+     */
+    async function UpdateMessageStatus(call, callback) {
+        try {
+            const { messageId, status, organization_id } = call.request;
+            if (!messageId || !status || !organization_id) {
+                return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'messageId, status, and organization_id are required' });
+            }
+
+            const updateData = { status };
+            if (status === 'read') {
+                updateData.read_at = utcNow();
+            }
+
+            const updatedMsg = await prisma.chat_Messages.update({
+                where: { id: messageId, organization_id: organization_id },
+                data: updateData,
+            });
+
+            // Notify the original sender that the message status has changed
+            const senderChannel = `org:${organization_id}:user:${updatedMsg.sender_id}`;
+            await redisPublisher.publish(senderChannel, JSON.stringify({
+                ...updatedMsg,
+                sent_at: updatedMsg.sent_at.toISOString(),
+            }));
+
+            callback(null, {});
+        } catch (err) {
+            logger.error('chat.grpc.update_message_status_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to update status' });
+        }
+    }
+
+    /**
+     * @param {grpc.ServerUnaryCall} call
+     * @param {grpc.sendUnaryData} callback
+     */
+    async function GetContacts(call, callback) {
+        try {
+            const { userId, organization_id } = call.request;
+            if (!userId || !organization_id) {
+                return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'userId and organization_id are required' });
+            }
+
+            const messages = await prisma.chat_Messages.findMany({
+                where: {
+                    organization_id,
+                    OR: [{ sender_id: userId }, { receiver_id: userId }],
+                },
+                orderBy: { sent_at: 'desc' },
+                distinct: ['sender_id', 'receiver_id'],
+            });
+
+            const contactMap = new Map();
+            for (const msg of messages) {
+                const otherUserId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+                if (!contactMap.has(otherUserId)) {
+                    contactMap.set(otherUserId, {
+                        last_message_encrypted: msg.encrypted_message,
+                        sent_at: msg.sent_at.toISOString(),
+                    });
+                }
+            }
+
+            const contactIds = Array.from(contactMap.keys());
+            const users = await prisma.users.findMany({
+                where: { user_id: { in: contactIds } },
+                select: { user_id: true, first_name: true, last_name: true },
+            });
+
+            let contacts = users.map(user => ({
+                id: user.user_id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                ...contactMap.get(user.user_id),
+            }));
+
+            contacts.sort((a, b) => new Date(b.sent_at) - new Date(a.sent_at));
+
+            callback(null, { contacts });
+        } catch (err) {
+            logger.error('chat.grpc.get_contacts_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to get contacts' });
+        }
+    }
+
+    /**
+     * @param {grpc.ServerDuplexStream} call
+     */
+    function ChatStream(call) {
+        let streamMetadata = { userId: null, orgId: null, clientKey: null };
+        const sub = redisSubscriber.duplicate();
+
+        call.on('data', async (clientEvent) => {
+            if (clientEvent.heartbeat) {
+                const { userId, organization_id, activeChatWith } = clientEvent.heartbeat;
+                if (!userId || !organization_id) return;
+
+                const clientKey = `${organization_id}:${userId}`;
+
+                // If it's the first heartbeat for this stream, set up the subscription
+                if (!streamMetadata.clientKey) {
+                    streamMetadata = { userId, orgId: organization_id, clientKey };
+                    clients.set(clientKey, call);
+
+                    try {
+                        await sub.connect();
+                        const channel = `org:${organization_id}:user:${userId}`;
+
+                        await sub.subscribe(channel, async (messageStr) => {
+                            const message = JSON.parse(messageStr);
+
+                            // Mark as "delivered" if receiver is in the chat screen with the sender
+                            const isChatting = activeConversations.get(clientKey) === message.sender_id;
+                            if (message.status === 'sent' && isChatting) {
+                                try {
+                                    await prisma.chat_Messages.update({
+                                        where: { id: message.id },
+                                        data: { status: 'delivered' },
+                                    });
+                                    message.status = 'delivered';
+                                } catch (updateErr) { logger.error('chat.grpc.mark_delivered_failed', { error: updateErr, meta: { messageId: message.id ?? null } }); }
+                            }
+
+                            if (clients.has(clientKey)) {
+                                clients.get(clientKey).write({ message });
+                            }
+                        });
+
+                    } catch (subErr) {
+                        logger.error('chat.grpc.redis_subscription_failed', { error: subErr, meta: { clientKey } });
+                        cleanup();
+                    }
+                }
+
+                // Update active conversation status on every heartbeat
+                if (activeChatWith) {
+                    activeConversations.set(clientKey, activeChatWith);
+                } else {
+                    activeConversations.delete(clientKey);
+                }
+            }
+        });
+
+        const cleanup = async () => {
+            const { clientKey } = streamMetadata;
+            if (clientKey) {
+                clients.delete(clientKey);
+                activeConversations.delete(clientKey);
+                logger.info('chat.grpc.stream_cleaned', { meta: { clientKey } });
+            }
+            if (sub.isOpen) {
+                await sub.quit();
+            }
+            if (!call.writableEnded) {
+                call.end();
+            }
+        };
+
+        call.on('end', cleanup);
+        call.on('error', (err) => {
+            logger.warn('chat.grpc.stream_error', { meta: { clientKey: streamMetadata.clientKey, message: err?.message ?? 'Unknown stream error' } });
+            cleanup();
+        });
+    }
+
+    // =========================================================
+    // =================== Helper Functions ====================
+    // =========================================================
+    async function sendNotification(userId, title, encryptedContent, dataPayload = {}) {
+        try {
+            const user = await prisma.users.findUnique({
+                where: { user_id: userId },
+                select: { fcm_token: true },
+            });
+
+            if (!user?.fcm_token) {
+                logger.warn('chat.grpc.notification_missing_fcm_token', { meta: { userId } });
+                return;
+            }
+
+            const message = {
+                token: user.fcm_token,
+                notification: { title, body: "You have a new message" },
+                data: {
+                    ...dataPayload,
+                    userId: String(userId),
+                    cipher: encryptedContent,
+                },
+            };
+
+            await firebaseAdmin.messaging().send(message);
+            logger.info('chat.grpc.notification_sent', { meta: { userId } });
+        } catch (err) {
+            logger.error('chat.grpc.notification_failed', { error: err, meta: { userId } });
+        }
+    }
+
+
+    // =========================================================
+    // =================== gRPC Server Setup ===================
+    // =========================================================
+    const server = new grpc.Server();
+    server.addService(proto.ChatService.service, {
+        SendMessage,
+        ReceiveMessages,
+        UpdateMessageStatus,
+        ChatStream,
+        GetContacts,
+    });
+
+    const addr = '0.0.0.0:5050';
+    server.bindAsync(addr, grpc.ServerCredentials.createInsecure(), (err, port) => {
+        if (err) {
+            logger.error('chat.grpc.bind_failed', { error: err });
+            return;
+        }
+        logger.info('chat.grpc.ready', { meta: { addr, port } });
+    });
+}
+
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\services\employeeAlertResponse.service.js ===
+// services/employeeAlertResponse.service.js
+import logger from "../utils/logger.js";
+import prisma from "../utils/prisma.js";
+import { utcNow } from "../utils/datetime.js";
+
+export const ALLOWED_RESPONSES = ["safe", "need_help", "emergency_help_needed"];
+
+class EmployeeAlertResponseServiceError extends Error {
+  constructor(message, statusCode = 500, details = {}) {
+    super(message);
+    this.name = "EmployeeAlertResponseServiceError";
+    this.statusCode = statusCode;
+    this.details = details;
+    Object.assign(this, details);
+  }
+}
+
+function ensureAllowedResponse(response) {
+  if (ALLOWED_RESPONSES.includes(response)) {
+    return;
+  }
+  throw new EmployeeAlertResponseServiceError("Invalid response", 400);
+}
+
+async function findAlertForResponse(tx, alert_id, organization_id) {
+  const alerts = await tx.alerts.findMany({
+    where: {
+      id: alert_id,
+      organization_id,
+    },
+    select: {
+      id: true,
+      organization_id: true,
+      status: true,
+      scheduled_time: true,
+      can_respond: true,                            // ← add
+    },
+    take: 1,
+  });
+
+  const alert = alerts[0];
+
+  if (!alert) {
+    throw new EmployeeAlertResponseServiceError("Alert not found", 404);
+  }
+
+  if (!alert.can_respond) {                         // ← add
+    throw new EmployeeAlertResponseServiceError(
+      "Responses are disabled for this alert",
+      403,
+    );
+  }
+
+  if (alert.status !== "active" && alert.status !== "scheduled") {
+    throw new EmployeeAlertResponseServiceError(
+      `Cannot respond to alert with status '${alert.status}'`,
+      409,
+    );
+  }
+
+  return alert;
+}
+
+async function ensureUserBelongsToOrganization(tx, user_id, organization_id) {
+  const users = await tx.users.findMany({
+    where: {
+      user_id,
+      organization_id,
+      is_active: true,
+    },
+    select: {
+      user_id: true,
+      organization_id: true,
+    },
+    take: 1,
+  });
+
+  const user = users[0];
+
+  if (!user) {
+    throw new EmployeeAlertResponseServiceError(
+      "User not found in this organization",
+      403,
+    );
+  }
+
+  return user;
+}
+
+async function findExistingRecipientOrThrow(tx, alert_id, user_id) {
+  const recipient = await tx.notification_Recipients.findUnique({
+    where: {
+      alert_id_user_id: { alert_id, user_id },
+    },
+    select: {
+      id: true,
+      alert_id: true,
+      user_id: true,
+      acknowledged_at: true,
+      delivery_status: true,
+      response_history: true,
+    },
+  });
+
+  if (!recipient) {
+    throw new EmployeeAlertResponseServiceError(
+      "User is not a recipient of this alert",
+      403,
+    );
+  }
+
+  return recipient;
+}
+
+async function updateRecipientResponse(tx, { alert, alert_id, user_id, response }) {
+  const now = utcNow();
+  const newHistoryEntry = { response, at: now.toISOString() };
+
+  const existing = await findExistingRecipientOrThrow(tx, alert_id, user_id);
+
+  const mergedHistory = Array.isArray(existing?.response_history)
+    ? [...existing.response_history, newHistoryEntry]
+    : [newHistoryEntry];
+
+  const recipient = await tx.notification_Recipients.update({
+    where: {
+      alert_id_user_id: { alert_id, user_id },
+    },
+    data: {
+      response,
+      response_updated_at: now,
+      acknowledged_at: existing?.acknowledged_at ?? now,
+      response_history: mergedHistory,
+      ...(existing?.delivery_status !== "delivered"
+        ? { delivery_status: "delivered", delivered_at: now }
+        : {}),
+    },
+    select: {
+      id: true,
+      alert_id: true,
+      user_id: true,
+      response: true,
+      response_updated_at: true,
+      acknowledged_at: true,
+      response_history: true,
+      delivery_status: true,
+    },
+  });
+
+  if (alert.status === "scheduled") {
+    await tx.alerts.updateMany({
+      where: {
+        id: alert_id,
+        organization_id: alert.organization_id,
+        status: "scheduled",
+      },
+      data: {
+        status: "active",
+        start_time: alert.scheduled_time ?? now,
+      },
+    });
+  }
+
+  return recipient;
+}
+
+/**
+ * Requires Prisma schema:
+ * model Notification_Recipients {
+ *   ...
+ *   alert_id String
+ *   user_id  String
+ *   @@unique([alert_id, user_id], name: "alert_id_user_id")
+ * }
+ *
+ * Behavior:
+ * - Requires alert to belong to the caller's organization
+ * - Requires user to belong to the same organization
+ * - Requires an existing recipient row for (alert_id, user_id)
+ * - Response can be updated multiple times
+ * - response_history appends entries each time
+ * - Marks delivered if not already delivered
+ * - If alert is scheduled, nudges it to active on first response
+ *
+ * NOTE:
+ * - This service does NOT auto-create notification recipient rows
+ * - This service does NOT write user_Locations
+ */
+export async function recordEmployeeAlertResponse({
+  alert_id,
+  user_id,
+  organization_id,
+  response,
+}) {
+  try {
+    ensureAllowedResponse(response);
+
+    const recipient = await prisma.$transaction(async (tx) => {
+      const alert = await findAlertForResponse(tx, alert_id, organization_id);
+
+      await ensureUserBelongsToOrganization(tx, user_id, organization_id);
+
+      return updateRecipientResponse(tx, {
+        alert,
+        alert_id,
+        user_id,
+        response,
+      });
+    });
+
+    return recipient;
+  } catch (error) {
+    logger.error("recordEmployeeAlertResponse failed", {
+      error,
+      meta: { alert_id, user_id, organization_id },
+    });
+    throw error;
+  }
+}
+
+export async function recordEmployeeAlertResponseWithLocation({
+  alert_id,
+  user_id,
+  organization_id,
+  response,
+  latitude,
+  longitude,
+  location_name = null,
+}) {
+  try {
+    ensureAllowedResponse(response);
+
+    const hasLocation =
+      typeof latitude === "number" && typeof longitude === "number";
+
+    return await prisma.$transaction(async (tx) => {
+      const alert = await findAlertForResponse(tx, alert_id, organization_id);
+
+      await ensureUserBelongsToOrganization(tx, user_id, organization_id);
+
+      await findExistingRecipientOrThrow(tx, alert_id, user_id);
+
+      let saved_location = null;
+      if (hasLocation) {
+        saved_location = await tx.user_Locations.create({
+          data: {
+            user_id,
+            alert_id,
+            latitude: latitude.toString(),
+            longitude: longitude.toString(),
+            location_name: location_name ?? null,
+          },
+          select: {
+            id: true,
+            user_id: true,
+            alert_id: true,
+            latitude: true,
+            longitude: true,
+            location_name: true,
+            timestamp: true,
+          },
+        });
+      }
+
+      const recipient = await updateRecipientResponse(tx, {
+        alert,
+        alert_id,
+        user_id,
+        response,
+      });
+
+      return { recipient, saved_location };
+    });
+  } catch (error) {
+    logger.error("recordEmployeeAlertResponseWithLocation failed", {
+      error,
+      meta: { alert_id, user_id, organization_id },
+    });
+    throw error;
+  }
+}
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\services\key-management.service.js ===
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import grpc from '@grpc/grpc-js';
+import protoLoader from '@grpc/proto-loader';
+import crypto from 'crypto';
+import logger from '../utils/logger.js';
+import { utcNow } from '../utils/datetime.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// ─── Server-side sealing helpers ─────────────────────────────────────────────
+// The SERVER_SEAL_KEY env var is a 32-byte hex string (64 hex chars).
+// Generate once with: node -e "console.log(crypto.randomBytes(32).toString('hex'))"
+// Store it in your .env and in your secrets manager. Never commit it.
+
+// function getSealKey() {
+//     const hex = process.env.SERVER_SEAL_KEY;
+//     if (!hex || hex.length !== 64) {
+//         throw new Error('SERVER_SEAL_KEY env var missing or invalid — must be 64 hex chars');
+//     }
+//     return Buffer.from(hex, 'hex');
+// }
+
+// Encrypts a buffer with AES-256-GCM using the server seal key.
+// Returns base64(iv || ciphertext || authTag) — same format as client blobs.
+// function sealBuffer(plaintext) {
+//     const key = getSealKey();
+//     const iv = crypto.randomBytes(12);
+//     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+//     const ct = Buffer.concat([cipher.update(plaintext), cipher.final()]);
+//     const tag = cipher.getAuthTag();
+//     return Buffer.concat([iv, ct, tag]).toString('base64');
+// }
+
+// Decrypts a base64(iv || ciphertext || authTag) blob with the server seal key.
+function unsealWithRsa(base64Blob) {
+    const privateKeyPem = process.env.SERVER_RSA_PRIVATE_KEY;
+    if (!privateKeyPem) throw new Error('SERVER_RSA_PRIVATE_KEY not configured');
+
+    const privateKey = crypto.createPrivateKey({
+        key: privateKeyPem.replace(/\\n/g, '\n'),
+        format: 'pem',
+        type: 'pkcs8',
+    });
+
+    const encrypted = Buffer.from(base64Blob, 'base64');
+    return crypto.privateDecrypt(
+        {
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256',
+        },
+        encrypted,
+    );
+}
+
+// Re-wraps a plaintext private key for a specific device using RSA-OAEP.
+// The device's public key is SPKI base64. Returns base64 wrapped key.
+function wrapKeyForDevice(plaintextPrivateKey, devicePublicKeySpkiBase64) {
+    const pubKeyDer = Buffer.from(devicePublicKeySpkiBase64, 'base64');
+    const pubKey = crypto.createPublicKey({ key: pubKeyDer, format: 'der', type: 'spki' });
+    const wrapped = crypto.publicEncrypt(
+        { key: pubKey, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: 'sha256' },
+        plaintextPrivateKey,
+    );
+    return wrapped.toString('base64');
+}
+
+// ─── Service bootstrap ────────────────────────────────────────────────────────
+
+export function startKeyManagementService(prisma, firebaseAdmin) {
+    logger.info('key_management.grpc.initializing');
+
+    const protoPath = path.join(__dirname, '../grpc/key_management.proto');
+    const packageDefinition = protoLoader.loadSync(protoPath, {
+        keepCase: true, longs: String, enums: String, defaults: true, oneofs: true,
+    });
+    const proto = grpc.loadPackageDefinition(packageDefinition).keymanagement;
+
+    // ─── UploadKeyBackup ───────────────────────────────────────────────────────
+    // Called once: immediately after first-time key pair generation on a device.
+    // Stores the client-encrypted blob AND creates the server-sealed fallback.
+    // The sealed_blob field is the private key encrypted with the server's seal key —
+    // the client sends this as part of the same request so we never need to ask for
+    // it again. The client encrypts it using the server's *public* key (RSA-OAEP),
+    // which you publish at a well-known endpoint (see note below).
+    // ──────────────────────────────────────────────────────────────────────────
+    async function UploadKeyBackup(call, callback) {
+        try {
+            const {
+                user_id, organization_id,
+                public_key,
+                device_id, platform, fcm_token,
+                sealed_blob,  // client encrypted the private key with server's public key
+            } = call.request;
+
+            if (!user_id || !organization_id || !public_key || !device_id || !platform) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    message: 'user_id, organization_id, public_key, device_id, platform are required',
+                });
+            }
+
+            // sealed_blob is optional on the first call if you want to simplify the
+            // initial implementation — but strongly recommended to include it.
+            // If absent, Scenario C (server-sealed recovery) won't be available for this user.
+
+            await prisma.$transaction(async (tx) => {
+                // 1. Store the key backup record (public key only for OTP accounts).
+                await tx.user_Key_Backups.upsert({
+                    where: { user_id },
+                    create: {
+                        user_id,
+                        encrypted_private_key: '', // unused for OTP accounts
+                        public_key,
+                        kdf_salt: '',
+                        kdf_iterations: 0,
+                        version: 1,
+                    },
+                    update: {
+                        public_key,
+                        version: { increment: 1 },
+                    },
+                });
+
+                // 2. Keep Users.e2ee_public_key in sync — chat.service.js reads this.
+                await tx.users.update({
+                    where: { user_id },
+                    data: { e2ee_public_key: public_key },
+                });
+
+                // 3. Register the first device.
+                await tx.user_Devices.upsert({
+                    where: { user_id_device_id: { user_id, device_id } },
+                    create: { user_id, device_id, platform, fcm_token, is_active: true },
+                    update: { platform, fcm_token, is_active: true, last_seen: utcNow() },
+                });
+
+                // 4. Store server-sealed fallback if provided.
+                if (sealed_blob) {
+                    await tx.server_Sealed_Key_Backups.upsert({
+                        where: { user_id },
+                        create: { user_id, sealed_blob, key_version: 'v1' },
+                        update: { sealed_blob, key_version: 'v1', updated_at: utcNow() },
+                    });
+                }
+            });
+
+            logger.info('key_management.backup_uploaded', { meta: { user_id, device_id } });
+            callback(null, {});
+        } catch (err) {
+            logger.error('key_management.upload_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to upload key backup' });
+        }
+    }
+
+    // ─── GetKeyBackup ──────────────────────────────────────────────────────────
+    // New device calls this after login to check what backup exists.
+    // Returns NOT_FOUND if this user has never set up keys (first ever login).
+    // ──────────────────────────────────────────────────────────────────────────
+    async function GetKeyBackup(call, callback) {
+        try {
+            const { user_id, organization_id } = call.request;
+            if (!user_id || !organization_id) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    message: 'user_id and organization_id are required',
+                });
+            }
+
+            const backup = await prisma.user_Key_Backups.findUnique({ where: { user_id } });
+            if (!backup) {
+                return callback({
+                    code: grpc.status.NOT_FOUND,
+                    message: 'No key backup found — generate a new key pair',
+                });
+            }
+
+            callback(null, {
+                public_key: backup.public_key,
+                kdf_algorithm: backup.kdf_algorithm,
+                version: backup.version,
+            });
+        } catch (err) {
+            logger.error('key_management.get_backup_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to retrieve key backup' });
+        }
+    }
+
+    // ─── RegisterDevice ────────────────────────────────────────────────────────
+    // Called after key recovery is complete (transfer approved or sealed recovery done).
+    // Safe to call multiple times — upsert handles reinstalls on same device_id.
+    // ──────────────────────────────────────────────────────────────────────────
+    async function RegisterDevice(call, callback) {
+        try {
+            const { user_id, organization_id, device_id, platform, fcm_token } = call.request;
+            if (!user_id || !organization_id || !device_id || !platform) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    message: 'user_id, organization_id, device_id, platform are required',
+                });
+            }
+
+            await prisma.user_Devices.upsert({
+                where: { user_id_device_id: { user_id, device_id } },
+                create: { user_id, device_id, platform, fcm_token, is_active: true },
+                update: { platform, fcm_token, is_active: true, last_seen: utcNow() },
+            });
+
+            logger.info('key_management.device_registered', { meta: { user_id, device_id } });
+            callback(null, {});
+        } catch (err) {
+            logger.error('key_management.register_device_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to register device' });
+        }
+    }
+
+    // ─── RequestKeyTransfer ────────────────────────────────────────────────────
+    // New device generates a fresh ephemeral EC key pair locally and posts
+    // the ephemeral PUBLIC key here. We store it and return a transfer_id.
+    // The new device then sends a push notification to all trusted devices
+    // (via their FCM tokens) so they know to check ListPendingTransfers.
+    // ──────────────────────────────────────────────────────────────────────────
+    async function RequestKeyTransfer(call, callback) {
+        try {
+            const { user_id, organization_id, requesting_device_id, ephemeral_public_key } = call.request;
+            if (!user_id || !organization_id || !requesting_device_id || !ephemeral_public_key) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    message: 'user_id, organization_id, requesting_device_id, ephemeral_public_key are required',
+                });
+            }
+
+            // Expire transfer requests after 10 minutes.
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+            const transfer = await prisma.device_Key_Transfers.create({
+                data: {
+                    user_id,
+                    requesting_device_id,
+                    ephemeral_public_key,
+                    status: 'pending',
+                    expires_at: expiresAt,
+                },
+            });
+
+            // Notify all other active devices belonging to this user so they can show
+            // an approval prompt. We look up their FCM tokens from User_Devices.
+            const trustedDevices = await prisma.user_Devices.findMany({
+                where: {
+                    user_id,
+                    is_active: true,
+                    NOT: { device_id: requesting_device_id },
+                },
+                select: { fcm_token: true, device_id: true },
+            });
+
+            const notifyPromises = trustedDevices
+                .filter(d => d.fcm_token)
+                .map(d =>
+                    firebaseAdmin.messaging().send({
+                        token: d.fcm_token,
+                        data: {
+                            type: 'key_transfer_request',
+                            transfer_id: transfer.id,
+                            user_id,
+                            expires_at: expiresAt.toISOString(),
+                        },
+                        // Data-only message — no notification banner. The Flutter app handles
+                        // the UI prompt itself so it can show the right screen.
+                        android: { priority: 'high' },
+                        apns: { payload: { aps: { contentAvailable: true } } },
+                    }).catch(err =>
+                        logger.warn('key_management.transfer_notify_failed', {
+                            meta: { device_id: d.device_id, error: err.message },
+                        })
+                    )
+                );
+
+            await Promise.all(notifyPromises);
+
+            logger.info('key_management.transfer_requested', {
+                meta: { user_id, transfer_id: transfer.id, trusted_device_count: trustedDevices.length },
+            });
+
+            callback(null, {
+                transfer_id: transfer.id,
+                expires_at: expiresAt.toISOString(),
+            });
+        } catch (err) {
+            logger.error('key_management.request_transfer_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to request key transfer' });
+        }
+    }
+
+    // ─── PollKeyTransfer ───────────────────────────────────────────────────────
+    // New device calls this every ~5 seconds while showing a "Waiting for approval"
+    // screen. Returns the wrapped key once the trusted device has approved.
+    // ──────────────────────────────────────────────────────────────────────────
+    async function PollKeyTransfer(call, callback) {
+        try {
+            const { transfer_id, user_id } = call.request;
+            if (!transfer_id || !user_id) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    message: 'transfer_id and user_id are required',
+                });
+            }
+
+            const transfer = await prisma.device_Key_Transfers.findFirst({
+                where: { id: transfer_id, user_id },
+            });
+
+            if (!transfer) {
+                return callback({ code: grpc.status.NOT_FOUND, message: 'Transfer not found' });
+            }
+
+            // Auto-expire transfers past their expiry time.
+            if (transfer.status === 'pending' && new Date() > transfer.expires_at) {
+                await prisma.device_Key_Transfers.update({
+                    where: { id: transfer_id },
+                    data: { status: 'expired' },
+                });
+                return callback(null, { status: 'expired' });
+            }
+
+            callback(null, {
+                status: transfer.status,
+                wrapped_private_key: transfer.wrapped_private_key ?? '',
+                approving_device_public_key: transfer.approving_device_public_key ?? '',
+            });
+        } catch (err) {
+            logger.error('key_management.poll_transfer_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to poll transfer' });
+        }
+    }
+
+    // ─── ApproveKeyTransfer ────────────────────────────────────────────────────
+    // Called by the trusted (old) device after the user taps "Approve".
+    // The trusted device has already done the ECDH locally and produced
+    // wrapped_private_key. We just store it and flip the status.
+    // ──────────────────────────────────────────────────────────────────────────
+    async function ApproveKeyTransfer(call, callback) {
+        try {
+            const {
+                transfer_id, user_id, approving_device_id,
+                wrapped_private_key, approving_device_public_key,
+            } = call.request;
+
+            if (!transfer_id || !user_id || !approving_device_id || !wrapped_private_key || !approving_device_public_key) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    message: 'All fields are required',
+                });
+            }
+
+            const transfer = await prisma.device_Key_Transfers.findFirst({
+                where: { id: transfer_id, user_id, status: 'pending' },
+            });
+
+            if (!transfer) {
+                return callback({
+                    code: grpc.status.NOT_FOUND,
+                    message: 'Pending transfer not found — may have expired or already been handled',
+                });
+            }
+
+            if (new Date() > transfer.expires_at) {
+                await prisma.device_Key_Transfers.update({
+                    where: { id: transfer_id },
+                    data: { status: 'expired' },
+                });
+                return callback({ code: grpc.status.DEADLINE_EXCEEDED, message: 'Transfer expired' });
+            }
+
+            await prisma.device_Key_Transfers.update({
+                where: { id: transfer_id },
+                data: {
+                    status: 'approved',
+                    wrapped_private_key,
+                    approving_device_public_key,
+                },
+            });
+
+            logger.info('key_management.transfer_approved', {
+                meta: { transfer_id, user_id, approving_device_id },
+            });
+            callback(null, {});
+        } catch (err) {
+            logger.error('key_management.approve_transfer_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to approve transfer' });
+        }
+    }
+
+    // ─── RejectKeyTransfer ─────────────────────────────────────────────────────
+    async function RejectKeyTransfer(call, callback) {
+        try {
+            const { transfer_id, user_id } = call.request;
+            if (!transfer_id || !user_id) {
+                return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'transfer_id and user_id are required' });
+            }
+
+            await prisma.device_Key_Transfers.updateMany({
+                where: { id: transfer_id, user_id, status: 'pending' },
+                data: { status: 'rejected' },
+            });
+
+            logger.info('key_management.transfer_rejected', { meta: { transfer_id, user_id } });
+            callback(null, {});
+        } catch (err) {
+            logger.error('key_management.reject_transfer_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to reject transfer' });
+        }
+    }
+
+    // ─── ListPendingTransfers ──────────────────────────────────────────────────
+    // Called by trusted devices on app open (or when they receive the FCM push).
+    // Returns all pending non-expired transfer requests for this user.
+    // ──────────────────────────────────────────────────────────────────────────
+    async function ListPendingTransfers(call, callback) {
+        try {
+            const { user_id } = call.request;
+            if (!user_id) {
+                return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'user_id is required' });
+            }
+
+            const transfers = await prisma.device_Key_Transfers.findMany({
+                where: {
+                    user_id,
+                    status: 'pending',
+                    expires_at: { gt: new Date() },
+                },
+                orderBy: { created_at: 'desc' },
+            });
+
+            callback(null, {
+                transfers: transfers.map(t => ({
+                    transfer_id: t.id,
+                    requesting_device_id: t.requesting_device_id,
+                    ephemeral_public_key: t.ephemeral_public_key,
+                    created_at: t.created_at.toISOString(),
+                    expires_at: t.expires_at.toISOString(),
+                })),
+            });
+        } catch (err) {
+            logger.error('key_management.list_transfers_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to list pending transfers' });
+        }
+    }
+
+    // ─── SealedKeyRecovery ─────────────────────────────────────────────────────
+    // Last-resort fallback when no trusted device is available.
+    // The server decrypts the sealed blob using its own key, then re-wraps
+    // the plaintext private key with the new device's public key.
+    // This is the only point where the server momentarily holds the plaintext key.
+    // Always logged to Audit_Logs.
+    // ──────────────────────────────────────────────────────────────────────────
+    async function SealedKeyRecovery(call, callback) {
+        try {
+            const { user_id, organization_id, device_id, device_public_key } = call.request;
+            if (!user_id || !organization_id || !device_id || !device_public_key) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    message: 'user_id, organization_id, device_id, device_public_key are required',
+                });
+            }
+
+            const sealedBackup = await prisma.server_Sealed_Key_Backups.findUnique({
+                where: { user_id },
+            });
+
+            if (!sealedBackup) {
+                return callback({
+                    code: grpc.status.NOT_FOUND,
+                    message: 'No server-sealed backup found for this user',
+                });
+            }
+
+            // Decrypt with server key — plaintext exists in memory only here.
+            let plaintextPrivateKey;
+            try {
+                plaintextPrivateKey = unsealWithRsa(sealedBackup.sealed_blob);
+            } catch (decryptErr) {
+                logger.error('key_management.sealed_recovery_decrypt_failed', { error: decryptErr, meta: { user_id } });
+                return callback({ code: grpc.status.INTERNAL, message: 'Failed to decrypt sealed backup' });
+            }
+
+            // Re-wrap immediately for the requesting device.
+            let wrappedKey;
+            try {
+                wrappedKey = wrapKeyForDevice(plaintextPrivateKey, device_public_key);
+            } catch (wrapErr) {
+                logger.error('key_management.sealed_recovery_wrap_failed', { error: wrapErr, meta: { user_id } });
+                return callback({ code: grpc.status.INTERNAL, message: 'Failed to wrap key for device' });
+            }
+
+            // Explicitly clear the plaintext from memory as soon as possible.
+            plaintextPrivateKey.fill(0);
+
+            // Log for audit trail — this is mandatory.
+            await prisma.audit_Logs.create({
+                data: {
+                    action: 'sealed_key_recovery',
+                    action_performed_by: user_id,
+                    action_target: device_id,
+                    ip_address: call.getPeer(),
+                },
+            });
+
+            logger.warn('key_management.sealed_recovery_used', { meta: { user_id, device_id } });
+            callback(null, { wrapped_private_key: wrappedKey });
+        } catch (err) {
+            logger.error('key_management.sealed_recovery_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Sealed key recovery failed' });
+        }
+    }
+
+    // ─── ListDevices ──────────────────────────────────────────────────────────
+    async function ListDevices(call, callback) {
+        try {
+            const { user_id } = call.request;
+            if (!user_id) return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'user_id is required' });
+
+            const rows = await prisma.user_Devices.findMany({
+                where: { user_id, is_active: true },
+                orderBy: { last_seen: 'desc' },
+            });
+
+            callback(null, {
+                devices: rows.map(d => ({
+                    device_id: d.device_id,
+                    platform: d.platform,
+                    last_seen: d.last_seen.toISOString(),
+                    is_active: d.is_active,
+                })),
+            });
+        } catch (err) {
+            logger.error('key_management.list_devices_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to list devices' });
+        }
+    }
+
+    // ─── RevokeDevice ─────────────────────────────────────────────────────────
+    async function RevokeDevice(call, callback) {
+        try {
+            const { user_id, device_id } = call.request;
+            if (!user_id || !device_id) {
+                return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'user_id and device_id are required' });
+            }
+
+            await prisma.user_Devices.updateMany({
+                where: { user_id, device_id },
+                data: { is_active: false },
+            });
+
+            logger.info('key_management.device_revoked', { meta: { user_id, device_id } });
+            callback(null, {});
+        } catch (err) {
+            logger.error('key_management.revoke_device_failed', { error: err });
+            callback({ code: grpc.status.INTERNAL, message: 'Failed to revoke device' });
+        }
+    }
+
+    // ─── gRPC server ──────────────────────────────────────────────────────────
+    const server = new grpc.Server();
+    server.addService(proto.KeyManagementService.service, {
+        UploadKeyBackup,
+        GetKeyBackup,
+        RegisterDevice,
+        RequestKeyTransfer,
+        PollKeyTransfer,
+        ApproveKeyTransfer,
+        RejectKeyTransfer,
+        ListPendingTransfers,
+        SealedKeyRecovery,
+        ListDevices,
+        RevokeDevice,
+    });
+
+    const addr = '0.0.0.0:5052';
+    server.bindAsync(addr, grpc.ServerCredentials.createInsecure(), (err, port) => {
+        if (err) {
+            logger.error('key_management.grpc.bind_failed', { error: err });
+            return;
+        }
+        logger.info('key_management.grpc.ready', { meta: { addr, port } });
+    });
+}
+
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\services\queue.service.js ===
+// services/queue.service.js
+import { Queue, Worker } from 'bullmq';
+import logger from "../utils/logger.js";
+
+// Prefer a single REDIS_URL; fall back to host/port with Compose service name.
+const REDIS_URL = process.env.REDIS_URL;
+
+function buildConnection() {
+  if (REDIS_URL) {
+    const u = new URL(REDIS_URL); // e.g., redis://zendlert_redis:6379
+    return {
+      host: u.hostname || 'zendlert_redis',
+      port: Number(u.port || 6379),
+      ...(u.password ? { password: u.password } : {}),
+    };
+  }
+  return {
+    host: process.env.REDIS_HOST || 'zendlert_redis',
+    port: Number(process.env.REDIS_PORT || 6379),
+  };
+}
+
+const connection = buildConnection();
+let notificationWorkerState = null;
+
+export const notificationQueue = new Queue('notificationQueue', {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 1000 },
+    removeOnComplete: true,
+    removeOnFail: 50,
+  },
+});
+
+export function startNotificationWorker(processorFn) {
+  if (notificationWorkerState) {
+    logger.info("[notificationQueue] Worker already initialized, reusing existing instance");
+    return notificationWorkerState;
+  }
+
+  const worker = new Worker('notificationQueue', processorFn, { connection });
+
+  worker.on('failed', (job, err) => {
+    logger.error("notificationQueue job failed", {
+      error: err,
+      meta: { job_id: job?.id ?? null },
+    });
+  });
+  worker.on('completed', (job) => {
+    logger.info("notificationQueue job completed", {
+      meta: { job_id: job?.id ?? null },
+    });
+  });
+
+  logger.info(
+    `[notificationQueue] BullMQ ready @ ${connection.host}:${connection.port}`
+  );
+
+  notificationWorkerState = { worker };
+  return notificationWorkerState;
+}
+
+=== c:\Users\OMEN\software-projects\zendlert\zendlrt\services\subscription.service.js ===
+import path from "path";
+import grpc from "@grpc/grpc-js";
+import protoLoader from "@grpc/proto-loader";
+import prisma from "../utils/prisma.js";
+
+import { getAuthContext } from "../utils/grpc-auth.js";
+
+class SubscriptionManager {
+    constructor() {
+        /**
+         * Map key format:
+         * `${topic}::${orgId}`
+         *
+         * Value:
+         * Set<ServerWritableStream>
+         */
+        this.subscribers = new Map();
+    }
+
+    _getKey(topic, orgId) {
+        return `${topic}::${orgId}`;
+    }
+
+    addSubscriber({ topic, orgId, call }) {
+        const key = this._getKey(topic, orgId);
+
+        if (!this.subscribers.has(key)) {
+            this.subscribers.set(key, new Set());
+        }
+
+        this.subscribers.get(key).add(call);
+    }
+
+    removeSubscriber({ topic, orgId, call }) {
+        const key = this._getKey(topic, orgId);
+        const bucket = this.subscribers.get(key);
+
+        if (!bucket) return;
+
+        bucket.delete(call);
+
+        if (bucket.size === 0) {
+            this.subscribers.delete(key);
+        }
+    }
+
+    publish({ topic, orgId, event, data }) {
+        const key = this._getKey(topic, orgId);
+        const bucket = this.subscribers.get(key);
+
+        if (!bucket || bucket.size === 0) return;
+
+        const message = {
+            topic,
+            event,
+            data: JSON.stringify(data ?? {}),
+        };
+
+        for (const call of [...bucket]) {
+            try {
+                call.write(message);
+            } catch (error) {
+                console.error("[SUBSCRIPTION_PUBLISH_ERROR]", {
+                    topic,
+                    orgId,
+                    event,
+                    error: error?.message,
+                });
+
+                this.removeSubscriber({ topic, orgId, call });
+
+                try {
+                    call.end();
+                } catch (_) { }
+            }
+        }
+    }
+
+    publishToTopicForAllOrgs({ topic, event, data }) {
+        for (const [key, bucket] of this.subscribers.entries()) {
+            if (!key.startsWith(`${topic}::`)) continue;
+
+            const message = {
+                topic,
+                event,
+                data: JSON.stringify(data ?? {}),
+            };
+
+            for (const call of [...bucket]) {
+                try {
+                    call.write(message);
+                } catch (error) {
+                    console.error("[SUBSCRIPTION_BROADCAST_ERROR]", {
+                        key,
+                        topic,
+                        event,
+                        error: error?.message,
+                    });
+
+                    bucket.delete(call);
+
+                    try {
+                        call.end();
+                    } catch (_) { }
+                }
+            }
+
+            if (bucket.size === 0) {
+                this.subscribers.delete(key);
+            }
+        }
+    }
+}
+
+
+const subscriptionManager = new SubscriptionManager();
+async function getOrganizationSubscriptionPayload(organizationId) {
+    const rows = await prisma.$queryRawUnsafe(
+        `
+      SELECT
+        s.id,
+        s.status,
+        s.payment_status,
+        s.current_period_start,
+        s.current_period_end,
+        p.plan_name,
+        p.user_limit,
+        p.area_limit,
+        p.site_limit,
+        p.alert_limit
+      FROM "Subscriptions" s
+      INNER JOIN "Subscription_Plans" p
+        ON p.id = s.subscription_plan_id
+      WHERE s.organization_id = $1
+        AND s.status IN ('active', 'trialing')
+      ORDER BY s.created_at DESC
+      LIMIT 1
+    `,
+        organizationId
+    );
+
+    const subscription = rows?.[0] ?? null;
+
+    if (!subscription) {
+        return {
+            type: "subscription",
+            subscription: {
+                id: null,
+                status: "inactive",
+                payment_status: null,
+                current_period_start: null,
+                current_period_end: null,
+                plan_name: null,
+                user_limit: 0,
+                area_limit: 0,
+                site_limit: 0,
+                alert_limit: 0,
+            },
+        };
+    }
+
+    return {
+        type: "subscription",
+        subscription: {
+            id: subscription.id,
+            status: subscription.status,
+            payment_status: subscription.payment_status,
+            current_period_start: subscription.current_period_start,
+            current_period_end: subscription.current_period_end,
+            plan_name: subscription.plan_name,
+            user_limit: Number(subscription.user_limit ?? 0),
+            area_limit: Number(subscription.area_limit ?? 0),
+            site_limit: Number(subscription.site_limit ?? 0),
+            alert_limit: Number(subscription.alert_limit ?? 0),
+        },
+    };
+}
+
+function writeGrpcError(call, code, message) {
+    call.emit("error", {
+        code,
+        message,
+    });
+}
+
+export function publishSubscriptionUpdate(orgId, payload) {
+    subscriptionManager.publish({
+        topic: "subscription",
+        orgId,
+        event: "UPDATE",
+        data: payload,
+    });
+}
+
+export async function notifySubscriptionUpdate(orgId) {
+    try {
+        const payload = await getOrganizationSubscriptionPayload(orgId);
+
+        subscriptionManager.publish({
+            topic: "subscription",
+            orgId,
+            event: "UPDATE",
+            data: payload,
+        });
+    } catch (error) {
+        console.error("[NOTIFY_SUBSCRIPTION_UPDATE_ERROR]", {
+            orgId,
+            error: error?.message,
+        });
+    }
+}
+
+export function startSubscriptionService() {
+    const protoPath = path.resolve("grpc/subscription.proto");
+
+    const packageDefinition = protoLoader.loadSync(protoPath, {
+        keepCase: true,
+        longs: String,
+        enums: String,
+        defaults: true,
+    });
+
+    const proto = grpc.loadPackageDefinition(packageDefinition).subscription;
+    const server = new grpc.Server();
+
+    const subscribe = async (call) => {
+        let auth;
+
+        try {
+            auth = getAuthContext(call);
+        } catch (error) {
+            writeGrpcError(
+                call,
+                error?.code ?? grpc.status.UNAUTHENTICATED,
+                error?.message || "Unauthorized"
+            );
+            return;
+        }
+
+        const { topic, filters } = call.request || {};
+        const { organization_id } = auth;
+
+        if (!organization_id) {
+            writeGrpcError(
+                call,
+                grpc.status.UNAUTHENTICATED,
+                "organization_id missing in auth token"
+            );
+            return;
+        }
+
+        if (!topic || typeof topic !== "string") {
+            writeGrpcError(call, grpc.status.INVALID_ARGUMENT, "topic is required");
+            return;
+        }
+
+        console.log("[SUBSCRIBE]", {
+            topic,
+            organization_id,
+            filters: filters || {},
+        });
+
+        subscriptionManager.addSubscriber({
+            topic,
+            orgId: organization_id,
+            call,
+        });
+
+        let cleanedUp = false;
+
+        const cleanup = () => {
+            if (cleanedUp) return;
+            cleanedUp = true;
+
+            console.log("[UNSUBSCRIBE]", {
+                topic,
+                organization_id,
+            });
+
+            subscriptionManager.removeSubscriber({
+                topic,
+                orgId: organization_id,
+                call,
+            });
+
+            try {
+                call.end();
+            } catch (_) { }
+        };
+
+        call.on("cancelled", cleanup);
+        call.on("close", cleanup);
+        call.on("error", (error) => {
+            console.error("[SUBSCRIBE_STREAM_ERROR]", {
+                topic,
+                organization_id,
+                error: error?.message,
+            });
+            cleanup();
+        });
+
+        try {
+            let initPayload = {
+                type: "generic",
+                message: "Subscribed successfully",
+            };
+
+            if (topic === "subscription") {
+                initPayload = await getOrganizationSubscriptionPayload(organization_id);
+            }
+
+            call.write({
+                topic,
+                event: "INIT",
+                data: JSON.stringify(initPayload),
+            });
+        } catch (error) {
+            console.error("[SUBSCRIBE_INIT_ERROR]", {
+                topic,
+                organization_id,
+                error: error?.message,
+            });
+
+            writeGrpcError(
+                call,
+                grpc.status.INTERNAL,
+                "Failed to initialize subscription stream"
+            );
+            cleanup();
+        }
+    };
+
+    const ping = async (_call, callback) => {
+        try {
+            callback(null, { message: "pong" });
+        } catch (error) {
+            callback({
+                code: grpc.status.INTERNAL,
+                message: "Ping failed",
+            });
+        }
+    };
+
+    server.addService(proto.SubscriptionService.service, {
+        Subscribe: subscribe,
+        Ping: ping,
+    });
+
+    const addr = '0.0.0.0:5053';
+    server.bindAsync(addr,
+        grpc.ServerCredentials.createInsecure(),
+        (error, port) => {
+            if (error) {
+                console.error("[SUBSCRIPTION_GRPC_BIND_ERROR]", error);
+                throw error;
+            }
+
+            server.start();
+            console.log(`Subscription gRPC running on ${addr} (port ${port})`);
+        }
+    );
+
+    return server;
+}
+

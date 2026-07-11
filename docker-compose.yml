@@ -8,6 +8,8 @@ services:
       - "7000:7000"
       - "5050:5050"
       - "5051:5051"
+      - "5052:5052"
+      - "5053:5053"
     depends_on:
       zendlert_db:
         condition: service_healthy

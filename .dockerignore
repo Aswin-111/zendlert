@@ -6,5 +6,14 @@ dist
 .git
 .gitignore
 Dockerfile
+docker-tars
 docker-compose*.yml
 *.md
+*.tar
+com.txt
+codex-context.txt
+chatgpt_context_by_codex.txt
+VKACCOUNTANCY.pem
+file-tree.txt
+login.html
+otp.html

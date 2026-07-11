@@ -21,7 +21,7 @@ import {
 import createAlertSchema from "../validators/alert/create-alert.validator.js";
 import addEmployeeSchema from "../validators/admin/add-employee.validator.js";
 import {
-    createAlertForOrganization, getAlertDashboardPayload, resolveAlertForOrganization, getAlertTypesForOrganization, getSitesForOrganization, getAreasForOrganizationSite
+    createAlertForOrganization, getAlertDashboardPayload, resolveAlertForOrganization, getAlertTypesForOrganization, getSitesForOrganization, getAreasForOrganizationSite, getAlertRecipientCountsPayload,
 } from "../services/alert.service.js";
 
 import adminCreateAlertSchema from "../validators/admin/create-alert.validator.js";
@@ -640,7 +640,137 @@ const AdminController = {
             });
         }
     },
+    getAlertRecipientCount: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const userId = req.user?.user_id;
 
+        try {
+            if (!organizationId) {
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            const site_selections =
+                req.body?.site_selections ?? req.body ?? [];
+
+            const payload = await getAlertRecipientCountsPayload(
+                prisma,
+                organizationId,
+                site_selections,
+            );
+
+            logger.info("Alert recipient count computed", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    userId,
+                    sites: payload.total_sites,
+                    areas: payload.total_areas,
+                    total: payload.totals.total,
+                },
+            });
+
+            return res.status(200).json(payload);
+        } catch (error) {
+            if (
+                respondWithKnownServiceError(res, error, [400, 403, 404], {
+                    400: (err) => ({
+                        ...(err.invalid_site_ids
+                            ? { invalid_site_ids: err.invalid_site_ids }
+                            : {}),
+                        ...(err.invalid_area_ids
+                            ? { invalid_area_ids: err.invalid_area_ids }
+                            : {}),
+                    }),
+                })
+            ) return;
+
+            logger.error("getAlertRecipientCount error", {
+                error,
+                meta: { requestId, organizationId, userId },
+            });
+
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
+    updateAlertResponsePermission: async (req, res) => {
+        const requestId = req.requestId || null;
+        const organizationId = req.user?.organization_id;
+        const actorUserId = req.user?.user_id;
+        const { alertId } = req.params;
+        const { can_respond } = req.body;
+
+        try {
+            if (!organizationId) {
+                return res.status(401).json({ message: "Unauthorized" });
+            }
+
+            if (!alertId) {
+                return res.status(400).json({ message: "alertId is required" });
+            }
+
+            if (typeof can_respond !== "boolean") {
+                return res.status(400).json({
+                    message: "can_respond must be a boolean (true or false)",
+                });
+            }
+
+            // ensure the alert belongs to this org
+            const alert = await prisma.alerts.findFirst({
+                where: { id: alertId, organization_id: organizationId },
+                select: { id: true, status: true, can_respond: true },
+            });
+
+            if (!alert) {
+                logger.warn("Alert not found or not in org", {
+                    meta: { requestId, organizationId, alertId },
+                });
+                return res.status(404).json({ message: "Alert not found" });
+            }
+
+            // (optional) don't allow toggling on resolved/ended alerts
+            if (["resolved", "ended", "cancelled"].includes(alert.status)) {
+                return res.status(409).json({
+                    message: `Cannot change response permission on a ${alert.status} alert.`,
+                });
+            }
+
+            if (alert.can_respond === can_respond) {
+                return res.status(200).json({
+                    message: `Alert response permission is already ${can_respond ? "enabled" : "disabled"}.`,
+                    alert_id: alertId,
+                    can_respond,
+                });
+            }
+
+            const updated = await prisma.alerts.update({
+                where: { id: alertId },
+                data: { can_respond },
+                select: { id: true, can_respond: true, status: true },
+            });
+
+            logger.info("Alert response permission updated", {
+                meta: {
+                    requestId,
+                    organizationId,
+                    actorUserId,
+                    alertId,
+                    can_respond,
+                },
+            });
+
+            return res.status(200).json({
+                message: `Recipients can ${can_respond ? "now" : "no longer"} respond to this alert.`,
+                alert: updated,
+            });
+        } catch (error) {
+            logger.error("updateAlertResponsePermission error", {
+                error,
+                meta: { requestId, organizationId, actorUserId, alertId },
+            });
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
     createUser: async (req, res) => {
         const requestId = req.requestId || null;
         const actorUserId = req.user?.user_id;
@@ -3932,6 +4062,7 @@ const AdminController = {
                     created_at: true,
 
                     emergency_type: { select: { name: true } }, // ✅ alert_type
+                    icon: { select: { id: true, name: true, image_url: true } },  
                     organization: { select: { name: true } }, // ✅ organization_name
 
                     user: {
@@ -4083,6 +4214,40 @@ const AdminController = {
             });
         }
     },
+    listIcons: async (req, res) => {
+        const requestId = req.requestId || null;
+        const userId = req.user?.user_id;
+
+        try {
+            const icons = await prisma.icons.findMany({
+                where: { is_active: true },
+                orderBy: { name: "asc" },
+                select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    image_url: true,
+                },
+            });
+
+            logger.info("Icons listed", {
+                meta: { requestId, userId, count: icons.length },
+            });
+
+            return res.status(200).json({
+                total: icons.length,
+                icons,
+            });
+        } catch (error) {
+            logger.error("listIcons error", {
+                error,
+                meta: { requestId, userId },
+            });
+            return res.status(500).json({ message: "Server error" });
+        }
+    },
+
+
     createAlert: async (req, res) => {
         try {
             const organization_id = getOrganizationIdOrUnauthorized(req, res);
@@ -4106,6 +4271,8 @@ const AdminController = {
                 severity_level,
                 alert_message,
                 send_sms,
+                can_respond,
+                icon_id,
                 response_required,
                 timing_details,
                 selected_area_details,
@@ -4121,6 +4288,8 @@ const AdminController = {
                     severity_level,
                     alert_message,
                     send_sms,
+                    can_respond,
+                     icon_id, 
                     response_required,
                     timing_details,
                     selected_area_details,

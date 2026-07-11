@@ -52,6 +52,7 @@ const EmployeeController = {
           organization: { select: { name: true } },
         },
       });
+      console.log(invitation)
 
       if (!invitation) {
         return res.status(404).json({ message: "Verification link not found." });
@@ -189,50 +190,58 @@ const EmployeeController = {
 
   // NOTE: If auth middleware is used on this route, you can remove user_id from body.
   // Keeping it as you had (no behavior change) but still validates response enum.
-  respondToAlert: async (req, res) => {
-    try {
-      const parsed = buildRespondToAlertSchema(ALLOWED_RESPONSES).parse(req.body);
-
-      const user_id = req.user?.user_id;
-      const organization_id = req.user?.organization_id;
-
-      if (!user_id || !organization_id) {
-        return sendForbidden(
-          res,
-          AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN
-        );
-      }
-
-      const result = await recordEmployeeAlertResponseWithLocation({
-        alert_id: parsed.alert_id,
-        user_id,
-        organization_id,
-        response: parsed.response,
-        latitude: parsed.latitude,
-        longitude: parsed.longitude,
-        location_name: parsed.location_name ?? null,
-      });
-
-      return res.status(200).json({
-        message: "Response recorded successfully",
-        recipient: result.recipient,
-        saved_location: result.saved_location ?? null,
-      });
-    } catch (err) {
-      if (err?.statusCode) {
-        return res.status(err.statusCode).json({ error: err.message });
-      }
-
-      if (err?.name === "ZodError") {
-        return res.status(400).json({
-          error: err.issues || err.errors,
-        });
-      }
-
-      logger.error("respondToAlert error:", err);
-      return res.status(500).json({ error: "Internal server error" });
+ respondToAlert: async (req, res) => {
+  try {
+    const alert_id = req.params?.alertId;
+    if (!alert_id) {
+      return res.status(400).json({ error: "alertId is required" });
     }
-  },
+
+    const parsed = buildRespondToAlertSchema(ALLOWED_RESPONSES).parse({
+      ...(req.body ?? {}),
+      alert_id,
+    });
+
+    const user_id = req.user?.user_id;
+    const organization_id = req.user?.organization_id;
+
+    if (!user_id || !organization_id) {
+      return sendForbidden(
+        res,
+        AUTH_RESPONSE_MESSAGES.FORBIDDEN_INVALID_TOKEN
+      );
+    }
+
+    const result = await recordEmployeeAlertResponseWithLocation({
+      alert_id: parsed.alert_id,
+      user_id,
+      organization_id,
+      response: parsed.response,
+      latitude: parsed.latitude,
+      longitude: parsed.longitude,
+      location_name: parsed.location_name ?? null,
+    });
+
+    return res.status(200).json({
+      message: "Response recorded successfully",
+      recipient: result.recipient,
+      saved_location: result.saved_location ?? null,
+    });
+  } catch (err) {
+    if (err?.statusCode) {
+      return res.status(err.statusCode).json({ error: err.message });
+    }
+
+    if (err?.name === "ZodError") {
+      return res.status(400).json({
+        error: err.issues || err.errors,
+      });
+    }
+
+    logger.error("respondToAlert error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+},
 
 
   /**

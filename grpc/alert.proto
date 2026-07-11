@@ -60,6 +60,9 @@ message AlertDataResponse {
   string status = 6;
   string priority = 7;
   google.protobuf.Timestamp delivered_time = 8;
+  string icon_name = 9;     // ← new ("Air Contamination")
+  string icon_url  = 10;    // ← new ("assets/air_contamination.png")
+  bool can_respond = 11;
 }
 
 // ================= STREAM =================
@@ -92,6 +95,9 @@ message ActiveAlert {
   google.protobuf.Timestamp last_response_updated_at = 14;
 
   repeated UserLocation user_locations = 15;
+  string icon_name = 16;    // ← new
+  string icon_url  = 17;    // ← new
+  bool can_respond = 18;
 }
 
 message ActiveAlertsResponse {

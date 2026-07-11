@@ -961,108 +961,110 @@ const OrganizationController = {
       });
     }
   },
-  createEmployee: async (req, res) => {
-    try {
-      const parsed = createEmployeeSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const errors = parsed.error.errors.map((e) => e.message);
-        return res.status(400).json({ message: "Invalid input", errors });
-      }
-
-      const { full_name, email, phone, password, domain } = parsed.data;
-
-      // 1. Check if a user with this email already exists
-      const existingUser = await prisma.users.findUnique({
-        where: { email: email.toLowerCase() },
-      });
-
-      if (existingUser) {
-        return res
-          .status(409)
-          .json({ message: "User with this email already exists" });
-      }
-
-      // 2. Find the organization using the provided domain
-      const existingOrg = await prisma.organizations.findUnique({
-        where: { email_domain: domain },
-      });
-
-      // 3. Validate that the organization was found
-      if (!existingOrg) {
-        return res
-          .status(404)
-          .json({ message: `Organization with domain '${domain}' not found.` });
-      }
-
-      // Now we can safely get the organization_id
-      const organization_id = existingOrg.organization_id;
-
-      // 4. Find the 'employee' role
-      const role = await prisma.roles.findUnique({
-        where: { role_name: "employee" },
-      });
-
-      if (!role) {
-        // This is an important check to prevent server errors if the role is missing
-        logger.error("'employee' role not found in the database.");
-        return res.status(500).json({
-          message: "Server configuration error: Employee role not found.",
-        });
-      }
-
-      // 5. Prepare user data
-      const password_hash = await bcrypt.hash(password, 10);
-      const { firstName, lastName } = splitFullName(full_name);
-
-      // 6. Create the new user and associate them with the found organization
-      const newUser = await prisma.users.create({
-        data: {
-          email: email.toLowerCase(),
-          password_hash,
-          first_name: firstName,
-          last_name: lastName,
-          phone_number: phone,
-          is_active: true,
-          user_type: "employee", // Note: user_type is an enum, so direct string is fine
-          role_id: role.id,
-          organization_id: organization_id, // Use the organization_id found via domain
-        },
-      });
-
-      const { accessToken, refreshToken } = generateTokens({
-        ...newUser,
-        role: { role_name: role.role_name },
-        organization: { name: existingOrg.name },
-      });
-
-      // Save Refresh Token to DB
-      await prisma.users.update({
-        where: { user_id: newUser.user_id },
-        data: { refresh_token: refreshToken },
-      });
-
-      // Send HttpOnly Cookie
-      sendRefreshTokenCookie(res, refreshToken);
-
-      return res.status(201).json({
-        message: `Employee joined under '${existingOrg.name}' successfully`,
-        organization_id: organization_id,
-        accessToken,
-        refreshToken,
-        user: {
-          role: role.role_name,
-          user_id: newUser.user_id,
-          email: newUser.email,
-          full_name: full_name,
-        },
-      });
-    } catch (error) {
-      logger.error("createEmployee error:", error);
-      return res
-        .status(500)
-        .json({ message: "Server error", error: error.message });
+ createEmployee: async (req, res) => {
+  try {
+    const parsed = createEmployeeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const errors = parsed.error.errors.map((e) => e.message);
+      return res.status(400).json({ message: "Invalid input", errors });
     }
-  },
+
+    const { first_name, last_name, email, phone } = parsed.data;
+
+    // 1. Extract domain from the email
+    const domain = email.split("@")[1];
+    if (!domain) {
+      return res
+        .status(400)
+        .json({ message: "Invalid email: could not extract domain." });
+    }
+
+    // 2. Check if a user with this email already exists
+    const existingUser = await prisma.users.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return res
+        .status(409)
+        .json({ message: "User with this email already exists" });
+    }
+
+    // 3. Find the organization using the extracted domain
+    const existingOrg = await prisma.organizations.findUnique({
+      where: { email_domain: domain },
+    });
+
+    if (!existingOrg) {
+      return res.status(404).json({
+        message: `No organization is registered with the domain '${domain}'.`,
+      });
+    }
+
+    const organization_id = existingOrg.organization_id;
+
+    // 4. Find the 'employee' role
+    const role = await prisma.roles.findUnique({
+      where: { role_name: "employee" },
+    });
+
+    if (!role) {
+      logger.error("'employee' role not found in the database.");
+      return res.status(500).json({
+        message: "Server configuration error: Employee role not found.",
+      });
+    }
+
+    // 5. Create the new user (no password yet)
+    const newUser = await prisma.users.create({
+      data: {
+        email,
+        first_name,
+        last_name,
+        phone_number: phone,
+        is_active: true,
+        user_type: "employee",
+        role_id: role.id,
+        organization_id,
+      },
+    });
+
+    // 6. Generate tokens
+    const { accessToken, refreshToken } = generateTokens({
+      ...newUser,
+      role: { role_name: role.role_name },
+      organization: { name: existingOrg.name },
+    });
+
+    // 7. Save refresh token
+    await prisma.users.update({
+      where: { user_id: newUser.user_id },
+      data: { refresh_token: refreshToken },
+    });
+
+    // 8. Send HttpOnly cookie
+    sendRefreshTokenCookie(res, refreshToken);
+
+    return res.status(201).json({
+      message: `Employee joined under '${existingOrg.name}' successfully`,
+      organization_id,
+      accessToken,
+      refreshToken,
+      user: {
+        role: role.role_name,
+        user_id: newUser.user_id,
+        email: newUser.email,
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
+      },
+    });
+  } catch (error) {
+    logger.error("createEmployee error:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+},
   // employee login
 
   getSitesAndAreasByOrganizationId: async (req, res) => {

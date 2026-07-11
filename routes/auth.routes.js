@@ -22,5 +22,8 @@ router.post("/organizations/registrations", OrganizationController.createOrganiz
 
 router.get("/employees/availability/email-domain", OrganizationController.checkEmailForEmployee);
 router.post("/employees/registrations", OrganizationController.createEmployee);
+router.get("/sites/areas", OrganizationController.getSitesAndAreasByOrganizationId);
+router.put("/users/:userId/site-area", OrganizationController.assignSiteAndAreaToUser);
+
 
 export default router;

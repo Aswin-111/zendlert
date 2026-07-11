@@ -1,11 +1,10 @@
 import { z } from "zod";
 
 const createEmployeeSchema = z.object({
-    domain: z.string().min(1, "Domain is required"),
-    full_name: z.string().min(1, "Full name is required"),
-    email: z.string().email("Invalid email format"),
-    phone: z.string().min(10, "Phone number is required"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+  first_name: z.string().min(1, "First name is required").trim(),
+  last_name: z.string().min(1, "Last name is required").trim(),
+  email: z.string().email("Invalid email format").toLowerCase(),
+  phone: z.string().min(10, "Phone number is required"),
 });
 
-export default createEmployeeSchema
+export default createEmployeeSchema;
