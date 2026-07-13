@@ -5,6 +5,60 @@ import prisma from "../utils/prisma.js";
 
 import { getAuthContext } from "../utils/grpc-auth.js";
 
+// ─── Plan limits ──────────────────────────────────────────────────────────────
+// The free plan is unlimited on every axis (users / sites / areas / alerts).
+// We send -1 to mean "unlimited" and also send explicit boolean flags so the
+// client never has to guess what -1 means.
+
+export const UNLIMITED = -1;
+
+const FREE_PLAN_NAME = "free";          // must match Subscription_Plans.plan_name
+const FREE_PLAN_STATUS = "active";      // free orgs are usable, not "inactive"
+const FREE_PLAN_PAYMENT_STATUS = "not_required";
+
+const LIMIT_FIELDS = ["user_limit", "area_limit", "site_limit", "alert_limit"];
+
+function isFreePlanName(planName) {
+    return String(planName ?? "").trim().toLowerCase() === FREE_PLAN_NAME;
+}
+
+/** A limit is "no cap" when it is negative / null / undefined. */
+export function isUnlimitedLimit(limit) {
+    return limit === null || limit === undefined || Number(limit) < 0;
+}
+
+/**
+ * Use this wherever a plan limit is enforced.
+ * `count >= limit` is WRONG once limit can be -1 — it would block everything.
+ */
+export function hasReachedLimit(currentCount, limit) {
+    if (isUnlimitedLimit(limit)) return false;
+    return Number(currentCount) >= Number(limit);
+}
+
+function buildPlanLimits(plan) {
+    // Free plan (or no plan row at all) → unlimited, regardless of what is stored
+    // in Subscription_Plans (those columns default to 0 in the schema).
+    if (!plan || isFreePlanName(plan.plan_name)) {
+        return LIMIT_FIELDS.reduce((acc, field) => {
+            acc[field] = UNLIMITED;
+            return acc;
+        }, {});
+    }
+
+    return LIMIT_FIELDS.reduce((acc, field) => {
+        acc[field] = isUnlimitedLimit(plan[field])
+            ? UNLIMITED
+            : Number(plan[field]);
+        return acc;
+    }, {});
+}
+
+function toIsoDate(value) {
+    if (!value) return null;
+    return value instanceof Date ? value.toISOString() : value;
+}
+
 class SubscriptionManager {
     constructor() {
         /**
@@ -112,68 +166,109 @@ class SubscriptionManager {
     }
 }
 
-
 const subscriptionManager = new SubscriptionManager();
-async function getOrganizationSubscriptionPayload(organizationId) {
-    const rows = await prisma.$queryRawUnsafe(
-        `
-      SELECT
-        s.id,
-        s.status,
-        s.payment_status,
-        s.current_period_start,
-        s.current_period_end,
-        p.plan_name,
-        p.user_limit,
-        p.area_limit,
-        p.site_limit,
-        p.alert_limit
-      FROM "Subscriptions" s
-      INNER JOIN "Subscription_Plans" p
-        ON p.id = s.subscription_plan_id
-      WHERE s.organization_id = $1
-        AND s.status IN ('active', 'trialing')
-      ORDER BY s.created_at DESC
-      LIMIT 1
-    `,
-        organizationId
-    );
 
-    const subscription = rows?.[0] ?? null;
-
-    if (!subscription) {
-        return {
-            type: "subscription",
-            subscription: {
-                id: null,
-                status: "inactive",
-                payment_status: null,
-                current_period_start: null,
-                current_period_end: null,
-                plan_name: null,
-                user_limit: 0,
-                area_limit: 0,
-                site_limit: 0,
-                alert_limit: 0,
+/**
+ * Look up the free plan row so we can send its real id / name / description.
+ * If the row does not exist we still return a synthetic free plan, so the
+ * client is never left with nulls and zeroes.
+ */
+async function findFreePlan() {
+    try {
+        return await prisma.subscription_Plans.findFirst({
+            where: {
+                plan_name: { equals: FREE_PLAN_NAME, mode: "insensitive" },
             },
-        };
+            select: {
+                id: true,
+                plan_name: true,
+                description: true,
+                user_limit: true,
+                area_limit: true,
+                site_limit: true,
+                alert_limit: true,
+            },
+        });
+    } catch (error) {
+        console.error("[FREE_PLAN_LOOKUP_ERROR]", { error: error?.message });
+        return null;
     }
+}
+
+function buildSubscriptionPayload({ subscription, plan }) {
+    const limits = buildPlanLimits(plan);
+    const is_free_plan = !plan || isFreePlanName(plan.plan_name);
 
     return {
         type: "subscription",
         subscription: {
-            id: subscription.id,
-            status: subscription.status,
-            payment_status: subscription.payment_status,
-            current_period_start: subscription.current_period_start,
-            current_period_end: subscription.current_period_end,
-            plan_name: subscription.plan_name,
-            user_limit: Number(subscription.user_limit ?? 0),
-            area_limit: Number(subscription.area_limit ?? 0),
-            site_limit: Number(subscription.site_limit ?? 0),
-            alert_limit: Number(subscription.alert_limit ?? 0),
+            id: subscription?.id ?? null,
+            subscription_plan_id: plan?.id ?? null,
+            plan_name: plan?.plan_name ?? FREE_PLAN_NAME,
+            description: plan?.description ?? null,
+
+            status: subscription?.status ?? FREE_PLAN_STATUS,
+            payment_status:
+                subscription?.payment_status ??
+                (is_free_plan ? FREE_PLAN_PAYMENT_STATUS : null),
+
+            current_period_start: toIsoDate(subscription?.current_period_start),
+            current_period_end: toIsoDate(subscription?.current_period_end),
+
+            is_free_plan,
+            is_unlimited: LIMIT_FIELDS.every((field) =>
+                isUnlimitedLimit(limits[field]),
+            ),
+
+            ...limits,
         },
     };
+}
+
+/**
+ * Resolves the org's current plan.
+ *
+ * 1. Active / trialing Subscriptions row  → that plan's limits.
+ * 2. Row exists but points at the free plan → unlimited (schema stores 0s).
+ * 3. No row at all (or cancelled / expired) → free plan, unlimited.
+ */
+export async function getOrganizationSubscriptionPayload(organizationId) {
+    const subscription = await prisma.subscriptions.findFirst({
+        where: {
+            organization_id: organizationId,
+            status: { in: ["active", "trialing"] },
+        },
+        orderBy: { created_at: "desc" },
+        select: {
+            id: true,
+            status: true,
+            payment_status: true,
+            current_period_start: true,
+            current_period_end: true,
+            plan: {
+                select: {
+                    id: true,
+                    plan_name: true,
+                    description: true,
+                    user_limit: true,
+                    area_limit: true,
+                    site_limit: true,
+                    alert_limit: true,
+                },
+            },
+        },
+    });
+
+    if (!subscription) {
+        // No paid subscription → the org is on the free plan.
+        const freePlan = await findFreePlan();
+        return buildSubscriptionPayload({ subscription: null, plan: freePlan });
+    }
+
+    return buildSubscriptionPayload({
+        subscription,
+        plan: subscription.plan,
+    });
 }
 
 function writeGrpcError(call, code, message) {
